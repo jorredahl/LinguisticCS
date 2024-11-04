@@ -1,6 +1,8 @@
 #include "mainwindow.h"
 #include <QtWidgets>
 #include <QAudioOutput>
+#include "visualizer.h"
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
@@ -9,21 +11,19 @@ MainWindow::MainWindow(QWidget *parent)
     setCentralWidget(center);
 
     // create main layout for central widget
-    mainLayout = new QHBoxLayout(center);
+    mainLayout = new QVBoxLayout(center);
 
     // create menu bar
     //QMenu *fileMenu = new QMenu("&File");
     QMenu *fileMenu = menuBar()->addMenu("&File");
 
-    QAction *uploadAction = new QAction("&Upload Audio File", this);
-    connect(uploadAction, &QAction::triggered, this, &MainWindow::uploadAudio);
-    uploadAction->setShortcut(Qt::CTRL | Qt::Key_N);
-    fileMenu->addAction(uploadAction);
+    //QAction *uploadAction = new QAction("&Upload Audio File", this);
+    //connect(uploadAction, &QAction::triggered, this, &MainWindow::uploadAudio);
+    //uploadAction->setShortcut(Qt::CTRL | Qt::Key_N);
+    //fileMenu->addAction(uploadAction);
 
-    // create upload button
-    uploadAudioButton = new QPushButton("Upload");
-    mainLayout->addWidget(uploadAudioButton, 0, Qt::AlignCenter);
-    connect(uploadAudioButton, &QPushButton::clicked, this, &MainWindow::uploadAudio);
+    Visualizer *source = new Visualizer();
+    mainLayout->addWidget(source);
 
     // create vertical layout for sound waves
     QVBoxLayout *waveformLayout = new QVBoxLayout();
@@ -47,17 +47,3 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow() {}
 
-void MainWindow::uploadAudio(){
-    QUrl aName = QFileDialog::getOpenFileUrl(this, "Select audio file");
-    if (aName.isEmpty()) return;
-
-    player = new QMediaPlayer;
-    audioOutput = new QAudioOutput;
-    player->setAudioOutput(audioOutput);
-    // ...
-    player->setSource(aName);
-    audioOutput->setVolume(50);
-    player->play();
-
-
-}

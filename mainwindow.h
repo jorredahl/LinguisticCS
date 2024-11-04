@@ -6,20 +6,19 @@
 #include <QPushButton>
 #include <QMediaPlayer>
 #include <QAudioOutput>
+#include <QtWidgets>
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
-    QHBoxLayout *mainLayout;
-    QPushButton *uploadAudioButton;
-    QMediaPlayer *player;
-    QAudioOutput *audioOutput;
+    QVBoxLayout *mainLayout;
+
 
 
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-public slots:
-    void uploadAudio();
+
 };
 #endif // MAINWINDOW_H
