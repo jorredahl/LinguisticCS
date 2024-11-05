@@ -22,27 +22,15 @@ MainWindow::MainWindow(QWidget *parent)
     //uploadAction->setShortcut(Qt::CTRL | Qt::Key_N);
     //fileMenu->addAction(uploadAction);
 
-    Visualizer *source = new Visualizer();
-    mainLayout->addWidget(source);
+    Visualizer *sourceVisualizer = new Visualizer();
 
-    // create vertical layout for sound waves
-    QVBoxLayout *waveformLayout = new QVBoxLayout();
-
-    // Native speaker's sound wave placeholder
-    QLabel *nativeWaveLabel = new QLabel("Native Speaker Sound Wave"); // using QLabel as a placeholder for waveforms
-    nativeWaveLabel->setAlignment(Qt::AlignCenter);
-    nativeWaveLabel->setStyleSheet("border: 1px solid black; min-height: 100px;");
-
-    // user's sound wave placeholder
-    QLabel *userWaveLabel = new QLabel("User's Sound Wave");
-    userWaveLabel->setAlignment(Qt::AlignCenter);
-    userWaveLabel->setStyleSheet("border: 1px solid black; min-height: 100px;");
+    mainLayout->addWidget(sourceVisualizer);
 
 
-    waveformLayout->addWidget(nativeWaveLabel);
-    waveformLayout->addWidget(userWaveLabel);
+    Visualizer *userVisualizer = new Visualizer();
+    mainLayout->addWidget(userVisualizer);
 
-    mainLayout->addLayout(waveformLayout);
+
 }
 
 MainWindow::~MainWindow() {}
