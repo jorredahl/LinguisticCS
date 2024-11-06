@@ -1,0 +1,6 @@
+# Ignore build directories and subdirectories
+build/
+
+# Ignore all files with .idx extension
+*.idx
+

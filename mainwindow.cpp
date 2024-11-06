@@ -11,7 +11,6 @@
 #include <QAudioOutput>
 
 
-
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), spectrograph(new Spectrograph(this))
 {
@@ -21,7 +20,7 @@ MainWindow::MainWindow(QWidget *parent)
     player->setAudioOutput(audioOutput);
 
     QVBoxLayout *menu = new QVBoxLayout();
-    uploadAudioButton = new QPushButton("Upload and Play Audio");
+    uploadAudioButton = new QPushButton("Upload");
     menu->addWidget(uploadAudioButton);
 
     QWidget *centerWidget = new QWidget(this);
@@ -68,11 +67,6 @@ void MainWindow::bufferReady() {
     const qint16 *data = buffer.constData<qint16>();
     int sampleCount = buffer.sampleCount();
 
-    // get samples from each buffer
-    // for(int i = 0; i < sampleCount; ++i) {
-    //     accumulatedSamples.append(static_cast<double>(data[i]));
-    // }
-
     // append incoming samples to vector
     for(int i = 0; i < sampleCount; ++i) {
         accumulatedSamples.append(static_cast<double>(data[i]));
@@ -88,12 +82,6 @@ void MainWindow::bufferReady() {
         // remove processed samples based on hopSize
         accumulatedSamples = accumulatedSamples.mid(spectrograph->hopSize);
     }
-
-    // // only call when theres data
-    // if(accumulatedSamples.size() >= spectrograph->getWindowSize()) {
-    //     spectrograph->setupSpectrograph(accumulatedSamples);
-    //     accumulatedSamples.clear();  // Clear after processing
-    // }
 }
 
 
