@@ -1,3 +1,5 @@
+QMAKE_MACOSX_DEPLOYMENT_TARGET = 14.0
+
 QT       += core gui multimedia
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
@@ -10,12 +12,18 @@ CONFIG += c++17
 
 SOURCES += \
     main.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    spectrograph.cpp
 
 HEADERS += \
-    mainwindow.h
+    mainwindow.h \
+    spectrograph.h
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+# adding the FFTW library
+INCLUDEPATH += /usr/local/include
+LIBS += -L/usr/local/lib -lfftw3
