@@ -21,7 +21,7 @@ Visualizer::Visualizer() {
     playButton = new QToolButton;
     playButton->setDefaultAction(playAction);
     playButton->setIcon(QIcon(":/resources/icons/play.svg"));
-
+    playButton->setEnabled(false);
     //connect(playButton, &QToolButton::triggered, this, &MainWindow::handlePlayPause);
     layout->addWidget(playButton);
 
@@ -38,21 +38,6 @@ Visualizer::Visualizer() {
      * and go through when not being played */
 
 
-    /* we can do spectrogram then generalize later
-     * so it is derived from qgraphics view, just like scribbler, initialized with .wav or pixmap
-     * has a slot to take in current position of audio file when playing
-     * so audio file emits signal when position changes.  or has internal timer that is started when plaing?
-     * basically can we continually access state from audio file or keep track ourselves?
-     * efficiency vs accuracy
-     *
-     * so cur/len is percent across the screen of bar
-     * we either delete and redraw everytime or move the rec.  probably equivalent
-     * when there is a click we get x pos and move bar there, emit signal to change pos of song
-     * so need to keep these synced at all times
-     * ok bet there is a positionChanged signal.  so we connect that to a slot that draws the bar
-     *
-
-*/
 
 
 }
@@ -69,24 +54,31 @@ void Visualizer::uploadAudio(){
     // ...
     player->setSource(aName);
     audioOutput->setVolume(50);
-    //player->play();
+
+    //ripped this from chatGPT: couldn't figure out why plain duration wasn't working
+    // Connect to durationChanged signal to get the actual duration
+    connect(player, &QMediaPlayer::durationChanged, this, [=](qint64 duration) {
+        spectrogram->setLength(duration);
+        qDebug() << duration << "duration";
+    });
 
     connect(player, &QMediaPlayer::positionChanged, this->spectrogram, &Spectrogram::audioChanged);
-
+    connect(this->spectrogram, &Spectrogram::sendAudioPosition, this, &Visualizer::changeAudioPosition);
+    playButton->setEnabled(true);
 
 
 }
 
 void Visualizer::handlePlayPause() {
-    qDebug() << "Hi";
-    audioPlaying = !audioPlaying;
     QIcon icon = audioPlaying ? QIcon(":/resources/icons/play.svg") : QIcon(":/resources/icons/pause.svg");
     playButton->setIcon(icon);
-    player->setPosition(0);
+    //player->setPosition(0);
 
     audioPlaying ? player->pause() : player->play();
 
+    audioPlaying = !audioPlaying;
+}
 
-
-
+void Visualizer::changeAudioPosition(qint64 pos) {
+    player->setPosition(pos);
 }

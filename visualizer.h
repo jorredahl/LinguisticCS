@@ -24,6 +24,7 @@ public:
 public slots:
     void uploadAudio();
     void handlePlayPause();
+    void changeAudioPosition(qint64 pos);
 };
 
 #endif // VISUALIZER_H
