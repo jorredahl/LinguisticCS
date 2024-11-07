@@ -5,6 +5,7 @@
 #include <QtWidgets>
 #include <QMediaPlayer>
 #include <QAudioOutput>
+#include "spectrogram.h"
 
 
 class Visualizer : public QWidget
@@ -18,6 +19,7 @@ public:
     bool audioPlaying;
     QToolButton *playButton;
     QHBoxLayout *layout;
+    Spectrogram *spectrogram;
 
 public slots:
     void uploadAudio();
