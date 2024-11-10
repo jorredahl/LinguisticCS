@@ -8,7 +8,6 @@
 #include <fftw3.h>
 
 /* This widget will display our spectrograph */
-
 class Spectrograph : public QWidget
 {
     Q_OBJECT
@@ -23,6 +22,7 @@ public:
     double maxMagnitude = 1.0;
     int hopSize;
     int getWindowSize() const { return windowSize; }
+    void reset();
 
 private:
    // fftw_plan plan;
@@ -35,10 +35,13 @@ private:
 
     int windowSize = 1024;
 
-    //int windowSize = 2048;
+    //int windowSize = 2048; this could be an option too but i think 1024 reads better
+
     QVector<QVector<double>> spectrogram; // 2D matrix
-    QVector<double> hammingWindowValues; // hamming window value
-    QVector<double> accumulatedSamples;
+    QVector<double> hammingWindowValues;
+    QVector<double> accumulatedSamples; //
+
+
 
 protected:
     void paintEvent(QPaintEvent *event) override;

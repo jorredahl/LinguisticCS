@@ -19,7 +19,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     player->setAudioOutput(audioOutput);
 
-    QVBoxLayout *menu = new QVBoxLayout();
+    QHBoxLayout *menu = new QHBoxLayout();
     uploadAudioButton = new QPushButton("Upload");
     menu->addWidget(uploadAudioButton);
 
@@ -32,11 +32,9 @@ MainWindow::MainWindow(QWidget *parent)
     connect(uploadAudioButton, &QPushButton::clicked, this, &MainWindow::uploadAudio);
 }
 
-
 MainWindow::~MainWindow() {
 
 }
-
 
 void MainWindow::uploadAudio()
 {
@@ -44,7 +42,9 @@ void MainWindow::uploadAudio()
     if (aName.isEmpty())
         return;
 
-    // bug - it does not play exactly when the spectrograph is shown
+    spectrograph->reset();
+
+    // bug - it does not play exactly when the spectrograph is shown or like in sync
     player->setSource(aName);
     player->play();
 
@@ -58,7 +58,6 @@ void MainWindow::uploadAudio()
     qDebug() << "audio started";
 }
 
-
 void MainWindow::bufferReady() {
 
     qDebug() << "buffer ready";
@@ -67,8 +66,8 @@ void MainWindow::bufferReady() {
     const qint16 *data = buffer.constData<qint16>();
     int sampleCount = buffer.sampleCount();
 
-    // append incoming samples to vector
-    for(int i = 0; i < sampleCount; ++i) {
+    // append incoming samples
+    for  (int i = 0; i < sampleCount; ++i) {
         accumulatedSamples.append(static_cast<double>(data[i]));
     }
 
@@ -84,15 +83,14 @@ void MainWindow::bufferReady() {
     }
 }
 
-
 void MainWindow::processAudioBuffer(const QAudioBuffer &buffer) {
     QVector<double> samples;
 
     const qint16 *data = buffer.constData<qint16>();
     int sampleCount = buffer.sampleCount();
 
-    for(int i = 0; i < sampleCount; ++i) {
-        samples.append(static_cast<double>(data[i])); // store as doubles
+    for (int i = 0; i < sampleCount; ++i) {
+        samples.append(static_cast<double>(data[i]));
     }
 
     // send samples to the Spectrograph for processing
