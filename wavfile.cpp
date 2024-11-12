@@ -11,7 +11,7 @@ bool WavFile::loadFile() {
     QFile file(filePath);
 
     if (!file.open(QIODevice::ReadOnly)) {
-        QMessageBox::warning(this, "Load Error", "Could not open file");
+        // QMessageBox::warning(this, "Load Error", "Could not open file");
         emit fileLoaded(false);
         return false;
     }
@@ -20,7 +20,7 @@ bool WavFile::loadFile() {
     file.close();
 
     if (fileContent.size() < 44) {
-        QMessageBox::warning(this, "File Error", "File too small to be valid WAV file");
+        // QMessageBox::warning(this, "File Error", "File too small to be valid WAV file");
         emit fileLoaded(false);
         return false;
     }
@@ -30,7 +30,7 @@ bool WavFile::loadFile() {
     audioData = fileContent.mid(44);
 
     if (!readHeader(headerData)) {
-        QMessageBox::warning(this, "File Error", "Invalid WAV header");
+        // QMessageBox::warning(this, "File Error", "Invalid WAV header");
         emit fileLoaded(false);
         return false;
     }
@@ -41,31 +41,31 @@ bool WavFile::loadFile() {
 
 bool WavFile::readHeader(const QByteArray& headerData) {
     if (headerData.mid(0, 4) != "RIFF") {
-        QMessageBox::warning(this, "File Error", "Invalid RIFF header");
+        // QMessageBox::warning(this, "File Error", "Invalid RIFF header");
         return false;
     } else if (headerData.mid(8, 4) != "WAVE") {
-        QMessageBox::warning(this, "File Error", "Invalid WAVE header");
+        // QMessageBox::warning(this, "File Error", "Invalid WAVE header");
         return false;
     }
 
     // get channels (position 22)
-    numChannels =
+    // numChannels =
 
     // get sample rate (pos 24-27)
-    sampleRate =
+    // sampleRate =
 
     // get bit depth (pos 34)
-    bitDepth =
+    // bitDepth =
 
     // get data size (pos 40-43)
-    dataSize =
+    // dataSize =
 
     return true;
 }
 
 bool WavFile::readData() {
     if (audioData.size() < dataSize) {
-        QMessageBox::warning(this, "File Error", "Audio data smaller than expected");
+        // QMessageBox::warning(this, "File Error", "Audio data smaller than expected");
         return false;
     }
 
@@ -74,7 +74,7 @@ bool WavFile::readData() {
 
 //access properties
 int WavFile::getSampleRate() const {
-    return sampleRate();
+    return sampleRate;
 }
 
 int WavFile::getNumChannels() const {

@@ -24,7 +24,7 @@ signals:
 
 private:
     //parsing methods
-    bool readHeader();
+    bool readHeader(const QByteArray& headerData);
     bool readData();
 
     //member variables

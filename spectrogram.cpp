@@ -12,6 +12,11 @@ void Spectrogram::setLength(qint64 _length) {
     length = _length;
 }
 
+void Spectrogram::setChart(QChartView *chartView) {
+    QGraphicsWidget *chartWidget = scene.addWidget(chartView);
+    chartWidget->resize(QSize(400, 300));
+}
+
 void Spectrogram::audioChanged(qint64 position) {
     double x = (double) position / (double) length * 400;
     if (x > 400) {

@@ -1,6 +1,7 @@
 #ifndef SPECTROGRAM_H
 #define SPECTROGRAM_H
 #include <QGraphicsView>
+#include <QtCharts/QChartView>
 #include <QWidget>
 
 class Spectrogram : public QGraphicsView
@@ -14,6 +15,7 @@ class Spectrogram : public QGraphicsView
 public:
     Spectrogram();
     void setLength(qint64 _length);
+    void setChart(QChartView *chartView);
     //Spectrogram();
 
 
