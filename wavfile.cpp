@@ -68,7 +68,7 @@ bool WavFile::readHeader(const QByteArray& headerData) {
 
 bool WavFile::readData() {
     if (audioData.size() < dataSize) {
-        // QMessageBox::warning(this, "File Error", "Audio data smaller than expected");
+        qWarning() << "File Error: Audio data smaller than expected";
         return false;
     }
 
