@@ -11,7 +11,7 @@ bool WavFile::loadFile() {
     QFile file(filePath);
 
     if (!file.open(QIODevice::ReadOnly)) {
-        // QMessageBox::warning(this, "Load Error", "Could not open file");
+        qWarning() << "Load Error: Could not open file";
         emit fileLoaded(false);
         return false;
     }
@@ -20,7 +20,7 @@ bool WavFile::loadFile() {
     file.close();
 
     if (fileContent.size() < 44) {
-        // QMessageBox::warning(this, "File Error", "File too small to be valid WAV file");
+        qWarning() << "File Error: File header too small to be valid WAV file";
         emit fileLoaded(false);
         return false;
     }
@@ -30,7 +30,7 @@ bool WavFile::loadFile() {
     audioData = fileContent.mid(44);
 
     if (!readHeader(headerData)) {
-        // QMessageBox::warning(this, "File Error", "Invalid WAV header");
+        qWarning() << "File Error: Invalid WAV header";
         emit fileLoaded(false);
         return false;
     }
@@ -44,24 +44,24 @@ bool WavFile::loadFile() {
 
 bool WavFile::readHeader(const QByteArray& headerData) {
     if (headerData.mid(0, 4) != "RIFF") {
-        // QMessageBox::warning(this, "File Error", "Invalid RIFF header");
+        qWarning() << "File Error: Invalid RIFF header";
         return false;
     } else if (headerData.mid(8, 4) != "WAVE") {
-        // QMessageBox::warning(this, "File Error", "Invalid WAVE header");
+        qWarning() << "File Error: Invalid WAV header";
         return false;
     }
 
     // get channels (position 22)
-    // numChannels =
+    numChannels = qFromLittleEndian<quint16> (reinterpret_cast<uchar*> (headerData.mid(22, 2).data()));
 
     // get sample rate (pos 24-27)
-    // sampleRate =
+    sampleRate = qFromLittleEndian<quint32> (reinterpret_cast<uchar*> (headerData.mid(24, 4).data()));
 
     // get bit depth (pos 34)
-    // bitDepth =
+    bitDepth = qFromLittleEndian<quint16> (reinterpret_cast<uchar*> (headerData.mid(34, 2).data()));
 
     // get data size (pos 40-43)
-    // dataSize =
+    dataSize = qFromLittleEndian<quint32> (reinterpret_cast<uchar*> (headerData.mid(40, 4).data()));
 
     return true;
 }
