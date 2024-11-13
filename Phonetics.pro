@@ -14,7 +14,6 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     source.cpp \
-    spectrogram.cpp \
     user.cpp \
     visualizer.cpp \
     wavfile.cpp \
@@ -24,7 +23,6 @@ HEADERS += \
     audio.h \
     mainwindow.h \
     source.h \
-    spectrogram.h \
     user.h \
     visualizer.h \
     wavfile.h \

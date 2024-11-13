@@ -6,7 +6,6 @@
 #include <QMediaPlayer>
 #include <QAudioOutput>
 #include <QtCharts/QChart>
-#include "spectrogram.h"
 #include "wavfile.h"
 
 
@@ -21,7 +20,6 @@ public:
     bool audioPlaying;
     QToolButton *playButton;
     QHBoxLayout *layout;
-    Spectrogram *spectrogram;
 
     QChart *chart;
     void audioToChart(WavFile* audio);
