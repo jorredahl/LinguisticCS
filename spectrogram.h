@@ -11,6 +11,16 @@ class Spectrogram : public QGraphicsView
     qint64 length;
     QGraphicsLineItem *currentLine;
     bool lineHasBeenDrawn;
+    QScrollArea *chartScrollArea;
+    QGraphicsWidget *chartWidget;
+    bool resizing = false;
+
+    //min chart size
+    const int MIN_W = 700;
+    const int MIN_H = 300;
+    //max chart size
+    const int MAX_W = 3000;
+    const int MAX_H = 500;
 
 public:
     Spectrogram();
@@ -21,6 +31,7 @@ public:
 
 public slots:
     void audioChanged(qint64 position);
+    void resizeEvent(QResizeEvent *event) override;
     void mousePressEvent(QMouseEvent *evt) override;
 signals:
     void sendAudioPosition(qint64 pos);

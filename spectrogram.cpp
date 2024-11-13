@@ -1,9 +1,9 @@
 #include "spectrogram.h"
 #include <QtWidgets>
+#include <QtCharts>
 Spectrogram::Spectrogram() {
     setScene(&scene);
-    setSceneRect(QRectF(0.0, 0.0, 400.0, 300.0));
-    setMinimumSize(QSize(400, 300));
+    setMinimumSize(QSize(MIN_W, MIN_H));
     setRenderHint(QPainter::Antialiasing, true);
     scene.addRect(sceneRect());
 }
@@ -13,10 +13,30 @@ void Spectrogram::setLength(qint64 _length) {
 }
 
 void Spectrogram::setChart(QChartView *chartView) {
-    QGraphicsWidget *chartWidget = scene.addWidget(chartView);
-    chartWidget->resize(QSize(400, 300));
-}
 
+    //holds the QChart
+    chartView->setMinimumSize(MIN_W, MIN_H);
+    chartView->setAlignment(Qt::AlignLeft | Qt::AlignTop);
+
+    //makes the chart a scrollable area
+    chartScrollArea = new QScrollArea();
+    chartScrollArea->setWidget(chartView);
+    chartScrollArea->setWidgetResizable(true);
+
+    chartWidget = scene.addWidget(chartScrollArea);
+    chartWidget->setMinimumSize(MIN_W, MIN_H);
+
+}
+void Spectrogram::resizeEvent(QResizeEvent *event) {
+    QGraphicsView::resizeEvent(event);
+    // resize chart
+    if (chartWidget) {
+        QSize newSize = viewport()->size();
+        chartScrollArea->resize(newSize);
+        chartWidget->resize(newSize);
+
+    }
+}
 void Spectrogram::audioChanged(qint64 position) {
     double x = (double) position / (double) length * 400;
     if (x > 400) {

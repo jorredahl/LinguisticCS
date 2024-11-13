@@ -29,7 +29,7 @@ Visualizer::Visualizer() {
 
     QLabel *nativeWaveLabel = new QLabel("Speaker Sound Wave"); // using QLabel as a placeholder for waveforms
     //nativeWaveLabel->setAlignment(Qt::AlignCenter);
-    nativeWaveLabel->setStyleSheet("border: 1px solid black; min-height: 100px;");
+    //nativeWaveLabel->setStyleSheet("border: 1px solid black; min-height: 100px;");
     layout->addWidget(nativeWaveLabel);
 
     spectrogram = new Spectrogram();
