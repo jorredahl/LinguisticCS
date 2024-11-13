@@ -7,6 +7,7 @@
 #include <QAudioOutput>
 #include <QtCharts/QChart>
 #include "spectrogram.h"
+#include "wavfile.h"
 
 
 class Visualizer : public QWidget
@@ -23,6 +24,7 @@ public:
     Spectrogram *spectrogram;
 
     QChart *chart;
+    void audioToChart(WavFile* audio);
 
 public slots:
     void uploadAudio();

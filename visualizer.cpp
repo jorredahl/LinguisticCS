@@ -70,29 +70,8 @@ void Visualizer::uploadAudio(){
     playButton->setEnabled(true);
 
     WavFile *audio = new WavFile(aName.toLocalFile());
-    QByteArray audioData;
-    if(audio->loadFile()) {
-        audioData = audio->getAudioData();
-    }
+    audioToChart(audio);
 
-    QList<qint16> samples;
-
-    // Collects each sample from 16-bit WAV file data as a signed integer (32768 to -32768), edit wavfile class soon to help
-    for (int i = 0; i < audioData.size(); i += 2) {
-        if (i + 1 < audioData.size()) {
-            qint16 sample = qFromLittleEndian<qint16>(reinterpret_cast<const unsigned char*>(audioData.mid(i, 2).constData()));
-            samples.append(sample);
-        }
-    }
-
-    QLineSeries *series = new QLineSeries();
-    // Zoom level one can be every hundredth of a second(?)
-    for (int i = 0; i < samples.length(); i += samples.length()/1000) {
-        series->append(i / 441, samples[i]);
-    }
-    chart->legend()->hide();
-    chart->addSeries(series);
-    spectrogram->setChart(new QChartView(chart));
 
 }
 
@@ -108,4 +87,23 @@ void Visualizer::handlePlayPause() {
 
 void Visualizer::changeAudioPosition(qint64 pos) {
     player->setPosition(pos);
+}
+
+void Visualizer::audioToChart(WavFile* audio){
+    QByteArray audioData;
+    QList<qint16> samples;
+
+    if(audio->loadFile()) {
+        audioData = audio->getAudioData();
+        samples = audio->getAudioSamples();
+    }
+
+    QLineSeries *series = new QLineSeries();
+    // Zoom level one can be every hundredth of a second(?)
+    for (int i = 0; i < samples.length(); i += samples.length()/1000) {
+        series->append(i / 441, samples[i]);
+    }
+    chart->legend()->hide();
+    chart->addSeries(series);
+    spectrogram->setChart(new QChartView(chart));
 }

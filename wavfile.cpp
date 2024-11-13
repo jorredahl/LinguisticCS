@@ -35,6 +35,9 @@ bool WavFile::loadFile() {
         return false;
     }
 
+    //collect samples of data
+    collectAudioSamples();
+
     emit fileLoaded(true);
     return true;
 }
@@ -69,7 +72,15 @@ bool WavFile::readData() {
         return false;
     }
 
-
+}
+void WavFile::collectAudioSamples(){
+    // Collects each sample from 16-bit WAV file data as a signed integer (32768 to -32768)
+    for (int i = 0; i < audioData.size(); i += 2) {
+        if (i + 1 < audioData.size()) {
+            qint16 sample = qFromLittleEndian<qint16>(reinterpret_cast<const unsigned char*>(audioData.mid(i, 2).constData()));
+            samples.append(sample);
+        }
+    }
 }
 
 //access properties
@@ -87,4 +98,8 @@ int WavFile::getBitDepth() const {
 
 QByteArray WavFile::getAudioData() const {
     return audioData;
+}
+
+QList<qint16> WavFile::getAudioSamples() const {
+    return samples;
 }

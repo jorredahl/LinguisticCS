@@ -15,6 +15,7 @@ public:
     int getNumChannels() const;
     int getBitDepth() const;
     QByteArray getAudioData() const;
+    QList<qint16> getAudioSamples() const;
 
     //loading function to process file
     bool loadFile();
@@ -26,6 +27,7 @@ private:
     //parsing methods
     bool readHeader(const QByteArray& headerData);
     bool readData();
+    void collectAudioSamples();
 
     //member variables
     QString filePath;
@@ -34,6 +36,7 @@ private:
     int bitDepth;
     int dataSize;
     QByteArray audioData;
+    QList<qint16> samples;
 };
 
 #endif // WAVFILE_H
