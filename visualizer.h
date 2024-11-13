@@ -30,6 +30,9 @@ public slots:
     void uploadAudio();
     void handlePlayPause();
     void changeAudioPosition(qint64 pos);
+
+signals:
+    void emitLoadAudioIn(QString fName);
 };
 
 #endif // VISUALIZER_H

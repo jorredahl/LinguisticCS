@@ -17,7 +17,8 @@ SOURCES += \
     spectrogram.cpp \
     user.cpp \
     visualizer.cpp \
-    wavfile.cpp
+    wavfile.cpp \
+    wavform.cpp
 
 HEADERS += \
     audio.h \
@@ -26,7 +27,8 @@ HEADERS += \
     spectrogram.h \
     user.h \
     visualizer.h \
-    wavfile.h
+    wavfile.h \
+    wavform.h
 
 RESOURCES += resources.qrc
 

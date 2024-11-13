@@ -24,17 +24,17 @@ class Spectrogram : public QGraphicsView
 
 public:
     Spectrogram();
-    void setLength(qint64 _length);
-    void setChart(QChartView *chartView);
-    //Spectrogram();
+//     void setLength(qint64 _length);
+//     void setChart(QChartView *chartView);
+//     //Spectrogram();
 
 
-public slots:
-    void audioChanged(qint64 position);
-    void resizeEvent(QResizeEvent *event) override;
-    void mousePressEvent(QMouseEvent *evt) override;
-signals:
-    void sendAudioPosition(qint64 pos);
+// public slots:
+//     void audioChanged(qint64 position);
+//     //void resizeEvent(QResizeEvent *event) override;
+//     void mousePressEvent(QMouseEvent *evt) override;
+// signals:
+//     void sendAudioPosition(qint64 pos);
 };
 
 #endif // SPECTROGRAM_H
