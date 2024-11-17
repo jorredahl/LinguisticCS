@@ -4,6 +4,7 @@
 #include "wavform.h"
 #include <QMediaPlayer>
 #include <QAudioOutput>
+#include <QFileDialog>
 
 Audio::Audio(QWidget *parent)
     : QWidget{parent}
@@ -49,6 +50,7 @@ void Audio::uploadAudio(){
 
     playButton->setEnabled(true);
     emit emitLoadAudioIn(aName.toLocalFile());
+    qDebug() << "emitting";
 
     //old way of handeling the scrubber
     // Connect to durationChanged signal to get the actual duration
