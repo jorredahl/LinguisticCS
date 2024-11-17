@@ -1,7 +1,7 @@
 #include "mainwindow.h"
 #include <QtWidgets>
 #include <QAudioOutput>
-#include "visualizer.h"
+#include "audio.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -22,13 +22,11 @@ MainWindow::MainWindow(QWidget *parent)
     //uploadAction->setShortcut(Qt::CTRL | Qt::Key_N);
     //fileMenu->addAction(uploadAction);
 
-    Visualizer *sourceVisualizer = new Visualizer();
+    audio1 = new Audio();
+    mainLayout->addWidget(audio1);
 
-    mainLayout->addWidget(sourceVisualizer);
-
-
-    Visualizer *userVisualizer = new Visualizer();
-    mainLayout->addWidget(userVisualizer);
+    audio2 = new Audio();
+    mainLayout->addWidget(audio2);
 
 
 }

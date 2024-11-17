@@ -4,7 +4,7 @@
 WavFile::WavFile(const QString& filePath, QObject* parent)
     : QObject(parent), filePath(filePath), sampleRate(0), numChannels(0), bitDepth(0), dataSize(0) {
     // initialize file path and default values
-    
+
 }
 
 bool WavFile::loadFile() {
