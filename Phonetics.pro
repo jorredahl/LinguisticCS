@@ -13,18 +13,12 @@ SOURCES += \
     audio.cpp \
     main.cpp \
     mainwindow.cpp \
-    source.cpp \
-    user.cpp \
-    visualizer.cpp \
     wavfile.cpp \
     wavform.cpp
 
 HEADERS += \
     audio.h \
     mainwindow.h \
-    source.h \
-    user.h \
-    visualizer.h \
     wavfile.h \
     wavform.h
 
