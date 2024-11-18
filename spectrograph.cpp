@@ -16,7 +16,7 @@ Spectrograph::Spectrograph(QWidget *parent)
      *
      * right now bc the hopSize =  windowSize there will just be one chunk being processed
      *
-     * i think that this gives the cleanest , also its faster
+     * i think that this gives the cleanest , its gets laggy after anything else
      * */
     setMouseTracking(true);
     grabKeyboard();
@@ -101,7 +101,6 @@ void Spectrograph::setupSpectrograph(const QVector<double> &samples) {
     update(); // display
 }
 
-
 void Spectrograph::reset() {
     spectrogram.clear();
     accumulatedSamples.clear();
@@ -124,9 +123,9 @@ void Spectrograph::paintEvent(QPaintEvent *event) {
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing, true);
 
-    QTransform transform;
-    transform.scale(zoomFactor, zoomFactor);
-    painter.setTransform(transform);
+   // QTransform transform;
+   // transform.scale(zoomFactor, zoomFactor);
+   // painter.setTransform(transform);
 
     int width = this->width();
     int height = this->height();
@@ -150,7 +149,7 @@ void Spectrograph::paintEvent(QPaintEvent *event) {
         return;
 
     double chunkWidth = static_cast<double>(width) / numChunks;
-    double freqHeight = static_cast<double>(height) / (numFrequencies/100); //can adj
+    double freqHeight = static_cast<double>(height) / (numFrequencies/100); //can adj this shows enough
 
     for (int chunk = 0; chunk < numChunks; ++chunk) {
         for (int freq = 0; freq < numFrequencies; ++freq) {
@@ -181,24 +180,6 @@ void Spectrograph::paintEvent(QPaintEvent *event) {
         }
     }
 }
-
-/* i can zoom in and out but its kind of weird
- *
- * should be a two finger scroll
- * to zoom in move two fingers up on the trackpad
- *
- * to zoom out should move two fingers down on the trackpad
- * its 1.02 bc it slows it down a bit
- * */
-void Spectrograph::wheelEvent(QWheelEvent *event) {
-    if (event->angleDelta().y() > 0) {
-        zoomFactor *= 1.02;  // Zoom in
-    } else {
-        zoomFactor /= 1.02;  // Zoom out
-    }
-    update();
-}
-
 
 
 

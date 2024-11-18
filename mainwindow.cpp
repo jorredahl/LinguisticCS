@@ -2,7 +2,6 @@
 #include "spectrograph.h"
 
 #include <fftw3.h>
-
 #include <QAudioOutput>
 #include <QtWidgets>
 #include <QAudioSource>
@@ -19,7 +18,7 @@ MainWindow::MainWindow(QWidget *parent)
     menu->addWidget(uploadAudioButton);
 
     QWidget *centerWidget = new QWidget(this);
-    QHBoxLayout *mainLayout = new QHBoxLayout(centerWidget);
+    QVBoxLayout *mainLayout = new QVBoxLayout(centerWidget);
     mainLayout->addLayout(menu);
     mainLayout->addWidget(spectrograph);
 
@@ -34,7 +33,6 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow() {
 }
 
-// for now this is the correct audio
 void MainWindow::uploadAudio()
 {
     QUrl aName = QFileDialog::getOpenFileUrl(this, "select audio file");
@@ -58,7 +56,6 @@ void MainWindow::uploadAudio()
 }
 
 void MainWindow::bufferReady() {
-
     //qDebug() << "buffer ready";
 
     QAudioBuffer buffer = decoder->read();

@@ -28,8 +28,6 @@ public:
     int getWindowSize() const { return windowSize; }
     void reset();
 
-    double zoomFactor = 0.7;
-
 private:
    // fftw_plan plan;
     fftw_complex *in;
@@ -47,9 +45,6 @@ private:
 
 protected:
     void paintEvent(QPaintEvent *event) override;
-
-    // for zooming in and out
-    void wheelEvent(QWheelEvent *event) override;
 
 };
 
