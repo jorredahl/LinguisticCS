@@ -20,7 +20,7 @@ void Audio::newAudioPlayer(){
 
     QAction *playAction = new QAction();
     connect(playAction, &QAction::triggered, this, &Audio::handlePlayPause);
-
+    playAction->setShortcut(Qt::Key_Space);
     playButton = new QToolButton;
     playButton->setDefaultAction(playAction);
     playButton->setIcon(QIcon(":/resources/icons/play.svg"));
@@ -36,6 +36,15 @@ void Audio::newAudioPlayer(){
     wavChart = new WavForm();
     audioLayout->addWidget(wavChart);
     connect(this, &Audio::emitLoadAudioIn, wavChart, &WavForm::uploadAudio);
+
+    timer = new QTimer(this);
+    connect(timer, &QTimer::timeout, this, &Audio::updateTrackPositionFromTimer);
+
+    timerRefreshRate = 10;
+
+    connect(this, &Audio::audioPositionChanged, wavChart, &WavForm::updateScrubberPosition);
+    connect(this->wavChart, &WavForm::sendAudioPosition, this, &Audio::updateTrackPositionFromScrubber);
+
 }
 
 void Audio::uploadAudio(){
@@ -50,17 +59,15 @@ void Audio::uploadAudio(){
 
     playButton->setEnabled(true);
     emit emitLoadAudioIn(aName.toLocalFile());
-    qDebug() << "emitting";
 
     //old way of handeling the scrubber
     // Connect to durationChanged signal to get the actual duration
-    // connect(player, &QMediaPlayer::durationChanged, this, [=](qint64 duration) {
-    //     spectrogram->setLength(duration);
-    //     qDebug() << duration << "duration";
-    // });
+    connect(player, &QMediaPlayer::durationChanged, this, [=](qint64 duration) {
+        audioLength = duration;
+        qDebug() << duration << "duration";
+     });
 
     //connect(player, &QMediaPlayer::positionChanged, this->spectrogram, &Spectrogram::audioChanged);
-    //connect(this->spectrogram, &Spectrogram::sendAudioPosition, this, &Visualizer::changeAudioPosition);
 
 
 }
@@ -68,9 +75,44 @@ void Audio::uploadAudio(){
 void Audio::handlePlayPause() {
     QIcon icon = audioPlaying ? QIcon(":/resources/icons/play.svg") : QIcon(":/resources/icons/pause.svg");
     playButton->setIcon(icon);
-    //player->setPosition(0);
 
-    audioPlaying ? player->pause() : player->play();
+    if (audioPlaying) {
+        player->pause();
+        timer->stop();
 
+    }
+    else {
+        player->play();
+        timer->start(timerRefreshRate);
+
+    }
+
+    setTrackPosition(player->position());
     audioPlaying = !audioPlaying;
+}
+
+
+// this is a slot with no arguments that updates position automatically using setTrackPosition
+void Audio::updateTrackPositionFromTimer() {
+    setTrackPosition(audioPosition + timerRefreshRate);
+}
+
+void Audio::updateTrackPositionFromScrubber(double position) {
+    qint64 intPosition = (qint64) (position * audioLength);
+    setTrackPosition(intPosition);
+    player->setPosition(intPosition);
+}
+
+void Audio::setTrackPosition(qint64 position) {
+    audioPosition = position;
+    //qDebug() << audioPosition;
+    double floatPosition = (double) audioPosition / audioLength;
+
+
+    // set to 1.05 so i don't accidentally trigger with pausing right before end
+    //  the timer and player position can be out of sync
+    if (floatPosition > 1.05) handlePlayPause();
+
+    //qDebug() << floatPosition;
+    emit audioPositionChanged(floatPosition);
 }
