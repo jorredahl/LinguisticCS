@@ -992,6 +992,8 @@ moc_mainwindow.cpp: ../../mainwindow.h \
 		../../../Qt/6.7.2/macos/lib/QtGui.framework/Headers/QImage \
 		../../../Qt/6.7.2/macos/lib/QtGui.framework/Headers/qimage.h \
 		/usr/local/include/fftw3.h \
+		../../../Qt/6.7.2/macos/lib/QtWidgets.framework/Headers/QGraphicsScene \
+		../../../Qt/6.7.2/macos/lib/QtWidgets.framework/Headers/QGraphicsView \
 		../../../Qt/6.7.2/macos/libexec/moc
 	/Users/miriambamaca/Qt/6.7.2/macos/libexec/moc $(DEFINES) -D__APPLE__ -D__GNUC__=4 -D__APPLE_CC__ -D__cplusplus=199711L -D__APPLE_CC__=6000 -D__clang__ -D__clang_major__=15 -D__clang_minor__=0 -D__clang_patchlevel__=0 -D__GNUC__=4 -D__GNUC_MINOR__=2 -D__GNUC_PATCHLEVEL__=1 -I/Users/miriambamaca/Qt/6.7.2/macos/mkspecs/macx-clang -I/Users/miriambamaca/LinguisticCS -I/usr/local/include -I/Users/miriambamaca/Qt/6.7.2/macos/lib/QtMultimedia.framework/Headers -I/Users/miriambamaca/Qt/6.7.2/macos/lib/QtWidgets.framework/Headers -I/Users/miriambamaca/Qt/6.7.2/macos/lib/QtGui.framework/Headers -I/Users/miriambamaca/Qt/6.7.2/macos/lib/QtNetwork.framework/Headers -I/Users/miriambamaca/Qt/6.7.2/macos/lib/QtCore.framework/Headers -I. -I/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1 -I/Library/Developer/CommandLineTools/usr/lib/clang/15.0.0/include -I/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include -I/Library/Developer/CommandLineTools/usr/include -F/Users/miriambamaca/Qt/6.7.2/macos/lib ../../mainwindow.h -o moc_mainwindow.cpp
 
@@ -1126,6 +1128,8 @@ moc_spectrograph.cpp: ../../spectrograph.h \
 		../../../Qt/6.7.2/macos/lib/QtGui.framework/Headers/QImage \
 		../../../Qt/6.7.2/macos/lib/QtGui.framework/Headers/qimage.h \
 		/usr/local/include/fftw3.h \
+		../../../Qt/6.7.2/macos/lib/QtWidgets.framework/Headers/QGraphicsScene \
+		../../../Qt/6.7.2/macos/lib/QtWidgets.framework/Headers/QGraphicsView \
 		../../../Qt/6.7.2/macos/libexec/moc
 	/Users/miriambamaca/Qt/6.7.2/macos/libexec/moc $(DEFINES) -D__APPLE__ -D__GNUC__=4 -D__APPLE_CC__ -D__cplusplus=199711L -D__APPLE_CC__=6000 -D__clang__ -D__clang_major__=15 -D__clang_minor__=0 -D__clang_patchlevel__=0 -D__GNUC__=4 -D__GNUC_MINOR__=2 -D__GNUC_PATCHLEVEL__=1 -I/Users/miriambamaca/Qt/6.7.2/macos/mkspecs/macx-clang -I/Users/miriambamaca/LinguisticCS -I/usr/local/include -I/Users/miriambamaca/Qt/6.7.2/macos/lib/QtMultimedia.framework/Headers -I/Users/miriambamaca/Qt/6.7.2/macos/lib/QtWidgets.framework/Headers -I/Users/miriambamaca/Qt/6.7.2/macos/lib/QtGui.framework/Headers -I/Users/miriambamaca/Qt/6.7.2/macos/lib/QtNetwork.framework/Headers -I/Users/miriambamaca/Qt/6.7.2/macos/lib/QtCore.framework/Headers -I. -I/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1 -I/Library/Developer/CommandLineTools/usr/lib/clang/15.0.0/include -I/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include -I/Library/Developer/CommandLineTools/usr/include -F/Users/miriambamaca/Qt/6.7.2/macos/lib ../../spectrograph.h -o moc_spectrograph.cpp
 
@@ -1290,6 +1294,8 @@ main.o: ../../main.cpp ../../mainwindow.h \
 		../../../Qt/6.7.2/macos/lib/QtGui.framework/Headers/QImage \
 		../../../Qt/6.7.2/macos/lib/QtGui.framework/Headers/qimage.h \
 		/usr/local/include/fftw3.h \
+		../../../Qt/6.7.2/macos/lib/QtWidgets.framework/Headers/QGraphicsScene \
+		../../../Qt/6.7.2/macos/lib/QtWidgets.framework/Headers/QGraphicsView \
 		../../../Qt/6.7.2/macos/lib/QtWidgets.framework/Headers/QApplication \
 		../../../Qt/6.7.2/macos/lib/QtWidgets.framework/Headers/QStyleFactory
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main.o ../../main.cpp
@@ -1437,6 +1443,8 @@ mainwindow.o: ../../mainwindow.cpp ../../mainwindow.h \
 		../../../Qt/6.7.2/macos/lib/QtGui.framework/Headers/QImage \
 		../../../Qt/6.7.2/macos/lib/QtGui.framework/Headers/qimage.h \
 		/usr/local/include/fftw3.h \
+		../../../Qt/6.7.2/macos/lib/QtWidgets.framework/Headers/QGraphicsScene \
+		../../../Qt/6.7.2/macos/lib/QtWidgets.framework/Headers/QGraphicsView \
 		../../../Qt/6.7.2/macos/lib/QtMultimedia.framework/Headers/QAudioDevice \
 		../../../Qt/6.7.2/macos/lib/QtMultimedia.framework/Headers/qaudiodevice.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o mainwindow.o ../../mainwindow.cpp
@@ -1571,7 +1579,9 @@ spectrograph.o: ../../spectrograph.cpp ../../../Qt/6.7.2/macos/lib/QtWidgets.fra
 		../../../Qt/6.7.2/macos/lib/QtCore.framework/Headers/QIODevice \
 		../../../Qt/6.7.2/macos/lib/QtCore.framework/Headers/qiodevice.h \
 		../../../Qt/6.7.2/macos/lib/QtGui.framework/Headers/QImage \
-		../../../Qt/6.7.2/macos/lib/QtGui.framework/Headers/qimage.h
+		../../../Qt/6.7.2/macos/lib/QtGui.framework/Headers/qimage.h \
+		../../../Qt/6.7.2/macos/lib/QtWidgets.framework/Headers/QGraphicsScene \
+		../../../Qt/6.7.2/macos/lib/QtWidgets.framework/Headers/QGraphicsView
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o spectrograph.o ../../spectrograph.cpp
 
 moc_mainwindow.o: moc_mainwindow.cpp 
