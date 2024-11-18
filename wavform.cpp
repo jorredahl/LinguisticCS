@@ -32,11 +32,13 @@ void WavForm::audioToChart(WavFile* audio){
 
 void WavForm::setChart(QList<qint16> data) {
 
+    // default values to plot waveform, can work with any values
     int width = 800;
     int height = 300;
 
     scene.clear();
 
+    // splits data into samples for each pixel of width
     int sampleLength = data.length() / width;
 
     QList<float> avgs = QList<float>(width);
@@ -44,6 +46,7 @@ void WavForm::setChart(QList<qint16> data) {
     QList<float> maxs = QList<float>(width);
     QList<float> rms = QList<float>(width);
 
+    // finds max value, min value, average value, and root mean square of each sample
     for (int i = 0; i < width; ++i) {
         float sum = 0;
         float squareSum = 0;
@@ -62,6 +65,7 @@ void WavForm::setChart(QList<qint16> data) {
         rms[i] = sqrt(squareSum / sampleLength);
     }
 
+    // visualization: min/max is darkest, then rms, then average. May need to change some placing if the zoom is enough that a sample covers only positive/negative values
     for (int i = 0; i < width; ++i) {
         scene.addRect(QRect(i, (height / 2) - ((abs(maxs[i]) * height) / 2), 1, (abs(maxs[i]) * height) / 2), Qt::NoPen, Qt::darkBlue);
         scene.addRect(QRect(i, height / 2, 1, abs(mins[i]) * height / 2), Qt::NoPen, Qt::darkBlue);
