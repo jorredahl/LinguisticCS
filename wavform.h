@@ -9,11 +9,12 @@ class WavForm : public QGraphicsView
 {
     Q_OBJECT
     QGraphicsScene scene;
-    QChart *chart;
+    //QChart *chart;
 
 public:
     explicit WavForm();
     void audioToChart(WavFile* audio);
+    void setChart(QList<qint16> data);
 public slots:
     void uploadAudio(QString fName);
 signals:

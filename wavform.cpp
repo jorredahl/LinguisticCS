@@ -9,11 +9,6 @@ WavForm::WavForm()
     setScene(&scene);
     setMinimumSize(QSize(400, 200));
     setRenderHint(QPainter::Antialiasing, true);
-    chart = new QChart();
-    chart->setMinimumSize(400, 200);
-    chart->legend()->hide();
-    chart->setMargins(QMargins(0, 0, 0, 0));
-    scene.addItem(chart);
     scene.addRect(sceneRect());
 }
 void WavForm::uploadAudio(QString fName){
@@ -36,11 +31,52 @@ void WavForm::audioToChart(WavFile* audio){
     for (int i = 0; i < samples.length(); i += samples.length()/1000) {
         series->append(i / 441, samples[i]);
     }
-    chart->legend()->hide();
-    chart->addSeries(series);
+    setChart(samples);
 
 }
 
+void WavForm::setChart(QList<qint16> data) {
+
+    int width = 800;
+    int height = 300;
+
+    scene.clear();
+
+    int sampleLength = data.length() / width;
+
+    QList<float> avgs = QList<float>(width);
+    QList<float> mins = QList<float>(width);
+    QList<float> maxs = QList<float>(width);
+    QList<float> rms = QList<float>(width);
+
+    for (int i = 0; i < width; ++i) {
+        float sum = 0;
+        float squareSum = 0;
+        float min = 1.0;
+        float max = -1.0;
+        for (int j = 0; j < sampleLength; ++j) {
+            float adjusted = data[j + i * sampleLength] / 32768.0;
+            if (adjusted < min) min = adjusted;
+            if (adjusted > max) max = adjusted;
+            sum += abs(adjusted);
+            squareSum += pow(adjusted, 2);
+        }
+        mins[i] = min;
+        maxs[i] = max;
+        avgs[i] = sum / sampleLength;
+        rms[i] = sqrt(squareSum / sampleLength);
+    }
+
+    for (int i = 0; i < width; ++i) {
+        scene.addRect(QRect(i, (height / 2) - ((abs(maxs[i]) * height) / 2), 1, (abs(maxs[i]) * height) / 2), Qt::NoPen, Qt::darkBlue);
+        scene.addRect(QRect(i, height / 2, 1, abs(mins[i]) * height / 2), Qt::NoPen, Qt::darkBlue);
+        scene.addRect(QRect(i, (height / 2) - ((rms[i] * height) / 2), 1, rms[i] * height), Qt::NoPen, Qt::blue);
+        scene.addRect(QRect(i, (height / 2) - ((avgs[i] * height) / 2), 1, avgs[i] * height), Qt::NoPen, QColor(QRgb(0x8888FF)));
+    }
+
+    setSceneRect(0,0,width,height);
+
+}
 
 //scrubber
 
