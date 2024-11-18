@@ -6,6 +6,9 @@
 #include <QIODevice>
 #include <QImage>
 #include <fftw3.h>
+#include <QGraphicsScene>
+#include <QGraphicsView>
+
 
 /* This widget will display our spectrograph */
 class Spectrograph : public QWidget
@@ -19,10 +22,13 @@ public:
     // takes samples as input
     void setupSpectrograph(const QVector<double> &samples);
     QVector<double> magnitudes;
-    double maxMagnitude = 1.0;
+    double maxAmp = 1.0;
+
     int hopSize;
     int getWindowSize() const { return windowSize; }
     void reset();
+
+    double zoomFactor = 0.7;
 
 private:
    // fftw_plan plan;
@@ -35,16 +41,15 @@ private:
 
     int windowSize = 1024;
 
-    //int windowSize = 2048; this could be an option too but i think 1024 reads better
-
     QVector<QVector<double>> spectrogram; // 2D matrix
     QVector<double> hammingWindowValues;
-    QVector<double> accumulatedSamples; //
-
-
+    QVector<double> accumulatedSamples;
 
 protected:
     void paintEvent(QPaintEvent *event) override;
+
+    // for zooming in and out
+    void wheelEvent(QWheelEvent *event) override;
 
 };
 

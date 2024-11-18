@@ -14,12 +14,7 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), spectrograph(new Spectrograph(this))
 {
-    player = new QMediaPlayer(this);
-    audioOutput = new QAudioOutput(this);
-
-    player->setAudioOutput(audioOutput);
-
-    QHBoxLayout *menu = new QHBoxLayout();
+    QVBoxLayout *menu = new QVBoxLayout();
     uploadAudioButton = new QPushButton("Upload");
     menu->addWidget(uploadAudioButton);
 
@@ -27,15 +22,19 @@ MainWindow::MainWindow(QWidget *parent)
     QHBoxLayout *mainLayout = new QHBoxLayout(centerWidget);
     mainLayout->addLayout(menu);
     mainLayout->addWidget(spectrograph);
+
     setCentralWidget(centerWidget);
 
+    player = new QMediaPlayer(this);
+    audioOutput = new QAudioOutput(this);
+    player->setAudioOutput(audioOutput);
     connect(uploadAudioButton, &QPushButton::clicked, this, &MainWindow::uploadAudio);
 }
 
 MainWindow::~MainWindow() {
-
 }
 
+// for now this is the correct audio
 void MainWindow::uploadAudio()
 {
     QUrl aName = QFileDialog::getOpenFileUrl(this, "select audio file");
@@ -55,12 +54,12 @@ void MainWindow::uploadAudio()
     connect(decoder, &QAudioDecoder::bufferReady, this, &MainWindow::bufferReady);
 
     decoder->start();
-    qDebug() << "audio started";
+    //qDebug() << "audio started";
 }
 
 void MainWindow::bufferReady() {
 
-    qDebug() << "buffer ready";
+    //qDebug() << "buffer ready";
 
     QAudioBuffer buffer = decoder->read();
     const qint16 *data = buffer.constData<qint16>();
