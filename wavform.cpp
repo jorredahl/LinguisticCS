@@ -34,7 +34,7 @@ void WavForm::setChart(QList<qint16> data) {
 
     // default values to plot waveform, can work with any values
     int width = 800;
-    int height = 300;
+    int height = 200;
 
     scene.clear();
 
@@ -117,3 +117,15 @@ void WavForm::setChart(QList<qint16> data) {
 
 
 // }
+void WavForm::updateScrubberPosition(double position) {
+
+    int scenePosition = (int) (position * 800);
+
+    if (scrubberHasBeenDrawn) scene.removeItem((QGraphicsItem *) lastLine);
+
+    QPointF *first = new QPointF(scenePosition, 0);
+    QPointF *second = new QPointF(scenePosition, 199);
+    lastLine = scene.addLine(QLineF(*first, *second), QPen(Qt::black, 3, Qt::SolidLine, Qt::FlatCap));
+    scrubberHasBeenDrawn = true;
+
+}

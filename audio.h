@@ -18,21 +18,29 @@ class Audio : public QWidget
         bool audioPlaying;
         QToolButton *playButton;
         QHBoxLayout *audioLayout;
+        QTimer *timer;
+        int timerRefreshRate;
+        qint64 audioPosition;
+        qint64 audioLength;
 
 
 public:
     explicit Audio(QWidget *parent = nullptr);
     WavForm *wavChart;
     void newAudioPlayer();
+    void setTrackPosition(qint64 position);
 
 public slots:
     void uploadAudio();
     void handlePlayPause();
+    void updateTrackPositionFromTimer();
+
 
 
 
 signals:
     void emitLoadAudioIn(QString fName);
+    void audioPositionChanged(double position);
 };
 
 #endif // AUDIO_H

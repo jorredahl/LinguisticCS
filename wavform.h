@@ -9,6 +9,8 @@ class WavForm : public QGraphicsView
 {
     Q_OBJECT
     QGraphicsScene scene;
+    bool scrubberHasBeenDrawn;
+    QGraphicsLineItem *lastLine;
     //QChart *chart;
 
 public:
@@ -17,6 +19,7 @@ public:
     void setChart(QList<qint16> data);
 public slots:
     void uploadAudio(QString fName);
+    void updateScrubberPosition(double position);
 signals:
 };
 
