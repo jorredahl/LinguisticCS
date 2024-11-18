@@ -26,11 +26,6 @@ void WavForm::audioToChart(WavFile* audio){
         samples = audio->getAudioSamples();
     }
 
-    QLineSeries *series = new QLineSeries();
-    // Zoom level one can be every hundredth of a second(?)
-    for (int i = 0; i < samples.length(); i += samples.length()/1000) {
-        series->append(i / 441, samples[i]);
-    }
     setChart(samples);
 
 }
