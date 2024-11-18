@@ -34,6 +34,7 @@ public slots:
     void uploadAudio();
     void handlePlayPause();
     void updateTrackPositionFromTimer();
+    void updateTrackPositionFromScrubber(double position);
 
 
 

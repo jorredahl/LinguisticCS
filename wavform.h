@@ -20,7 +20,12 @@ public:
 public slots:
     void uploadAudio(QString fName);
     void updateScrubberPosition(double position);
+
+protected:
+    void mousePressEvent(QMouseEvent *evt) override;
+
 signals:
+    void sendAudioPosition(double position);
 };
 
 #endif // WAVFORM_H

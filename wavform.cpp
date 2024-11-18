@@ -75,6 +75,8 @@ void WavForm::setChart(QList<qint16> data) {
 
     setSceneRect(0,0,width,height);
 
+
+
 }
 
 //scrubber
@@ -97,35 +99,37 @@ void WavForm::setChart(QList<qint16> data) {
 // }
 
 
-// void Spectrogram::mousePressEvent(QMouseEvent *evt) {
+void WavForm::mousePressEvent(QMouseEvent *evt) {
 
-//     QGraphicsView::mousePressEvent(evt);
+    QGraphicsView::mousePressEvent(evt);
 
-//     QPointF center = mapToScene(evt->pos());
+    QPointF center = mapToScene(evt->pos());
 
-//     double x = center.x();
+    double x = center.x();
 
-//     if (lineHasBeenDrawn) scene.removeItem((QGraphicsItem *) currentLine);
+    if (scrubberHasBeenDrawn) scene.removeItem((QGraphicsItem *) lastLine);
 
-//     QPointF *first = new QPointF(x, 0);
-//     QPointF *second = new QPointF(x, 299);
-//     currentLine = scene.addLine(QLineF(*first, *second), QPen(Qt::black, 3, Qt::SolidLine, Qt::FlatCap));
-//     lineHasBeenDrawn = true;
+    QPointF *first = new QPointF(x, 0);
+    QPointF *second = new QPointF(x, 299);
+    lastLine = scene.addLine(QLineF(*first, *second), QPen(Qt::black, 3, Qt::SolidLine, Qt::FlatCap));
+    scrubberHasBeenDrawn = true;
 
-//     qint64 correspondingPosition = x / 400 * length;
-//     emit sendAudioPosition(correspondingPosition);
+    double position = x / 800;
+    emit sendAudioPosition(position);
 
 
-// }
+    }
+
 void WavForm::updateScrubberPosition(double position) {
 
     int scenePosition = (int) (position * 800);
-
     if (scrubberHasBeenDrawn) scene.removeItem((QGraphicsItem *) lastLine);
 
     QPointF *first = new QPointF(scenePosition, 0);
     QPointF *second = new QPointF(scenePosition, 199);
+
     lastLine = scene.addLine(QLineF(*first, *second), QPen(Qt::black, 3, Qt::SolidLine, Qt::FlatCap));
+    centerOn(lastLine);
     scrubberHasBeenDrawn = true;
 
 }

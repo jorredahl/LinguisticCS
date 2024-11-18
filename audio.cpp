@@ -20,7 +20,7 @@ void Audio::newAudioPlayer(){
 
     QAction *playAction = new QAction();
     connect(playAction, &QAction::triggered, this, &Audio::handlePlayPause);
-
+    playAction->setShortcut(Qt::Key_Space);
     playButton = new QToolButton;
     playButton->setDefaultAction(playAction);
     playButton->setIcon(QIcon(":/resources/icons/play.svg"));
@@ -43,6 +43,8 @@ void Audio::newAudioPlayer(){
     timerRefreshRate = 10;
 
     connect(this, &Audio::audioPositionChanged, wavChart, &WavForm::updateScrubberPosition);
+    connect(this->wavChart, &WavForm::sendAudioPosition, this, &Audio::updateTrackPositionFromScrubber);
+
 }
 
 void Audio::uploadAudio(){
@@ -66,7 +68,6 @@ void Audio::uploadAudio(){
      });
 
     //connect(player, &QMediaPlayer::positionChanged, this->spectrogram, &Spectrogram::audioChanged);
-    //connect(this->spectrogram, &Spectrogram::sendAudioPosition, this, &Visualizer::changeAudioPosition);
 
 
 }
@@ -96,11 +97,22 @@ void Audio::updateTrackPositionFromTimer() {
     setTrackPosition(audioPosition + timerRefreshRate);
 }
 
+void Audio::updateTrackPositionFromScrubber(double position) {
+    qint64 intPosition = (qint64) (position * audioLength);
+    setTrackPosition(intPosition);
+    player->setPosition(intPosition);
+}
 
 void Audio::setTrackPosition(qint64 position) {
     audioPosition = position;
     //qDebug() << audioPosition;
     double floatPosition = (double) audioPosition / audioLength;
+
+
+    // set to 1.05 so i don't accidentally trigger with pausing right before end
+    //  the timer and player position can be out of sync
+    if (floatPosition > 1.05) handlePlayPause();
+
     //qDebug() << floatPosition;
     emit audioPositionChanged(floatPosition);
 }
