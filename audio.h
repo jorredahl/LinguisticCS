@@ -17,6 +17,7 @@ class Audio : public QWidget
         QAudioOutput *audioOutput;
         bool audioPlaying;
         QToolButton *playButton;
+        QToolButton *loopButton;
         QHBoxLayout *audioLayout;
         QTimer *timer;
         int timerRefreshRate;

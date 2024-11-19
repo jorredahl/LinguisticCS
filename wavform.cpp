@@ -10,11 +10,13 @@ WavForm::WavForm()
     setMinimumSize(QSize(400, 200));
     setRenderHint(QPainter::Antialiasing, true);
     scene.addRect(sceneRect());
+    audioFileLoaded = false;
 }
 void WavForm::uploadAudio(QString fName){
 
     WavFile *audio = new WavFile(fName);
     audioToChart(audio);
+    audioFileLoaded = true;
 }
 
 void WavForm::audioToChart(WavFile* audio){
@@ -103,6 +105,8 @@ void WavForm::mousePressEvent(QMouseEvent *evt) {
 
     QGraphicsView::mousePressEvent(evt);
 
+    if (!audioFileLoaded) return;
+
     QPointF center = mapToScene(evt->pos());
 
     double x = center.x();
@@ -114,6 +118,8 @@ void WavForm::mousePressEvent(QMouseEvent *evt) {
     lastLine = scene.addLine(QLineF(*first, *second), QPen(Qt::black, 3, Qt::SolidLine, Qt::FlatCap));
     scrubberHasBeenDrawn = true;
 
+    centerOnScrubber = false; // if we click somewhere to change audio we don't want to keep centering; gets distracting
+
     double position = x / 800;
     emit sendAudioPosition(position);
 
@@ -123,13 +129,17 @@ void WavForm::mousePressEvent(QMouseEvent *evt) {
 void WavForm::updateScrubberPosition(double position) {
 
     int scenePosition = (int) (position * 800);
+    if (position < 0.05) centerOnScrubber = true; //if starting from beginning we want to center on scrubber
+
     if (scrubberHasBeenDrawn) scene.removeItem((QGraphicsItem *) lastLine);
 
     QPointF *first = new QPointF(scenePosition, 0);
     QPointF *second = new QPointF(scenePosition, 199);
 
     lastLine = scene.addLine(QLineF(*first, *second), QPen(Qt::black, 3, Qt::SolidLine, Qt::FlatCap));
-    centerOn(lastLine);
+
+    if (centerOnScrubber) centerOn(lastLine);
+
     scrubberHasBeenDrawn = true;
 
 }
