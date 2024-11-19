@@ -22,10 +22,10 @@ MainWindow::MainWindow(QWidget *parent)
     //uploadAction->setShortcut(Qt::CTRL | Qt::Key_N);
     //fileMenu->addAction(uploadAction);
 
-    audio1 = new Audio();
+    audio1 = new Audio(nullptr, "Speaker Sound Wave");
     mainLayout->addWidget(audio1);
 
-    audio2 = new Audio();
+    audio2 = new Audio(nullptr, "User Sound Wave");
     mainLayout->addWidget(audio2);
 
 

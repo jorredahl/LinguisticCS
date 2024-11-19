@@ -26,10 +26,12 @@ class Audio : public QWidget
         qint64 audioLength;
         Zoom *zoomButtons;
         QVBoxLayout *displayAndControlsLayout;
+        QHBoxLayout *controlsLayout;
+        QString label;
 
 
 public:
-    explicit Audio(QWidget *parent = nullptr);
+    explicit Audio(QWidget *parent = nullptr, QString _label = "Sound Wave");
     WavForm *wavChart;
     void newAudioPlayer();
     void setTrackPosition(qint64 position);
