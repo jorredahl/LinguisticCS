@@ -6,6 +6,9 @@
 #include <QAudioOutput>
 #include <QFileDialog>
 
+#define WAVFORM_HEIGHT 200
+#define WAVFORM_WIDTH 400
+
 Audio::Audio(QWidget *parent)
     : QWidget{parent}
 {
@@ -14,9 +17,11 @@ Audio::Audio(QWidget *parent)
 void Audio::newAudioPlayer(){
     audioLayout = new QHBoxLayout();
     setLayout(audioLayout);
+
+
     uploadAudioButton = new QPushButton("Upload");
-    audioLayout->addWidget(uploadAudioButton, 0, Qt::AlignCenter);
     connect(uploadAudioButton, &QPushButton::clicked, this, &Audio::uploadAudio);
+    audioLayout->addWidget(uploadAudioButton, 0, Qt::AlignCenter);
 
     QAction *playAction = new QAction();
     connect(playAction, &QAction::triggered, this, &Audio::handlePlayPause);
@@ -27,25 +32,26 @@ void Audio::newAudioPlayer(){
     playButton->setEnabled(false);
     audioLayout->addWidget(playButton);
 
-    zoomButtons = new Zoom();
-    audioLayout->addWidget(zoomButtons);
-    zoomButtons->setEnabled(false);
 
-    //chart
-    QVBoxLayout *chartLayout = new QVBoxLayout();
-    audioLayout->addLayout(chartLayout);
+    displayAndControlsLayout = new QVBoxLayout();
+    audioLayout->addLayout(displayAndControlsLayout);
+
     QLabel *nativeWaveLabel = new QLabel("Speaker Sound Wave"); // using QLabel as a placeholder for waveforms
-    chartLayout->addWidget(nativeWaveLabel);
+    displayAndControlsLayout->addWidget(nativeWaveLabel);
 
-    wavChart = new WavForm();
-    chartLayout->addWidget(wavChart);
+    zoomButtons = new Zoom(nullptr, WAVFORM_WIDTH, WAVFORM_HEIGHT);
+    zoomButtons->setEnabled(false);
+    displayAndControlsLayout->addWidget(zoomButtons);
+
+
+    wavChart = new WavForm(WAVFORM_WIDTH, WAVFORM_HEIGHT);
     connect(this, &Audio::emitLoadAudioIn, wavChart, &WavForm::uploadAudio);
     connect(zoomButtons, &Zoom::zoomGraphIn, wavChart, &WavForm::updateChart);
-    connect(zoomButtons, &Zoom::zoomGraphOut, wavChart, &WavForm::updateChart);
+
+    displayAndControlsLayout->addWidget(wavChart);
 
     timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &Audio::updateTrackPositionFromTimer);
-
     timerRefreshRate = 10;
 
     connect(this, &Audio::audioPositionChanged, wavChart, &WavForm::updateScrubberPosition);

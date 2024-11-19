@@ -12,11 +12,13 @@ class WavForm : public QGraphicsView
     bool scrubberHasBeenDrawn;
     QGraphicsLineItem *lastLine;
     WavFile *audio;
+    int viewW;
+    int viewH;
     int chartW;
     int chartH;
 
 public:
-    explicit WavForm();
+    explicit WavForm(int _width, int _height);
     void audioToChart();
     void setChart(QList<qint16> data, int width, int height);
 public slots:

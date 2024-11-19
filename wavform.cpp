@@ -4,11 +4,13 @@
 #include <QtCharts>
 #include <QtWidgets>
 
-WavForm::WavForm()
+WavForm::WavForm(int _width, int _height): viewW(_width), viewH(_height)
 {
     setScene(&scene);
-    setMinimumSize(QSize(400, 200));
+    setMinimumSize(QSize(viewW, viewH));
+
     setRenderHint(QPainter::Antialiasing, true);
+    setSceneRect(0, 0, viewW, viewH); // Explicitly set scene rect to match view
     scene.addRect(sceneRect());
 }
 void WavForm::uploadAudio(QString fName){
@@ -24,8 +26,8 @@ void WavForm::audioToChart(){
         samples = audio->getAudioSamples();
     }
 
-    chartW = 800;
-    chartH = 300;
+    chartW = viewW;
+    chartH = viewH * 0.95;
     setChart(samples, chartW, chartH);
 }
 
@@ -84,7 +86,6 @@ void WavForm::updateChart(int width, int height){
     chartH = height;
 
     setChart(samples, width, height);
-    qDebug() << "update chart called";
 }
 
 

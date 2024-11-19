@@ -24,6 +24,7 @@ class Audio : public QWidget
         qint64 audioPosition;
         qint64 audioLength;
         Zoom *zoomButtons;
+        QVBoxLayout *displayAndControlsLayout;
 
 
 public:
