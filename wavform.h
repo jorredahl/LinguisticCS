@@ -13,15 +13,20 @@ class WavForm : public QGraphicsView
     bool centerOnScrubber;
     bool audioFileLoaded;
     QGraphicsLineItem *lastLine;
-    //QChart *chart;
+    WavFile *audio;
+    int viewW;
+    int viewH;
+    int chartW;
+    int chartH;
 
 public:
-    explicit WavForm();
-    void audioToChart(WavFile* audio);
-    void setChart(QList<qint16> data);
+    explicit WavForm(int _width, int _height);
+    void audioToChart();
+    void setChart(QList<qint16> data, int width, int height);
 public slots:
     void uploadAudio(QString fName);
     void updateScrubberPosition(double position);
+    void updateChart(int width, int height);
 
 protected:
     void mousePressEvent(QMouseEvent *evt) override;

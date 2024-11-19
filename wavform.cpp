@@ -4,39 +4,37 @@
 #include <QtCharts>
 #include <QtWidgets>
 
-WavForm::WavForm()
+WavForm::WavForm(int _width, int _height): viewW(_width), viewH(_height)
 {
     setScene(&scene);
-    setMinimumSize(QSize(400, 200));
+    setMinimumSize(QSize(viewW, viewH));
+
     setRenderHint(QPainter::Antialiasing, true);
+    setSceneRect(0, 0, viewW, viewH); // Explicitly set scene rect to match view
     scene.addRect(sceneRect());
     audioFileLoaded = false;
 }
 void WavForm::uploadAudio(QString fName){
 
-    WavFile *audio = new WavFile(fName);
-    audioToChart(audio);
-    audioFileLoaded = true;
+
+    audio = new WavFile(fName);
+    audioToChart();
 }
 
-void WavForm::audioToChart(WavFile* audio){
-    QByteArray audioData;
+void WavForm::audioToChart(){
     QList<qint16> samples;
 
     if(audio->loadFile()) {
-        audioData = audio->getAudioData();
         samples = audio->getAudioSamples();
     }
 
-    setChart(samples);
-
+    chartW = viewW;
+    chartH = viewH * 0.95;
+    setChart(samples, chartW, chartH);
 }
 
-void WavForm::setChart(QList<qint16> data) {
+void WavForm::setChart(QList<qint16> data, int width, int height) {
 
-    // default values to plot waveform, can work with any values
-    int width = 800;
-    int height = 200;
 
     scene.clear();
 
@@ -81,24 +79,16 @@ void WavForm::setChart(QList<qint16> data) {
 
 }
 
-//scrubber
+void WavForm::updateChart(int width, int height){
+    QList<qint16> samples = audio->getAudioSamples();
+    scene.clear();
+    scene.update();
 
-// void Spectrogram::setLength(qint64 _length) {
-//     length = _length;
-// }
+    chartW = width;
+    chartH = height;
 
-// void Spectrogram::audioChanged(qint64 position) {
-//     double x = (double) position / (double) length * 400;
-//     if (x > 400) {
-//         return;
-//     }
-//     if (lineHasBeenDrawn) scene.removeItem((QGraphicsItem *) currentLine);
-
-//     QPointF *first = new QPointF(x, 0);
-//     QPointF *second = new QPointF(x, 299);
-//     currentLine = scene.addLine(QLineF(*first, *second), QPen(Qt::black, 3, Qt::SolidLine, Qt::FlatCap));
-//     lineHasBeenDrawn = true;
-// }
+    setChart(samples, width, height);
+}
 
 
 void WavForm::mousePressEvent(QMouseEvent *evt) {
@@ -114,13 +104,14 @@ void WavForm::mousePressEvent(QMouseEvent *evt) {
     if (scrubberHasBeenDrawn) scene.removeItem((QGraphicsItem *) lastLine);
 
     QPointF *first = new QPointF(x, 0);
-    QPointF *second = new QPointF(x, 299);
+    QPointF *second = new QPointF(x, chartH-1);
     lastLine = scene.addLine(QLineF(*first, *second), QPen(Qt::black, 3, Qt::SolidLine, Qt::FlatCap));
     scrubberHasBeenDrawn = true;
 
     centerOnScrubber = false; // if we click somewhere to change audio we don't want to keep centering; gets distracting
 
-    double position = x / 800;
+    double position = x / chartW;
+  
     emit sendAudioPosition(position);
 
 
@@ -128,13 +119,14 @@ void WavForm::mousePressEvent(QMouseEvent *evt) {
 
 void WavForm::updateScrubberPosition(double position) {
 
-    int scenePosition = (int) (position * 800);
-    if (position < 0.05) centerOnScrubber = true; //if starting from beginning we want to center on scrubber
 
+    if (position < 0.05) centerOnScrubber = true; //if starting from beginning we want to center on scrubber
+    int scenePosition = (int) (position * chartW);
+  
     if (scrubberHasBeenDrawn) scene.removeItem((QGraphicsItem *) lastLine);
 
     QPointF *first = new QPointF(scenePosition, 0);
-    QPointF *second = new QPointF(scenePosition, 199);
+    QPointF *second = new QPointF(scenePosition, chartH);
 
     lastLine = scene.addLine(QLineF(*first, *second), QPen(Qt::black, 3, Qt::SolidLine, Qt::FlatCap));
 

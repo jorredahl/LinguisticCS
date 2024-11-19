@@ -14,13 +14,15 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     wavfile.cpp \
-    wavform.cpp
+    wavform.cpp \
+    zoom.cpp
 
 HEADERS += \
     audio.h \
     mainwindow.h \
     wavfile.h \
-    wavform.h
+    wavform.h \
+    zoom.h
 
 RESOURCES += resources.qrc
 
