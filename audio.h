@@ -8,6 +8,7 @@
 #include <QToolButton>
 #include <QHBoxLayout>
 #include "wavform.h"
+#include "zoom.h"
 
 class Audio : public QWidget
 {
@@ -22,6 +23,7 @@ class Audio : public QWidget
         int timerRefreshRate;
         qint64 audioPosition;
         qint64 audioLength;
+        Zoom *zoomButtons;
 
 
 public:

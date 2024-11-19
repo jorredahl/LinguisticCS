@@ -11,15 +11,18 @@ class WavForm : public QGraphicsView
     QGraphicsScene scene;
     bool scrubberHasBeenDrawn;
     QGraphicsLineItem *lastLine;
-    //QChart *chart;
+    WavFile *audio;
+    int chartW;
+    int chartH;
 
 public:
     explicit WavForm();
-    void audioToChart(WavFile* audio);
-    void setChart(QList<qint16> data);
+    void audioToChart();
+    void setChart(QList<qint16> data, int width, int height);
 public slots:
     void uploadAudio(QString fName);
     void updateScrubberPosition(double position);
+    void updateChart(int width, int height);
 
 protected:
     void mousePressEvent(QMouseEvent *evt) override;

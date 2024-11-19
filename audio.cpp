@@ -25,17 +25,23 @@ void Audio::newAudioPlayer(){
     playButton->setDefaultAction(playAction);
     playButton->setIcon(QIcon(":/resources/icons/play.svg"));
     playButton->setEnabled(false);
-    //connect(playButton, &QToolButton::triggered, this, &MainWindow::handlePlayPause);
     audioLayout->addWidget(playButton);
 
+    zoomButtons = new Zoom();
+    audioLayout->addWidget(zoomButtons);
+    zoomButtons->setEnabled(false);
+
+    //chart
+    QVBoxLayout *chartLayout = new QVBoxLayout();
+    audioLayout->addLayout(chartLayout);
     QLabel *nativeWaveLabel = new QLabel("Speaker Sound Wave"); // using QLabel as a placeholder for waveforms
-    //nativeWaveLabel->setAlignment(Qt::AlignCenter);
-    //nativeWaveLabel->setStyleSheet("border: 1px solid black; min-height: 100px;");
-    audioLayout->addWidget(nativeWaveLabel);
+    chartLayout->addWidget(nativeWaveLabel);
 
     wavChart = new WavForm();
-    audioLayout->addWidget(wavChart);
+    chartLayout->addWidget(wavChart);
     connect(this, &Audio::emitLoadAudioIn, wavChart, &WavForm::uploadAudio);
+    connect(zoomButtons, &Zoom::zoomGraphIn, wavChart, &WavForm::updateChart);
+    connect(zoomButtons, &Zoom::zoomGraphOut, wavChart, &WavForm::updateChart);
 
     timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &Audio::updateTrackPositionFromTimer);
@@ -44,7 +50,6 @@ void Audio::newAudioPlayer(){
 
     connect(this, &Audio::audioPositionChanged, wavChart, &WavForm::updateScrubberPosition);
     connect(this->wavChart, &WavForm::sendAudioPosition, this, &Audio::updateTrackPositionFromScrubber);
-
 }
 
 void Audio::uploadAudio(){
@@ -59,6 +64,7 @@ void Audio::uploadAudio(){
 
     playButton->setEnabled(true);
     emit emitLoadAudioIn(aName.toLocalFile());
+    zoomButtons->setEnabled(true);
 
     //old way of handeling the scrubber
     // Connect to durationChanged signal to get the actual duration
@@ -66,9 +72,6 @@ void Audio::uploadAudio(){
         audioLength = duration;
         qDebug() << duration << "duration";
      });
-
-    //connect(player, &QMediaPlayer::positionChanged, this->spectrogram, &Spectrogram::audioChanged);
-
 
 }
 
