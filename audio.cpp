@@ -9,14 +9,16 @@
 #define WAVFORM_HEIGHT 200
 #define WAVFORM_WIDTH 400
 
-Audio::Audio(QWidget *parent)
-    : QWidget{parent}
+Audio::Audio(QWidget *parent, QString _label)
+    : QWidget{parent}, label(_label)
 {
     newAudioPlayer();
 }
 void Audio::newAudioPlayer(){
     audioLayout = new QHBoxLayout();
     setLayout(audioLayout);
+
+// add constructor for iniitalizer of qlabel text
 
 
     uploadAudioButton = new QPushButton("Upload");
@@ -36,12 +38,25 @@ void Audio::newAudioPlayer(){
     displayAndControlsLayout = new QVBoxLayout();
     audioLayout->addLayout(displayAndControlsLayout);
 
-    QLabel *nativeWaveLabel = new QLabel("Speaker Sound Wave"); // using QLabel as a placeholder for waveforms
+    QLabel *nativeWaveLabel = new QLabel(label); // using QLabel as a placeholder for waveforms
     displayAndControlsLayout->addWidget(nativeWaveLabel);
+
+    controlsLayout = new QHBoxLayout();
+    displayAndControlsLayout->addLayout(controlsLayout);
+
+    QAction *loopAction = new QAction();
+    //connect(loopAction, &QAction::triggered, this, &Audio::handleLoopClick);
+    loopButton = new QToolButton;
+    loopButton->setDefaultAction(loopAction);
+    loopButton->setIcon(QIcon(":/resources/icons/loop.svg"));
+    loopButton->setEnabled(false);
+    //connect(playButton, &QToolButton::triggered, this, &MainWindow::handlePlayPause);
+    controlsLayout->addWidget(loopButton);
+
 
     zoomButtons = new Zoom(nullptr, WAVFORM_WIDTH, WAVFORM_HEIGHT);
     zoomButtons->setEnabled(false);
-    displayAndControlsLayout->addWidget(zoomButtons);
+    controlsLayout->addWidget(zoomButtons);
 
 
     wavChart = new WavForm(WAVFORM_WIDTH, WAVFORM_HEIGHT);
@@ -69,6 +84,7 @@ void Audio::uploadAudio(){
     audioOutput->setVolume(50);
 
     playButton->setEnabled(true);
+    loopButton->setEnabled(true);
     emit emitLoadAudioIn(aName.toLocalFile());
     zoomButtons->setEnabled(true);
 

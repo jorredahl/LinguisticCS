@@ -10,6 +10,8 @@ class WavForm : public QGraphicsView
     Q_OBJECT
     QGraphicsScene scene;
     bool scrubberHasBeenDrawn;
+    bool centerOnScrubber;
+    bool audioFileLoaded;
     QGraphicsLineItem *lastLine;
     WavFile *audio;
     int viewW;
