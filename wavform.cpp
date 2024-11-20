@@ -4,6 +4,30 @@
 #include <QtCharts>
 #include <QtWidgets>
 
+/*
+ * File: wavform.cpp
+ * Description:
+ *  This source file implements the 'WavForm' class, a custom 'QGraphicsView' which visualizes audio
+ *  waveforms. The class visalizes the waveform using audio data from the 'WavFile' class and provides
+ *  methods for updating the chart. The constructor 'WavForm(int _width, int _height): viewW(_width), viewH(_height)'
+ *  initializes the 'QGraphicsView' and scene dimensions.
+ *
+ * Key Methods:
+ *  - 'uploadAudio()': Creates a 'WavFile' object and sets up its waveform visualizatio with 'audioToChart()'
+ *  - 'audioToChart()': Processes audio data and sets up the waveform chart
+ *  - 'setChart()': Splits audio data into pixel-width length and calculates average, min, max and
+ *    RMS values for each sample segment
+ *  - 'mousePressEvent()': Maps mouse clicks to waveform positions and adds scrubber line to position
+ *  - 'updateScrubberPosition()': Moves the scrubber based on position
+ *
+ * Notes:
+ *  - Dark blue represents min and max values for each sample segment
+ *  - ...
+ *
+ * References:
+ *  - ...
+ */
+
 WavForm::WavForm(int _width, int _height): viewW(_width), viewH(_height)
 {
     setScene(&scene);

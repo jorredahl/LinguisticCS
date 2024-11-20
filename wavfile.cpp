@@ -1,6 +1,40 @@
 #include "wavfile.h"
 #include <QtWidgets>
 
+/*
+ * File: wavfile.cpp
+ * Description:
+ *   This source file implements the `WavFile` class, providing methods for loading and parsing WAV files.
+ *   The class validates the WAV file header, extracts audio properties, and parses audio samples.
+ *
+ * Implementation Details:
+ *   - `loadFile()`: Opens the file, validates its header, and extracts audio data.
+ *   - `readHeader()`: Reads and validates the WAV file's 44-byte header, extracting metadata.
+ *   - `collectAudioSamples()`: Parses 16-bit PCM audio data into a list of signed integers.
+ *
+ * Constructor:
+ *   - `WavFile(const QString& filePath, QObject* parent)`: Initializes the class with a file path and sets default values for member variables.
+ *
+ * Key Methods:
+ *   - `loadFile()`: Main entry point for loading and parsing a WAV file. Emits a signal upon success or failure.
+ *   - `readHeader(const QByteArray& headerData)`: Extracts sample rate, number of channels, bit depth, and data size from the header.
+ *   - `collectAudioSamples()`: Converts raw audio data into a list of signed 16-bit samples for further processing.
+ *
+ * Notes:
+ *   - `loadFile()` ensures the WAV file has a valid header and sufficient data before extracting samples.
+ *   - Header validation includes checks for "RIFF" and "WAVE" identifiers and the expected header size.
+ *   - Audio samples are stored in the `samples` list, which can be accessed using `getAudioSamples()`.
+ *
+ * Error Handling:
+ *   - Emits `fileLoaded(false)` if the file cannot be opened, the header is invalid, or the data size is insufficient.
+ *   - Logs warnings for debugging purposes using `qWarning()`.
+ *
+ * References:
+ *   - WAV File Format Basics: https://docs.fileformat.com/audio/wav/
+ *  - https://stackoverflow.com/questions/66362937/how-to-convert-big-little-endian-bytes-to-integer-and-vice-versa-in-c
+ *  - https://en.cppreference.com/w/cpp/language/reinterpret_cast
+ */
+
 WavFile::WavFile(const QString& filePath, QObject* parent)
     : QObject(parent), filePath(filePath), sampleRate(0), numChannels(0), bitDepth(0), dataSize(0) {
     // initialize file path and default values

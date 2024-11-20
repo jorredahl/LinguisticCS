@@ -9,6 +9,35 @@
 #define WAVFORM_HEIGHT 200
 #define WAVFORM_WIDTH 400
 
+/*
+ * File: audio.cpp
+ * Description:
+ *  This source file implements the 'Audio' class, providing the functionality for audio playback, upload,
+ *  visualization, and control interactions. The class uses 'QMediaPlayer' and 'QAudioOutput' for audio
+ *  playback and integrates waveform and zoom controls. The constructor 'Audio(QWidget *parent)' calls the
+ *  'newAudioPlayer()' method which sets up the UI, including the upload and play buttons, waveform display,
+ *  and zoom controls, and the audio playback is managed with 'QMediaPlayer' and supports scrubbing and
+ *  zooming functionality.
+ *
+ * Key Methods:
+ *  - 'newAudioPlayer()': Sets up the layout, buttons, waveform, and timer connecetions
+ *  - 'uploadAudio()': Handles the file selection process and media player setup
+ *  - 'handlePlayPause()': Manages the play/pause state of the audio player and updates the timer
+ *  - 'setTrackPosition(qint64 position)': Updates the current track position and emits the
+ *    'audioPositionChanged' signal
+ *
+ * Slots:
+ *  - 'updateTrackPositionFromTimer()': Advances the audio position periodically based on the timer
+ *  - 'updateTrackPositionFromScrubber(double position)': Adjusts the player position when the scrubber is moved
+ *
+ * Notes:
+ *  - 'WaveForm' class and 'Zoom' class are integrated for visualization and zoom functionality respectively,
+ *    see 'wavform.h' and 'wavform.cpp' for 'WaveForm' implementation and 'zoom.h' and 'zoom.cpp' for 'Zoom implementation
+ *
+ * References:
+ *  - ...
+ */
+
 Audio::Audio(QWidget *parent, QString _label)
     : QWidget{parent}, label(_label)
 {
