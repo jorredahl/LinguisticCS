@@ -3,16 +3,21 @@
 
 #include <fftw3.h>
 #include <QAudioOutput>
+<<<<<<< HEAD
 #include <QtWidgets>
 #include <QAudioSource>
 #include <QAudioDevice>
 #include <QAudioDecoder>
 #include <QAudioOutput>
 
+=======
+#include "audio.h"
+>>>>>>> origin/main
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), spectrograph(new Spectrograph(this))
 {
+<<<<<<< HEAD
     QVBoxLayout *menu = new QVBoxLayout();
     uploadAudioButton = new QPushButton("Upload");
     menu->addWidget(uploadAudioButton);
@@ -28,11 +33,37 @@ MainWindow::MainWindow(QWidget *parent)
     audioOutput = new QAudioOutput(this);
     player->setAudioOutput(audioOutput);
     connect(uploadAudioButton, &QPushButton::clicked, this, &MainWindow::uploadAudio);
+=======
+    // create central widget
+    QWidget *center = new QWidget();
+    setCentralWidget(center);
+
+    // create main layout for central widget
+    mainLayout = new QVBoxLayout(center);
+
+    // create menu bar
+    //QMenu *fileMenu = new QMenu("&File");
+    QMenu *fileMenu = menuBar()->addMenu("&File");
+
+    //QAction *uploadAction = new QAction("&Upload Audio File", this);
+    //connect(uploadAction, &QAction::triggered, this, &MainWindow::uploadAudio);
+    //uploadAction->setShortcut(Qt::CTRL | Qt::Key_N);
+    //fileMenu->addAction(uploadAction);
+
+    audio1 = new Audio(nullptr, "Speaker Sound Wave");
+    mainLayout->addWidget(audio1);
+
+    audio2 = new Audio(nullptr, "User Sound Wave");
+    mainLayout->addWidget(audio2);
+
+
+>>>>>>> origin/main
 }
 
 MainWindow::~MainWindow() {
 }
 
+<<<<<<< HEAD
 void MainWindow::uploadAudio()
 {
     QUrl aName = QFileDialog::getOpenFileUrl(this, "select audio file");
@@ -96,3 +127,5 @@ void MainWindow::processAudioBuffer(const QAudioBuffer &buffer) {
 
 
 
+=======
+>>>>>>> origin/main
