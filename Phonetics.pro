@@ -15,7 +15,6 @@ SOURCES += \
     audio.cpp \
     main.cpp \
     mainwindow.cpp \
-    spectrograph.cpp \
     wavfile.cpp \
     wavform.cpp \
     zoom.cpp
@@ -23,7 +22,6 @@ SOURCES += \
 HEADERS += \
     audio.h \
     mainwindow.h \
-    spectrograph.h \
     wavfile.h \
     wavform.h \
     zoom.h
