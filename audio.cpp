@@ -20,8 +20,12 @@ void Audio::newAudioPlayer(){
 
 // add constructor for iniitalizer of qlabel text
 
+    // Upload: ctrl+U
+    // Play/Pause: space
+    // loop: ctrl+L
 
     uploadAudioButton = new QPushButton("Upload");
+    uploadAudioButton->setShortcut(Qt::CTRL | Qt::Key_U);
     connect(uploadAudioButton, &QPushButton::clicked, this, &Audio::uploadAudio);
     audioLayout->addWidget(uploadAudioButton, 0, Qt::AlignCenter);
 
@@ -50,21 +54,23 @@ void Audio::newAudioPlayer(){
     loopButton->setDefaultAction(loopAction);
     loopButton->setIcon(QIcon(":/resources/icons/loop.svg"));
     loopButton->setEnabled(false);
+    loopButton->setShortcut(Qt::CTRL | Qt::Key_L);
     //connect(playButton, &QToolButton::triggered, this, &MainWindow::handlePlayPause);
     controlsLayout->addWidget(loopButton);
 
-
+    //Zoom
     zoomButtons = new Zoom(nullptr, WAVFORM_WIDTH, WAVFORM_HEIGHT);
     zoomButtons->setEnabled(false);
     controlsLayout->addWidget(zoomButtons);
 
-
+    //Chart
     wavChart = new WavForm(WAVFORM_WIDTH, WAVFORM_HEIGHT);
     connect(this, &Audio::emitLoadAudioIn, wavChart, &WavForm::uploadAudio);
     connect(zoomButtons, &Zoom::zoomGraphIn, wavChart, &WavForm::updateChart);
 
     displayAndControlsLayout->addWidget(wavChart);
 
+    //Timer/scrubber
     timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &Audio::updateTrackPositionFromTimer);
     timerRefreshRate = 10;

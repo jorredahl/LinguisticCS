@@ -16,7 +16,6 @@ WavForm::WavForm(int _width, int _height): viewW(_width), viewH(_height)
 }
 void WavForm::uploadAudio(QString fName){
 
-
     audio = new WavFile(fName);
     audioToChart();
 }
@@ -24,6 +23,7 @@ void WavForm::uploadAudio(QString fName){
 void WavForm::audioToChart(){
     QList<qint16> samples;
 
+    //verify we can load in file then get audio samples
     if(audio->loadFile()) {
         samples = audio->getAudioSamples();
     }
@@ -35,6 +35,7 @@ void WavForm::audioToChart(){
 
 void WavForm::setChart(QList<qint16> data, int width, int height) {
 
+    //draw the new chart with given samples in the given window width and height
 
     scene.clear();
 
@@ -80,6 +81,7 @@ void WavForm::setChart(QList<qint16> data, int width, int height) {
 }
 
 void WavForm::updateChart(int width, int height){
+    //clear old chart and update with the same samples but different width/height
     QList<qint16> samples = audio->getAudioSamples();
     scene.clear();
     scene.update();
