@@ -2,6 +2,8 @@
 #include <QtWidgets>
 #include <QAudioOutput>
 #include "audio.h"
+#include "spectrograph.h"
+
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -25,11 +27,24 @@ MainWindow::MainWindow(QWidget *parent)
     audio1 = new Audio(nullptr, "Speaker Sound Wave");
     mainLayout->addWidget(audio1);
 
+    Spectrograph *spectWidget1 = new Spectrograph(nullptr, 1);
+    mainLayout->addWidget(spectWidget1);
+
     audio2 = new Audio(nullptr, "User Sound Wave");
     mainLayout->addWidget(audio2);
+
+    Spectrograph *spectWidget2 = new Spectrograph(nullptr, 2);
+    mainLayout->addWidget(spectWidget2);
 
 
 }
 
-MainWindow::~MainWindow() {}
+
+MainWindow::~MainWindow() {
+}
+
+
+
+
+
 

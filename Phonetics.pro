@@ -1,3 +1,5 @@
+QMAKE_MACOSX_DEPLOYMENT_TARGET = 14.0
+
 QT       += core gui multimedia
 QT       += charts
 
@@ -13,6 +15,7 @@ SOURCES += \
     audio.cpp \
     main.cpp \
     mainwindow.cpp \
+    spectrograph.cpp \
     wavfile.cpp \
     wavform.cpp \
     zoom.cpp
@@ -20,14 +23,18 @@ SOURCES += \
 HEADERS += \
     audio.h \
     mainwindow.h \
+    spectrograph.h \
     wavfile.h \
     wavform.h \
     zoom.h
 
 RESOURCES += resources.qrc
 
-
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+# adding the FFTW library
+INCLUDEPATH += /usr/local/include
+LIBS += -L/usr/local/lib -lfftw3
