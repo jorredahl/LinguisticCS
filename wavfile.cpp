@@ -18,7 +18,7 @@
  * Key Methods:
  *   - `loadFile()`: Main entry point for loading and parsing a WAV file. Emits a signal upon success or failure.
  *   - `readHeader(const QByteArray& headerData)`: Extracts sample rate, number of channels, bit depth, and data size from the header.
- *   - `collectAudioSamples()`: Converts raw audio data into a list of signed 16-bit samples for further processing.
+ *   - `collectAudioSamples()`: Converts raw audio data into a list of float samples between -1.0 and 1.0 for further processing.
  *
  * Notes:
  *   - `loadFile()` ensures the WAV file has a valid header and sufficient data before extracting samples.
@@ -106,12 +106,36 @@ bool WavFile::readData() {
         return false;
     }
 
+    return true;
 }
 void WavFile::collectAudioSamples(){
-    // Collects each sample from 16-bit WAV file data as a signed integer (32768 to -32768)
-    for (int i = 0; i < audioData.size(); i += 2) {
+    // Collects each sample from WAV file data as a float value from -1.0 to 1.0. Custom fits to 16, 24, and 32 bit audio.
+    if (bitDepth == 0) {
+        qWarning() << "File Error: Invalid Bit Depth";
+        return;
+    }
+    for (int i = 0; i < audioData.size(); i += (bitDepth / 8)) {
         if (i + 1 < audioData.size()) {
-            qint16 sample = qFromLittleEndian<qint16>(reinterpret_cast<const unsigned char*>(audioData.mid(i, 2).constData()));
+            float sample;
+            // Custom fitting based on unique bitDepths
+            if (bitDepth == 16) {
+                sample = static_cast<float>(qFromLittleEndian<qint16>(audioData.mid(i, 2).constData())) / 32768.0f;
+            } else if (bitDepth == 24) {
+                // Creating an unsigned int here (prepends 0x00)
+                quint32 uInt = qFromLittleEndian<quint32>(audioData.mid(i, 3).constData());
+
+                // Sign extending my unsigned int
+                if (uInt & 0x800000) {
+                    uInt |= 0xFF000000;
+                }
+
+                sample = static_cast<float>(static_cast<qint32>(uInt)) / 8388608.0f;
+            } else if (bitDepth == 32) {
+                sample = qFromLittleEndian<float>(audioData.mid(i, 4).constData());
+            } else {
+                qWarning() << "File Error: Invalid Bit Depth";
+                return;
+            }
             samples.append(sample);
         }
     }
@@ -134,6 +158,6 @@ QByteArray WavFile::getAudioData() const {
     return audioData;
 }
 
-QList<qint16> WavFile::getAudioSamples() const {
+QList<float> WavFile::getAudioSamples() const {
     return samples;
 }

@@ -20,7 +20,7 @@
  *  - 'int numChannels': Number of audio channels (1 for, mono, 2 for stereo)
  *  - 'int bitDepth': bit depth of each audio sample
  *  - 'QByteArray audioData': Extracted raw audio data from the file
- *  - 'Qlist<qint16> samples': Parsed audio samples as signed 16-bit integers
+ *  - 'Qlist<float> samples': Parsed audio samples as float values between -1.0 and 1.0
  *
  * Public Methods:
  *  - 'WavFile(const QString& filePath, QObject* parent = nullptr)': Constructor that initializes the WAV
@@ -29,7 +29,7 @@
  *  - 'int getnumChannels() const': Returns number of audio channels
  *  - 'int getBitDepth() const': Returns the bit depth of the audio file
  *  - 'QByteArray getAudioData() const': Returns the raw audio data as a byte array
- *  - 'QList<qint16> getAudioSamples() const': Returns the parsed audio samples
+ *  - 'QList<float> getAudioSamples() const': Returns the parsed audio samples
  *  - 'bool loadFile()': Loads and processes the WAV file
  *
  * Signals:
@@ -56,7 +56,7 @@ public:
     int getNumChannels() const;
     int getBitDepth() const;
     QByteArray getAudioData() const;
-    QList<qint16> getAudioSamples() const;
+    QList<float> getAudioSamples() const;
 
     //loading function to process file
     bool loadFile();
@@ -77,7 +77,7 @@ private:
     int bitDepth;
     int dataSize;
     QByteArray audioData;
-    QList<qint16> samples;
+    QList<float> samples;
 };
 
 #endif // WAVFILE_H
