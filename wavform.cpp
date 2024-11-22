@@ -42,6 +42,7 @@ void WavForm::uploadAudio(QString fName){
 
     audio = new WavFile(fName);
     audioToChart();
+    audioFileLoaded = true;
 }
 
 void WavForm::audioToChart(){
@@ -120,7 +121,6 @@ void WavForm::updateChart(int width, int height){
 void WavForm::mousePressEvent(QMouseEvent *evt) {
 
     QGraphicsView::mousePressEvent(evt);
-
     if (!audioFileLoaded) return;
 
     QPointF center = mapToScene(evt->pos());

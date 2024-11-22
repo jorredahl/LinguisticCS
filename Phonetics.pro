@@ -35,4 +35,4 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 # adding the FFTW library
 INCLUDEPATH += /usr/local/include
-LIBS += -L/usr/local/lib -lfftw3
+#LIBS += -L/usr/local/lib -lfftw3
