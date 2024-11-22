@@ -27,7 +27,7 @@
  * Public Methods:
  *  - `explicit WavForm(int _width, int _height)`: Constructor initializing the view dimensions.
  *  - `void audioToChart()`: Loads audio data from the `WavFile` and creates a waveform visualization.
- *  - `void setChart(QList<qint16> data, int width, int height)`: Draws the waveform using audio sample data.
+ *  - `void setChart(QList<float> data, int width, int height)`: Draws the waveform using audio sample data.
  *
  * Slots:
  *  - `void uploadAudio(QString fName)`: Loads a WAV file and generates its waveform visualization.
@@ -64,7 +64,7 @@ class WavForm : public QGraphicsView
 public:
     explicit WavForm(int _width, int _height);
     void audioToChart();
-    void setChart(QList<qint16> data, int width, int height);
+    void setChart(QList<float> data, int width, int height);
 public slots:
     void uploadAudio(QString fName);
     void updateScrubberPosition(double position);
