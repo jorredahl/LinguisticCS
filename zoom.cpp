@@ -36,7 +36,7 @@ Zoom::Zoom(QWidget *parent, int viewW, int viewH)
     horizantalSlider = new QSlider();
     horizantalSlider->setOrientation(Qt::Horizontal);
     horizantalSlider->setMinimum(1);
-    horizantalSlider->setMaximum(10);
+    horizantalSlider->setMaximum(200);
     connect(horizantalSlider, &QSlider::sliderMoved, this, &Zoom::horizantalZoom);
     zoomLayout->addWidget(horizantalSlider);
 
