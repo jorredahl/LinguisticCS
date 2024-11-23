@@ -170,15 +170,13 @@ void WavForm::mousePressEvent(QMouseEvent *evt) {
 
     centerOnScrubber = false; // if we click somewhere to change audio we don't want to keep centering; gets distracting
 
-    double position = x / chartW;
-  
+    double position = x / chartW;  
     emit sendAudioPosition(position);
 
 
     }
 
 void WavForm::updateScrubberPosition(double position) {
-
 
     if (position < 0.05) centerOnScrubber = true; //if starting from beginning we want to center on scrubber
     int scenePosition = (int) (position * chartW);
