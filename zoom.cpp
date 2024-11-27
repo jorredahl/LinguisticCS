@@ -39,7 +39,7 @@ Zoom::Zoom(QWidget *parent, int viewW, int viewH)
     horizantalSlider->setMinimum(1);
     horizantalSlider->setMaximum(200);
     connect(horizantalSlider, &QSlider::sliderMoved, this, &Zoom::horizantalZoom);
-    connect(horizantalSlider, &QSlider::sliderReleased, this, &Zoom::sliderRelease);
+    connect(horizantalSlider, &QSlider::sliderReleased, this, &Zoom::sliderReleased);
     zoomLayout->addWidget(horizantalSlider);
 
     verticalSlider = new QSlider();
