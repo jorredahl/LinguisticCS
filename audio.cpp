@@ -106,6 +106,12 @@ void Audio::newAudioPlayer(){
 
     connect(this, &Audio::audioPositionChanged, wavChart, &WavForm::updateScrubberPosition);
     connect(this->wavChart, &WavForm::sendAudioPosition, this, &Audio::updateTrackPositionFromScrubber);
+
+    //Close Analysis Graphs
+    segmentGraph = new SegmentGraph(WAVFORM_WIDTH, WAVFORM_HEIGHT);
+    segmentGraph->setVisible(false);
+    //connect(this, (Some function when segments are selected that emits a QList<QList<float>>, segmentGraph, &SegmentGraph::updateGraphs);
+    audioLayout->addWidget(segmentGraph);
 }
 
 void Audio::uploadAudio(){
