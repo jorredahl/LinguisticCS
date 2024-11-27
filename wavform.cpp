@@ -151,12 +151,10 @@ void WavForm::updateChart(int width, int height){
     int oldHeight = chartH;
     chartW = width;
     chartH = height;
-    //qDebug() << "chart width: " << chartW << "window width" << scene.activeWindow()->maximumWidth();
 
     setChart(samples, width, height);
 
     if (oldWidth == chartW & oldHeight == chartH){
-        qDebug() << "scrubber active and changing width ";
         emit sceneSizeChange();
     }
 

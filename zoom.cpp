@@ -17,6 +17,7 @@
  *  - 'void horizontalZoom(int position)': Calculates the zoom width level based on the position of the
  *    slider and emits the 'zoomGraphIn' signal with the updated dimensions
  *
+ *
  * Notes:
  *  - Zoom levels range from 1x to 10x
  *  - Default values for 'viewW' and 'viewH' are 400 and 200 respectively
@@ -64,7 +65,6 @@ void Zoom::horizantalZoom(int position) {
 
 }
 
-void Zoom::sliderRelease(){
-    qDebug() << "slider position: " << horizantalSlider->sliderPosition();
+void Zoom::sliderReleased(){
     emit zoomGraphIn(horizantalSlider->sliderPosition() * graphWidth, verticalSlider->sliderPosition() * graphHeight);
 }
