@@ -100,6 +100,7 @@ void WavForm::setChart(QList<float> data, int width, int height) {
         scene.addRect(QRect(i, height / 2, 1, abs(mins[i]) * height / 2), Qt::NoPen, Qt::darkBlue);
         scene.addRect(QRect(i, (height / 2) - ((rms[i] * height) / 2), 1, rms[i] * height), Qt::NoPen, Qt::blue);
         scene.addRect(QRect(i, (height / 2) - ((avgs[i] * height) / 2), 1, avgs[i] * height), Qt::NoPen, QColor(QRgb(0x8888FF)));
+        setSceneRect(0,0,width,height);
     }
     }else{
         //qDebug() << "width: "<< width << "height: " << height;
@@ -131,8 +132,9 @@ void WavForm::setChart(QList<float> data, int width, int height) {
 
             scene.addLine(QLineF(p1, p2), pen);
         }
+        setSceneRect(0,0,ogWidth,height);
     }
-    setSceneRect(0,0,width,height);
+
     scene.update();
 
 
@@ -149,7 +151,7 @@ void WavForm::updateChart(int width, int height){
     int oldHeight = chartH;
     chartW = width;
     chartH = height;
-    //qDebug()
+    //qDebug() << "chart width: " << chartW << "window width" << scene.activeWindow()->maximumWidth();
 
     setChart(samples, width, height);
 
