@@ -84,6 +84,7 @@ public slots:
     void handlePlayPause();
     void updateTrackPositionFromTimer();
     void updateTrackPositionFromScrubber(double position);
+    void ZoomScrubberPosition();
 
 
 

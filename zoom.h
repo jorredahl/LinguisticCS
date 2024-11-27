@@ -59,6 +59,7 @@ public slots:
 
     void verticalZoom(int position);
     void horizantalZoom(int position);
+    void sliderRelease();
 signals:
 
     void zoomGraphIn(int width, int height);

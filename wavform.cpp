@@ -143,11 +143,21 @@ void WavForm::updateChart(int width, int height){
     QList<float> samples = audio->getAudioSamples();
     scene.clear();
     scene.update();
+    scrubberHasBeenDrawn = false;
 
+    int oldWidth = chartW;
+    int oldHeight = chartH;
     chartW = width;
     chartH = height;
+    //qDebug()
 
     setChart(samples, width, height);
+
+    if (oldWidth == chartW & oldHeight == chartH){
+        qDebug() << "scrubber active and changing width ";
+        emit sceneSizeChange();
+    }
+
 }
 
 
@@ -179,15 +189,17 @@ void WavForm::mousePressEvent(QMouseEvent *evt) {
 void WavForm::updateScrubberPosition(double position) {
 
     if (position < 0.05) centerOnScrubber = true; //if starting from beginning we want to center on scrubber
-    int scenePosition = (int) (position * chartW);
-  
+    double scenePosition = (double) (position * chartW);
+    //qDebug() << "scene position: " << scenePosition;
     if (scrubberHasBeenDrawn) scene.removeItem((QGraphicsItem *) lastLine);
 
     QPointF *first = new QPointF(scenePosition, 0);
+    //qDebug() << "first point made";
     QPointF *second = new QPointF(scenePosition, chartH);
 
+    //qDebug() << "made points";
     lastLine = scene.addLine(QLineF(*first, *second), QPen(Qt::black, 3, Qt::SolidLine, Qt::FlatCap));
-
+    //qDebug() << "line drawn";
     if (centerOnScrubber) centerOn(lastLine);
 
     scrubberHasBeenDrawn = true;

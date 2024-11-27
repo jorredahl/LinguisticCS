@@ -75,6 +75,7 @@ protected:
 
 signals:
     void sendAudioPosition(double position);
+    void sceneSizeChange();
 };
 
 #endif // WAVFORM_H
