@@ -36,6 +36,7 @@
  *
  * Signals:
  *  - `void sendAudioPosition(double position)`: Emitted when the scrubber position changes.
+ *  - `void sceneSizeChange()`: emmited when scene size is finished change
  *
  * Protected Methods:
  *  - `void mousePressEvent(QMouseEvent *evt) override`: Handles user interaction for updating the scrubber.

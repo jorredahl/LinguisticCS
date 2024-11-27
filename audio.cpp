@@ -29,7 +29,7 @@
  * Slots:
  *  - 'updateTrackPositionFromTimer()': Advances the audio position periodically based on the timer
  *  - 'updateTrackPositionFromScrubber(double position)': Adjusts the player position when the scrubber is moved
- *
+ *  - 'ZoomScrubberPosition()': adjusts the scrubber when there is a zoom update
  * Notes:
  *  - 'WaveForm' class and 'Zoom' class are integrated for visualization and zoom functionality respectively,
  *    see 'wavform.h' and 'wavform.cpp' for 'WaveForm' implementation and 'zoom.h' and 'zoom.cpp' for 'Zoom implementation
@@ -107,7 +107,7 @@ void Audio::newAudioPlayer(){
     connect(this, &Audio::audioPositionChanged, wavChart, &WavForm::updateScrubberPosition);
     connect(this->wavChart, &WavForm::sendAudioPosition, this, &Audio::updateTrackPositionFromScrubber);
 
-    connect(wavChart, &WavForm::sceneSizeChange, this, &Audio::ZoomScrubberPosition);
+    connect(zoomButtons, &Zoom::zoomGraphIn, this, &Audio::ZoomScrubberPosition);
 
 
     //Close Analysis Graphs
@@ -149,7 +149,6 @@ void Audio::handlePlayPause() {
     if (audioPlaying) {
         player->pause();
         timer->stop();
-        qDebug() << "pause position: "<< player->position();
     }
     else {
         player->play();
@@ -175,25 +174,17 @@ void Audio::updateTrackPositionFromScrubber(double position) {
 
 void Audio::ZoomScrubberPosition(){
     double floatPosition = (double) audioPosition / audioLength;
-    qDebug() << "float position: " << floatPosition;
     emit audioPositionChanged(floatPosition);
-    qDebug() << "emitted audio position change";
 }
 
 void Audio::setTrackPosition(qint64 position) {
     audioPosition = position;
-    //qDebug() << audioPosition;
     double floatPosition = (double) audioPosition / audioLength;
 
 
     // set to 1.05 so i don't accidentally trigger with pausing right before end
     //  the timer and player position can be out of sync
-    if (floatPosition > 1.05) {
-        //player->setPosition(0.0);
-        //audioPosition = 0;
-        handlePlayPause();
-    }
+    if (floatPosition > 1.05) handlePlayPause();
 
-    //qDebug() << floatPosition;
     emit audioPositionChanged(floatPosition);
 }

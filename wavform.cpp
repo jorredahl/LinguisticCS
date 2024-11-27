@@ -16,7 +16,8 @@
  *  - 'uploadAudio()': Creates a 'WavFile' object and sets up its waveform visualizatio with 'audioToChart()'
  *  - 'audioToChart()': Processes audio data and sets up the waveform chart
  *  - 'setChart()': Splits audio data into pixel-width length and calculates average, min, max and
- *    RMS values for each sample segment
+ *    RMS values for each sample segment. When the width goes past the samples available in the wav file about (400 * 51),
+ *    it switches to max and min and draws a line graph of (400*51*2 (2 for max and min)) points across the given width.
  *  - 'mousePressEvent()': Maps mouse clicks to waveform positions and adds scrubber line to position
  *  - 'updateScrubberPosition()': Moves the scrubber based on position
  *
@@ -147,16 +148,10 @@ void WavForm::updateChart(int width, int height){
     scene.update();
     scrubberHasBeenDrawn = false;
 
-    int oldWidth = chartW;
-    int oldHeight = chartH;
     chartW = width;
     chartH = height;
 
     setChart(samples, width, height);
-
-    if (oldWidth == chartW & oldHeight == chartH){
-        emit sceneSizeChange();
-    }
 
 }
 
@@ -190,16 +185,13 @@ void WavForm::updateScrubberPosition(double position) {
 
     if (position < 0.05) centerOnScrubber = true; //if starting from beginning we want to center on scrubber
     double scenePosition = (double) (position * chartW);
-    //qDebug() << "scene position: " << scenePosition;
+
     if (scrubberHasBeenDrawn) scene.removeItem((QGraphicsItem *) lastLine);
 
     QPointF *first = new QPointF(scenePosition, 0);
-    //qDebug() << "first point made";
     QPointF *second = new QPointF(scenePosition, chartH);
 
-    //qDebug() << "made points";
     lastLine = scene.addLine(QLineF(*first, *second), QPen(Qt::black, 3, Qt::SolidLine, Qt::FlatCap));
-    //qDebug() << "line drawn";
     if (centerOnScrubber) centerOn(lastLine);
 
     scrubberHasBeenDrawn = true;

@@ -16,6 +16,8 @@
  *    slider and emits the 'zoomGraphIn' signal with the updated dimensions
  *  - 'void horizontalZoom(int position)': Calculates the zoom width level based on the position of the
  *    slider and emits the 'zoomGraphIn' signal with the updated dimensions
+ *   - 'void sliderReleased()': signals when the slider is done being moved by the user so that the slider
+ *      can be redrawn. It is only necessary to redraw when the width is changed.
  *
  *
  * Notes:
@@ -39,7 +41,6 @@ Zoom::Zoom(QWidget *parent, int viewW, int viewH)
     horizantalSlider->setMinimum(1);
     horizantalSlider->setMaximum(200);
     connect(horizantalSlider, &QSlider::sliderMoved, this, &Zoom::horizantalZoom);
-    connect(horizantalSlider, &QSlider::sliderReleased, this, &Zoom::sliderReleased);
     zoomLayout->addWidget(horizantalSlider);
 
     verticalSlider = new QSlider();
@@ -65,6 +66,3 @@ void Zoom::horizantalZoom(int position) {
 
 }
 
-void Zoom::sliderReleased(){
-    emit zoomGraphIn(horizantalSlider->sliderPosition() * graphWidth, verticalSlider->sliderPosition() * graphHeight);
-}
