@@ -9,6 +9,7 @@
 #include <QHBoxLayout>
 #include "wavform.h"
 #include "zoom.h"
+#include "segmentgraph.h"
 
 /*
  * File: audio.h
@@ -68,6 +69,7 @@ class Audio : public QWidget
         qint64 audioPosition;
         qint64 audioLength;
         Zoom *zoomButtons;
+        SegmentGraph *segmentGraph;
         QVBoxLayout *displayAndControlsLayout;
         QHBoxLayout *controlsLayout;
         QString label;
