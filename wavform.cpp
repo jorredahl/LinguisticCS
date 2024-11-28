@@ -43,6 +43,7 @@ void WavForm::uploadAudio(QString fName){
 
     audio = new WavFile(fName);
     audioToChart();
+    audioFileLoaded = true;
 }
 
 void WavForm::audioToChart(){
