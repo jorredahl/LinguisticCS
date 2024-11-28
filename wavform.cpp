@@ -42,6 +42,9 @@ WavForm::WavForm(int _width, int _height): viewW(_width), viewH(_height)
 void WavForm::uploadAudio(QString fName){
 
     audio = new WavFile(fName);
+    scene.clear();
+    scene.update();
+    scrubberHasBeenDrawn = false;
     audioToChart();
     audioFileLoaded = true;
 }

@@ -33,6 +33,11 @@
  * Notes:
  *  - 'WaveForm' class and 'Zoom' class are integrated for visualization and zoom functionality respectively,
  *    see 'wavform.h' and 'wavform.cpp' for 'WaveForm' implementation and 'zoom.h' and 'zoom.cpp' for 'Zoom implementation
+ *  - if issues with the scrubber arise unconnect the 'updateAudioDuration(qint64 position)' and use what is below instead:
+ *      -       //     connect(player, &QMediaPlayer::durationChanged, this, [=](qint64 duration) {
+                //     audioLength = duration;
+                //     qDebug() << duration << "duration";
+                //  });
  *
  * References:
  *  - ...
@@ -122,6 +127,8 @@ void Audio::uploadAudio(){
     QUrl aName = QFileDialog::getOpenFileUrl(this, "Select audio file");
     if (aName.isEmpty()) return;
 
+    if (player) player = nullptr;
+    if(audioOutput) audioOutput = nullptr;
     player = new QMediaPlayer;
     audioOutput = new QAudioOutput;
     player->setAudioOutput(audioOutput);
@@ -135,10 +142,8 @@ void Audio::uploadAudio(){
 
     //old way of handeling the scrubber
     // Connect to durationChanged signal to get the actual duration
-    connect(player, &QMediaPlayer::durationChanged, this, [=](qint64 duration) {
-        audioLength = duration;
-        qDebug() << duration << "duration";
-     });
+
+    connect(player, &QMediaPlayer::durationChanged, this, &Audio::updateAudioDuration);
 
 }
 
@@ -187,4 +192,8 @@ void Audio::setTrackPosition(qint64 position) {
     if (floatPosition > 1.05) handlePlayPause();
 
     emit audioPositionChanged(floatPosition);
+}
+
+void Audio::updateAudioDuration(qint64 duration){
+    audioLength = duration;
 }

@@ -87,9 +87,7 @@ public slots:
     void updateTrackPositionFromTimer();
     void updateTrackPositionFromScrubber(double position);
     void ZoomScrubberPosition();
-
-
-
+    void updateAudioDuration(qint64 duration);
 
 signals:
     void emitLoadAudioIn(QString fName);
