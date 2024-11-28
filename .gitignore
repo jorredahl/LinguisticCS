@@ -1,12 +1,16 @@
-<<<<<<< HEAD
+
 build/
 *.idx
-=======
-build/*
+
+
 .DS_Store
 Phonetics.pro.user
 
 *.pro.user*
 
->>>>>>> origin/main
+
+
 build/Qt_6_7_2_for_macOS-Debug/.qtc_clangd/
+
+
+

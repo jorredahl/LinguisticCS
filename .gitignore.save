@@ -1,7 +1,9 @@
 
+build/
 *.idx
-build/*
 .DS_Store
 Phonetics.pro.user
+
 *.pro.user*
+
 
