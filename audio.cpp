@@ -2,6 +2,7 @@
 #include <QWidget>
 #include <QLabel>
 #include "wavform.h"
+#include "waveformsegments.h"
 #include <QMediaPlayer>
 #include <QAudioOutput>
 #include <QFileDialog>
@@ -51,6 +52,12 @@ Audio::Audio(QWidget *parent, QString _label)
 void Audio::newAudioPlayer(){
     audioLayout = new QHBoxLayout();
     setLayout(audioLayout);
+    wavFormAudioControlsLayout = new QVBoxLayout();
+    audioLayout-> addLayout(wavFormAudioControlsLayout);
+    audioControls = new QHBoxLayout();
+    wavFormControls = new QHBoxLayout();
+    wavFormAudioControlsLayout-> addLayout(audioControls);
+    wavFormAudioControlsLayout->addLayout(wavFormControls);
 
 // add constructor for iniitalizer of qlabel text
 
@@ -61,7 +68,7 @@ void Audio::newAudioPlayer(){
     uploadAudioButton = new QPushButton("Upload");
     uploadAudioButton->setShortcut(Qt::CTRL | Qt::Key_U);
     connect(uploadAudioButton, &QPushButton::clicked, this, &Audio::uploadAudio);
-    audioLayout->addWidget(uploadAudioButton, 0, Qt::AlignCenter);
+    audioControls->addWidget(uploadAudioButton, 0, Qt::AlignCenter);
 
     QAction *playAction = new QAction();
     connect(playAction, &QAction::triggered, this, &Audio::handlePlayPause);
@@ -70,8 +77,7 @@ void Audio::newAudioPlayer(){
     playButton->setDefaultAction(playAction);
     playButton->setIcon(QIcon(":/resources/icons/play.svg"));
     playButton->setEnabled(false);
-    audioLayout->addWidget(playButton);
-
+    audioControls->addWidget(playButton);
 
     displayAndControlsLayout = new QVBoxLayout();
     audioLayout->addLayout(displayAndControlsLayout);
@@ -113,6 +119,13 @@ void Audio::newAudioPlayer(){
     connect(this->wavChart, &WavForm::sendAudioPosition, this, &Audio::updateTrackPositionFromScrubber);
 
     connect(zoomButtons, &Zoom::zoomGraphIn, this, &Audio::ZoomScrubberPosition);
+
+
+    //wavForm controls
+    graphSegments = new WaveFormSegments();
+    createGraphSegments = new QPushButton("create segment graphs");
+    wavFormControls->addWidget(createGraphSegments);
+    //connect(graphSegments, &QPushButton::clicked, graphSegments, );
 
 
     //Close Analysis Graphs

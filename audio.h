@@ -6,10 +6,11 @@
 #include <QPushButton>
 #include <QMediaPlayer>
 #include <QToolButton>
-#include <QHBoxLayout>
+#include <QBoxLayout>
 #include "wavform.h"
 #include "zoom.h"
 #include "segmentgraph.h"
+#include "waveformsegments.h"
 
 /*
  * File: audio.h
@@ -64,6 +65,9 @@ class Audio : public QWidget
         QToolButton *playButton;
         QToolButton *loopButton;
         QHBoxLayout *audioLayout;
+        QVBoxLayout *wavFormAudioControlsLayout;
+        QHBoxLayout *audioControls;
+        QHBoxLayout *wavFormControls;
         QTimer *timer;
         int timerRefreshRate;
         qint64 audioPosition;
@@ -73,6 +77,8 @@ class Audio : public QWidget
         QVBoxLayout *displayAndControlsLayout;
         QHBoxLayout *controlsLayout;
         QString label;
+        QPushButton *createGraphSegments;
+        WaveFormSegments *graphSegments;
 
 
 public:
