@@ -47,6 +47,7 @@ void WavForm::uploadAudio(QString fName){
     scrubberHasBeenDrawn = false;
     audioToChart();
     audioFileLoaded = true;
+    emit audioFileLoadedTrue();
 }
 
 void WavForm::audioToChart(){
@@ -200,4 +201,8 @@ void WavForm::updateScrubberPosition(double position) {
 
     scrubberHasBeenDrawn = true;
 
+}
+
+ QList<float> WavForm::getSamples(){
+     return audio->getAudioSamples();
 }

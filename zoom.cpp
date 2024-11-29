@@ -51,6 +51,15 @@ Zoom::Zoom(QWidget *parent, int viewW, int viewH)
     zoomLayout->addWidget(verticalSlider);
 
 }
+void Zoom::resetZoom(){
+    horizantalSlider->setSliderPosition(1);
+    verticalSlider->setSliderPosition(1);
+    zoomedHeight = graphHeight * 1;
+    zoomedWidth = graphWidth * 1;
+    emit zoomGraphIn(zoomedWidth, zoomedHeight);
+    emit zoomGraphIn(zoomedWidth, zoomedHeight);
+
+}
 
 void Zoom::verticalZoom(int position) {
 

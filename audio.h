@@ -77,8 +77,10 @@ class Audio : public QWidget
         QVBoxLayout *displayAndControlsLayout;
         QHBoxLayout *controlsLayout;
         QString label;
-        QPushButton *createGraphSegments;
-        WaveFormSegments *graphSegments;
+        QPushButton *createGraphSegmentsButton;
+        QPushButton *clearAllGraphSegmentsButton;
+
+        WaveFormSegments *graphAudioSegments;
 
 
 public:
@@ -94,6 +96,7 @@ public slots:
     void updateTrackPositionFromScrubber(double position);
     void ZoomScrubberPosition();
     void updateAudioDuration(qint64 duration);
+    void audioLoaded();
 
 signals:
     void emitLoadAudioIn(QString fName);

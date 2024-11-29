@@ -54,6 +54,7 @@ public:
     int graphHeight;
     int zoomedWidth;
     int zoomedHeight;
+    void resetZoom();
 
 public slots:
 

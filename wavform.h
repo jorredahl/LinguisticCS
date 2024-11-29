@@ -66,6 +66,7 @@ public:
     explicit WavForm(int _width, int _height);
     void audioToChart();
     void setChart(QList<float> data, int width, int height);
+    QList<float> getSamples();
 public slots:
     void uploadAudio(QString fName);
     void updateScrubberPosition(double position);
@@ -77,6 +78,7 @@ protected:
 signals:
     void sendAudioPosition(double position);
     void sceneSizeChange();
+    void audioFileLoadedTrue();
 };
 
 #endif // WAVFORM_H
