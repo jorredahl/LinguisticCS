@@ -167,6 +167,7 @@ void Audio::uploadAudio(){
     emit emitLoadAudioIn(aName.toLocalFile());
     zoomButtons->setEnabled(true);
     zoomButtons->resetZoom();
+    setTrackPosition(player->position());
 
     // Connect to durationChanged signal to get the actual duration
     connect(player, &QMediaPlayer::durationChanged, this, &Audio::updateAudioDuration);
