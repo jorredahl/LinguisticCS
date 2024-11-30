@@ -210,12 +210,18 @@ void Audio::updateTrackPositionFromScrubber(double position) {
 
 void Audio::ZoomScrubberPosition(){
     double floatPosition = (double) audioPosition / audioLength;
+    if (floatPosition < 1.0 & abs(audioPosition - player->position()) > 100) {
+        audioPosition = player->position();
+    }
     emit audioPositionChanged(floatPosition);
 }
 
 void Audio::setTrackPosition(qint64 position) {
     audioPosition = position;
     double floatPosition = (double) audioPosition / audioLength;
+    if (floatPosition < 1.0 & abs(audioPosition - player->position()) > 100) {
+        audioPosition = player->position();
+    }
 
 
     // set to 1.05 so i don't accidentally trigger with pausing right before end
