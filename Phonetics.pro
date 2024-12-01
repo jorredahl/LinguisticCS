@@ -19,6 +19,7 @@ SOURCES += \
     waveformsegments.cpp \
     wavfile.cpp \
     wavform.cpp \
+    spectrograph.cpp \
     zoom.cpp
 
 HEADERS += \
@@ -28,6 +29,7 @@ HEADERS += \
     waveformsegments.h \
     wavfile.h \
     wavform.h \
+    spectrograph.h \
     zoom.h
 
 RESOURCES += resources.qrc
@@ -38,5 +40,5 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 # adding the FFTW library
-# INCLUDEPATH += /usr/local/include
-# LIBS += -L/usr/local/lib -lfftw3
+INCLUDEPATH += /usr/local/include
+LIBS += -L/usr/local/lib -lfftw3

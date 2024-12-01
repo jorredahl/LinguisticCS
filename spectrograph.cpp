@@ -10,7 +10,7 @@
 
 /* Im mainly looking at this https://ofdsp.blogspot.com/2011/08/short-time-fourier-transform-with-fftw3.html */
 
-Spectrograph::Spectrograph(QWidget *parent, int buttonIndex)
+Spectrograph::Spectrograph(QWidget *parent)
     : QWidget(parent)
 {
     /* hopSize can techniclly be adjusted
@@ -30,167 +30,68 @@ Spectrograph::Spectrograph(QWidget *parent, int buttonIndex)
     // calc hamming window for smoothing out
     hammingWindow(windowSize, hammingWindowValues);
 
-    // button for the spectrogram
-    // later maybe a box with like a small image
-    // each spect instance gets own button/layout
-    if (buttonIndex == 1) {
+    QVBoxLayout *mainLayout = new QVBoxLayout(this);
 
-        showSpect1 = new QPushButton("show spect", this);
-        connect(showSpect1, &QPushButton::clicked, this, &Spectrograph::uploadAudio1);
-        QHBoxLayout *spectLayout1 = new QHBoxLayout(this);
-        spectLayout1->addWidget(showSpect1, 0, Qt::AlignLeft);
-        setLayout(spectLayout1);
+    QPushButton *peaksButton = new QPushButton("Peaks", this);
+    connect(peaksButton, &QPushButton::clicked, this, &Spectrograph::showPeaks);
+    mainLayout->addWidget(peaksButton);
 
-    } else if (buttonIndex == 2) {
+    setLayout(mainLayout);
 
-        showSpect2 = new QPushButton("show spect2", this);
-        connect(showSpect2, &QPushButton::clicked, this, &Spectrograph::uploadAudio2);
-        QHBoxLayout *spectLayout2 = new QHBoxLayout(this);
-        spectLayout2->addWidget(showSpect2, 0, Qt::AlignLeft);
-        setLayout(spectLayout2);
-    }
+    // set fixed size for spectrograph , can change later
+    setFixedSize(190, 115);
 }
 
-// should take in the file name in audio pretty sure
-// void Spectrograph::checkForAudio() {
 
-//     checkForAudio = true;
+void Spectrograph::loadAudioFile(const QString &fileName) {
 
-//     // if there is something loaded into
-//     // psuedocode for now
-//     if(audio->uploadAudio()) {
-
-//         // should call my upload audio1
-//         processAudioFile(aName, 1);
-//     }
-// }
-
-
-void Spectrograph::uploadAudio1() {
-
-    // GOING TO HAVE TO TAKE THIS OUT MIGHT BE THE ENTIRE FUNCTION ACTUALLY
-    QUrl aName = QFileDialog::getOpenFileUrl(this, "select audio file");
+    QUrl aName = QUrl::fromLocalFile(fileName);
     if (aName.isEmpty())
         return;
 
-    reset1();
-
-    // handle audio processing
-    processAudioFile(aName, 1);
-
-    // bug - it does not play exactly when the spectrograph is shown or like in sync
-   // player->setSource(aName);
-   // player->play();
-
-    // decode audio file to raw data
-    // decoder = new QAudioDecoder(this);
-    // decoder->setSource(aName);
-
-    // connect(decoder, &QAudioDecoder::bufferReady, this, &Spectrograph::bufferReady);
-
-    // decoder->start();
-    //qDebug() << "audio started";
+    reset();
+    processAudioFile(aName);
 }
 
-void Spectrograph::uploadAudio2() {
-    QUrl aName = QFileDialog::getOpenFileUrl(this, "select audio file");
-    if (aName.isEmpty())
-        return;
 
-    reset2();
+void Spectrograph::processAudioFile(const QUrl &fileUrl) {
 
-    // handle audio processing
-    processAudioFile(aName, 2);
-
-    // bug - it does not play exactly when the spectrograph is shown or like in sync
-    // player->setSource(aName);
-    // player->play();
-
-    // decode audio file to raw data
-    // decoder = new QAudioDecoder(this);
-    // decoder->setSource(aName);
-
-    // connect(decoder, &QAudioDecoder::bufferReady, this, &Spectrograph::bufferReady);
-
-    // decoder->start();
-    //qDebug() << "audio started";
-}
-
-// everything down here should be fine
-
-void Spectrograph::processAudioFile(const QUrl &fileUrl, int audioIndex) {
-
-    if (audioIndex == 1) {
-        decoder1 = new QAudioDecoder(this);
-        decoder1->setSource(fileUrl);
-        connect(decoder1, &QAudioDecoder::bufferReady, this, &Spectrograph::bufferReady1);
-        decoder1->start();
-
-    } else if (audioIndex == 2) {
-        decoder2 = new QAudioDecoder(this);
-        decoder2->setSource(fileUrl);
-        decoder2->setSource(fileUrl);
-        connect(decoder2, &QAudioDecoder::bufferReady, this, &Spectrograph::bufferReady2);
-        decoder2->start();
+    if (!decoder) {
+        decoder = new QAudioDecoder(this);
+        connect(decoder, &QAudioDecoder::bufferReady, this, &Spectrograph::bufferReady);
     }
+
+    decoder->setSource(fileUrl);
+    decoder->start();
 }
 
 
-void Spectrograph::bufferReady1() {
+void Spectrograph::bufferReady() {
     // handle buffer for audio1
-    QAudioBuffer buffer = decoder1->read();
-    handleAudioBuffer(buffer, 1);
+    QAudioBuffer buffer = decoder->read();
+    handleAudioBuffer(buffer);
 }
 
 
-void Spectrograph::bufferReady2() {
-    // handle buffer for audio2
-    QAudioBuffer buffer = decoder2->read();
-    handleAudioBuffer(buffer, 2);
-}
-
-
-void Spectrograph::handleAudioBuffer(const QAudioBuffer &buffer, int audioIndex) {
+void Spectrograph::handleAudioBuffer(const QAudioBuffer &buffer) {
     const qint16 *data = buffer.constData<qint16>();
     int sampleCount = buffer.sampleCount();
 
-    if (audioIndex == 1) {
-        // Process for audio 1
-        const qint16 *data = buffer.constData<qint16>();
-        int sampleCount = buffer.sampleCount();
 
-        // append incoming samples
-        for  (int i = 0; i < sampleCount; ++i) {
-            accumulatedSamples1.append(static_cast<double>(data[i]));
-        }
+    // append incoming samples
+    for  (int i = 0; i < sampleCount; ++i) {
+        accumulatedSamples.append(static_cast<double>(data[i]));
+    }
 
-        // Process in overlapping windows
-        while (accumulatedSamples1.size() >= getWindowSize()) {
+    // Process in overlapping windows
+    while (accumulatedSamples.size() >= getWindowSize()) {
 
-            // extract a chunk of windowSize for processing
-            QVector<double> windowSamples = accumulatedSamples1.mid(0, getWindowSize());
-            setupSpectrograph(windowSamples);
+        // extract a chunk of windowSize for processing
+        QVector<double> windowSamples = accumulatedSamples.mid(0, getWindowSize());
+        setupSpectrograph(windowSamples);
 
-            // remove processed samples based on hopSize
-            accumulatedSamples1 = accumulatedSamples1.mid(hopSize);
-        }
-    } else if (audioIndex == 2) {
-
-        // append incoming samples
-        for  (int i = 0; i < sampleCount; ++i) {
-            accumulatedSamples2.append(static_cast<double>(data[i]));
-        }
-
-        // Process in overlapping windows
-        while (accumulatedSamples2.size() >= getWindowSize()) {
-
-            // extract a chunk of windowSize for processing
-            QVector<double> windowSamples = accumulatedSamples2.mid(0, getWindowSize());
-            setupSpectrograph(windowSamples);
-
-            // remove processed samples based on hopSize
-            accumulatedSamples2 = accumulatedSamples2.mid(hopSize);
-        }
+        // remove processed samples based on hopSize
+        accumulatedSamples = accumulatedSamples.mid(hopSize);
     }
 }
 
@@ -200,6 +101,7 @@ Spectrograph::~Spectrograph() {
     fftw_destroy_plan(plan);
     fftw_free(data);
     fftw_free(fft_result);
+    if (decoder) delete decoder;
 }
 
 
@@ -213,9 +115,6 @@ void Spectrograph::hammingWindow(int windowLength, QVector<double> &window) {
 
 
 void Spectrograph::setupSpectrograph(QVector<double> &accumulatedSamples) {
-
-    // continuous stream of data
-   // accumulatedSamples.append(samples);
 
     //qDebug() << "before processing, accumulatedsamples size:" << accumulatedSamples.size();
 
@@ -269,15 +168,9 @@ void Spectrograph::setupSpectrograph(QVector<double> &accumulatedSamples) {
 }
 
 
-void Spectrograph::reset1() {
+void Spectrograph::reset() {
     spectrogram.clear();
-    accumulatedSamples1.clear();
-    update();
-}
-
-void Spectrograph::reset2() {
-    spectrogram.clear();
-    accumulatedSamples2.clear();
+    accumulatedSamples.clear();
     update();
 }
 
@@ -341,7 +234,68 @@ void Spectrograph::paintEvent(QPaintEvent *event) {
             painter.fillRect(rect, color);
         }
     }
+
+
+    // that below is WORKING ISH
+    /*
+     *
+     * other otion or idea is that
+     * spectral view -->
+     *
+     * red / yeellow the same as b4
+     *
+     * blue lines drawn over spect is peak frequencies
+     * darker area --> purple and black quieter freq meh
+     *
+     *
+     * removes background stuff ? noise ?
+     *
+     * */
+
+
+    // peaks of amplitude
+    if (showPeaksEnabled) {
+        painter.setPen(QPen(Qt::blue, 2));
+        QVector<QPointF> peakPoints;
+
+        for (int chunk = 0; chunk < numChunks; ++chunk) {
+            // check these values later , and peak freq
+            int peakFreq = 0;
+            double peakValue = 1.0;
+
+            // Find the peak frequency in this chunk
+            for (int freq = 0; freq < numFrequencies; ++freq) {
+                if (spectrogram[chunk][freq] > peakValue) {
+                    peakFreq = freq;
+                    peakValue = spectrogram[chunk][freq];
+                }
+            }
+
+            int intensityAmp = static_cast<int>((peakValue / maxAmp) * 255.0);
+
+            // only add points for peaks above a certain intensity threshold , can adjust number
+
+            if (intensityAmp  > 210) {
+                double x = chunk * chunkWidth + chunkWidth / 2.0;
+                double y = height - (peakFreq + 1) * freqHeight;
+                peakPoints.append(QPointF(x, y)); // store the peak point
+            }
+        }
+
+        // Draw the lines connecting the peaks
+        for (int i = 1; i < peakPoints.size(); ++i) {
+            painter.drawLine(peakPoints[i - 1], peakPoints[i]);
+        }
+    }
 }
+
+
+void Spectrograph::showPeaks() {
+    showPeaksEnabled = !showPeaksEnabled;
+    update(); //repaint
+}
+
+
 
 
 

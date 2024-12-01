@@ -98,6 +98,9 @@ public slots:
 signals:
     void emitLoadAudioIn(QString fName);
     void audioPositionChanged(double position);
+
+    // for connecting spectrograph
+    void audioFileSelected(const QString &fileName);
 };
 
 #endif // AUDIO_H

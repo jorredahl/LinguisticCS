@@ -158,6 +158,9 @@ void Audio::uploadAudio(){
 
     connect(player, &QMediaPlayer::durationChanged, this, &Audio::updateAudioDuration);
 
+    // emit signal to notify the spectrograph
+    emit audioFileSelected(aName.toLocalFile());
+
 }
 
 void Audio::handlePlayPause() {
