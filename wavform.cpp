@@ -285,3 +285,14 @@ void WavForm::updateDelta(double _delta){
         drawIntervalLinesInSegment(startSegmentP.x());
     }
 }
+
+void WavForm::sendIntervalsForSegment(){
+    if (intervalLines.isEmpty()) return;
+    QList<int> intervalLocations;
+    intervalLocations << startSegmentP.x();
+    for (QGraphicsLineItem *l: intervalLines){
+        intervalLocations << l->x()/chartW;
+    }
+    intervalLocations << endSegmentP.x()/chartW;
+    emit intervalsForSegments(intervalLocations);
+}

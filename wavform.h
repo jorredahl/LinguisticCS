@@ -81,6 +81,7 @@ public slots:
     void updateScrubberPosition(double position);
     void updateChart(int width, int height);
     void switchMouseEventControls(bool segmentControlsOn);
+    void sendIntervalsForSegment();
 
 
 protected:
@@ -91,6 +92,7 @@ signals:
     void sceneSizeChange();
     void audioFileLoadedTrue();
     void segmentReady(bool ready);
+    void intervalsForSegments(QList<int>);
 };
 
 #endif // WAVFORM_H

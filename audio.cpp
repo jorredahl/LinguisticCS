@@ -148,7 +148,8 @@ void Audio::newAudioPlayer(){
 
     //GRAPH INTERVAL CONTROLS HERE ///////////////////////////////////////////////////////////////////////////
 
-    //connect(createGraphSegmentsButton, &QPushButton::clicked, ... some slot that emits QList<int> of places to divide graph;
+    connect(createGraphSegmentsButton, &QPushButton::clicked, wavChart, &WavForm::sendIntervalsForSegment);
+    connect(wavChart, &WavForm::intervalsForSegments, graphAudioSegments, &WaveFormSegments::collectWavSegment);
     //connect (this, emit of Qlist<int> of graph locations ..., graphAudioSegments, &WaveFormSegments::collectWavSegment);
 
     // ///////////////////////////////////////////////////////////////////////////
@@ -268,6 +269,6 @@ void Audio::segmentIntervalControlsEnable(bool ready){
 
 void Audio::applySegmentInterval(){
     wavChart->updateDelta(deltaSelector->value());
+    if(!createGraphSegmentsButton->isEnabled()) createGraphSegmentsButton->setEnabled(true);
     //connect(deltaSelector, &QDoubleSpinBox::valueChanged, wavChart, &WavForm::updateDelta);
-
 }
