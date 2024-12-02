@@ -47,6 +47,7 @@ void WavForm::uploadAudio(QString fName){
     scrubberHasBeenDrawn = false;
     audioToChart();
     audioFileLoaded = true;
+    emit audioFileLoadedTrue();
 }
 
 void WavForm::audioToChart(){
@@ -163,7 +164,6 @@ void WavForm::updateChart(int width, int height){
 void WavForm::mousePressEvent(QMouseEvent *evt) {
 
     QGraphicsView::mousePressEvent(evt);
-
     if (!audioFileLoaded) return;
 
     QPointF center = mapToScene(evt->pos());
@@ -200,4 +200,8 @@ void WavForm::updateScrubberPosition(double position) {
 
     scrubberHasBeenDrawn = true;
 
+}
+
+ QList<float> WavForm::getSamples(){
+     return audio->getAudioSamples();
 }
