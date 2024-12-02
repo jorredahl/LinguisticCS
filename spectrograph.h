@@ -13,8 +13,19 @@
 #include <QGraphicsView>
 #include <QAudioDecoder>
 
+/* File spectrograph.h
+ * Defines the spectrograph class , which provides visualization for an audio file using QPaintEvent
+ *
+ * Purpose:
+ * Creates a visual representation (spectrogram) from audio data
+ *
+ * Key Features:
+ * - Displays a spectrogram of audio data
+ * - Provides functionality for enabling / disabling peak amplitude visualization
+ * - Includes audio decoding and FFT transformation using FFTW library
+ *
+ * */
 
-/* This widget will display our spectrograph */
 class Spectrograph : public QWidget
 {
     Q_OBJECT
@@ -23,54 +34,49 @@ public:
     explicit Spectrograph(QWidget *parent = nullptr);
     ~Spectrograph();
 
-    // takes samples as input
+    // configures the spectrogram visualization
     void setupSpectrograph(QVector<double> &accumulatedSamples);
     int getWindowSize() const { return windowSize; }
     void reset();
-
     bool showPeaksEnabled = false;
 
 protected:
     void paintEvent(QPaintEvent *event) override;
-    void showPeaks();
 
 private:
-    QAudioDecoder *decoder = nullptr; // decoder for Spectrograph instance
-    QVector<double> accumulatedSamples; // accumulatedSamples for Spectrograph instance
-
-    void newSpectrograph();
-    double maxAmp = 1.0;
-    int hopSize;
-    QVector<double> magnitudes;
-
-    fftw_complex *in;
-    fftw_complex *out;
-
-    void hammingWindow(int windowLength, QVector<double> &window);
-    fftw_complex *data, *fft_result;
-    fftw_plan plan;
-
-    int windowSize = 1024;
-
-    QVector<QVector<double>> spectrogram; // 2D matrix
-    QVector<double> hammingWindowValues;
-
+    // audio processing
+    QAudioDecoder *decoder = nullptr;
+    QVector<double> accumulatedSamples;
 
     QMediaPlayer *player;
     QAudioOutput *audioOutput;
 
-    QAudioDecoder *decoder1;
-    QAudioDecoder *decoder2;
+    // FFT and spectrogram
+    fftw_complex *in;
+    fftw_complex *out;
+    fftw_plan plan;
+    fftw_complex *data, *fft_result;
+    QVector<QVector<double>> spectrogram; // 2D matrix for spectrogram
+    QVector<double> hammingWindowValues;
+
+    // parameters
+    double maxAmp = 1.0;
+    int hopSize;
+    int windowSize = 1024;
+
+    // helper method
+    void hammingWindow(int windowLength, QVector<double> &window);
+
+   // void newSpectrograph();
+   // QVector<double> magnitudes;
 
 
 public slots:
     void bufferReady();
-
     void processAudioFile(const QUrl &fileUrl);
     void handleAudioBuffer(const QAudioBuffer &buffer);
-
-    // new for cleaning up
     void loadAudioFile(const QString &fileName);
+    void showPeaks();
 
 };
 
