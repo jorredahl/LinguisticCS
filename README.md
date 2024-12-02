@@ -1,6 +1,6 @@
 <p align="center">
   <a href="" rel="noopener">
- <img width=200px height=200px src="https://i.imgur.com/6wj0hh6.jpg" alt="Project logo"></a>
+ <img width=200px height=200px src="https://github.com/jorredahl/LinguisticCS/blob/readme/resources/icons/phonetics_logo.jpg" alt="Project logo"></a>
 </p>
 
 <h3 align="center">Phonetics Visualizer</h3>
@@ -22,7 +22,6 @@
 ## 📝 Table of Contents
 - [About](#about)
 - [Getting Started](#getting_started)
-- [Deployment](#deployment)
 - [Usage](#usage)
 - [Built Using](#built_using)
 - [TODO](../TODO.md)
@@ -56,27 +55,45 @@ A step by step series of examples that tell you how to get a development env run
 
 1. Install XCode, Qt, Qt Creator.  There are plenty of better guides to do this online than anything we could write.
 
-```
-Give the example
-```
 
-2. 
-
-And repeat
+2. Git clone the project into your desired directory.
 
 ```
-until finished
+git clone https://github.com/jorredahl/LinguisticCS.git
 ```
+3. Install [FFTW](https://www.fftw.org/).  We did this using homebrew, then to get the FFTW package to where our `.pro` file was looking we used 
 
-End with an example of getting some data out of the system or using it for a little demo.
+ ```
+ sudo cp /opt/homebrew/Cellar/fftw/3.x.x/lib/* /usr/local/lib/
+
+ ```
 
 
 
 ## 🎈 Usage <a name="usage"></a>
-Add notes about how to use the system.
+Upon starting the Phonetics Visualizer, the user will be greeted with some controls and a blank waveform visualizer.  Almost every control is initially disabled - you have to first upload an audio file.  
 
-## 🚀 Deployment <a name = "deployment"></a>
-This is a standalone app.
+### Loading audio files
+The first step is to load an audio file to compare.  
+1. Click the top "Upload" button to upload a source file to compare your audio against.
+2. There will be a pop-up file explorer.  Navigate in your computer directory to the desired audio file and click "Open" in the bottom right to open that.
+
+
+**Note: only `.wav` files are accepted at the moment.  A 24 or 32 bitrate is encouraged for the file.**
+
+### Playing audio files
+Once your audio file is loaded, you can click the corresponding play button to play and pause.  You can see the scrubber's corresponding progress through the waveform to the right.
+
+### Visualizing the audio
+There are two primary visualization methods within the Phonetics Visualizer: a waveform and a spectrogram
+
+#### The Waveform
+
+#### The Spectrogram
+
+### Zooming in 
+There are two ways to zoom in
+
 
 ## ⛏️ Built Using <a name = "built_using"></a>
 - C++
