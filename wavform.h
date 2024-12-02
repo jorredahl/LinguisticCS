@@ -61,6 +61,12 @@ class WavForm : public QGraphicsView
     int viewH;
     int chartW;
     int chartH;
+    bool segmentControls;
+    QPointF startSegmentP;
+    QPointF endSegmentP;
+    QGraphicsLineItem *startSegment;
+    QGraphicsLineItem *endSegment;
+
 
 public:
     explicit WavForm(int _width, int _height);
@@ -71,6 +77,7 @@ public slots:
     void uploadAudio(QString fName);
     void updateScrubberPosition(double position);
     void updateChart(int width, int height);
+    void switchMouseEventControls(bool segmentControlsOn);
 
 protected:
     void mousePressEvent(QMouseEvent *evt) override;

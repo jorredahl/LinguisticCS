@@ -79,6 +79,7 @@ class Audio : public QWidget
         QString label;
         QPushButton *createGraphSegmentsButton;
         QPushButton *clearAllGraphSegmentsButton;
+        QCheckBox *segmentToolsCheckbox;
 
         WaveFormSegments *graphAudioSegments;
 

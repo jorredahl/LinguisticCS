@@ -128,6 +128,9 @@ void Audio::newAudioPlayer(){
     wavFormControls->addWidget(createGraphSegmentsButton);
     connect(wavChart, &WavForm::audioFileLoadedTrue, this, &Audio::audioLoaded);
 
+    segmentToolsCheckbox = new QCheckBox("segment controls");
+    connect(segmentToolsCheckbox, &QCheckBox::clicked, wavChart, &WavForm::switchMouseEventControls);
+
     //GRAPH INTERVAL CONTROLS HERE ///////////////////////////////////////////////////////////////////////////
 
     //connect(createGraphSegmentsButton, &QPushButton::clicked, ... some slot that emits QList<int> of places to divide graph;
@@ -141,6 +144,7 @@ void Audio::newAudioPlayer(){
     wavFormControls->addWidget(clearAllGraphSegmentsButton);
     connect(clearAllGraphSegmentsButton, &QPushButton::clicked, graphAudioSegments, &WaveFormSegments::clearAllWavSegments);
 
+    wavFormControls-> addWidget(segmentToolsCheckbox);
     //Close Analysis Graphs
     segmentGraph = new SegmentGraph(WAVFORM_WIDTH, WAVFORM_HEIGHT);
     segmentGraph->setVisible(false);
