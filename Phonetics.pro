@@ -15,6 +15,8 @@ SOURCES += \
     audio.cpp \
     main.cpp \
     mainwindow.cpp \
+    segmentgraph.cpp \
+    waveformsegments.cpp \
     wavfile.cpp \
     wavform.cpp \
     zoom.cpp
@@ -22,6 +24,8 @@ SOURCES += \
 HEADERS += \
     audio.h \
     mainwindow.h \
+    segmentgraph.h \
+    waveformsegments.h \
     wavfile.h \
     wavform.h \
     zoom.h

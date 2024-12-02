@@ -16,7 +16,8 @@
  *  - 'uploadAudio()': Creates a 'WavFile' object and sets up its waveform visualizatio with 'audioToChart()'
  *  - 'audioToChart()': Processes audio data and sets up the waveform chart
  *  - 'setChart()': Splits audio data into pixel-width length and calculates average, min, max and
- *    RMS values for each sample segment
+ *    RMS values for each sample segment. When the width goes past the samples available in the wav file about (400 * 51),
+ *    it switches to max and min and draws a line graph of (400*51*2 (2 for max and min)) points across the given width.
  *  - 'mousePressEvent()': Maps mouse clicks to waveform positions and adds scrubber line to position
  *  - 'updateScrubberPosition()': Moves the scrubber based on position
  *
@@ -41,8 +42,12 @@ WavForm::WavForm(int _width, int _height): viewW(_width), viewH(_height)
 void WavForm::uploadAudio(QString fName){
 
     audio = new WavFile(fName);
+    scene.clear();
+    scene.update();
+    scrubberHasBeenDrawn = false;
     audioToChart();
     audioFileLoaded = true;
+    emit audioFileLoadedTrue();
 }
 
 void WavForm::audioToChart(){
@@ -63,6 +68,9 @@ void WavForm::setChart(QList<float> data, int width, int height) {
     //draw the new chart with given samples in the given window width and height
 
     scene.clear();
+    const int MAX_SAMPLES = (400 * 51); //if we reach this we stop drawing new samples
+    int ogWidth = width; //need to store original width;
+    width = std::min(width, MAX_SAMPLES); // whichever is smaller is what we draw to stop at max
 
     // splits data into samples for each pixel of width
     int sampleLength = data.length() / width;
@@ -91,16 +99,49 @@ void WavForm::setChart(QList<float> data, int width, int height) {
         rms[i] = sqrt(squareSum / sampleLength);
     }
 
+    if (MAX_SAMPLES != width){
     // visualization: min/max is darkest, then rms, then average. May need to change some placing if the zoom is enough that a sample covers only positive/negative values
     for (int i = 0; i < width; ++i) {
         scene.addRect(QRect(i, (height / 2) - ((abs(maxs[i]) * height) / 2), 1, (abs(maxs[i]) * height) / 2), Qt::NoPen, Qt::darkBlue);
         scene.addRect(QRect(i, height / 2, 1, abs(mins[i]) * height / 2), Qt::NoPen, Qt::darkBlue);
         scene.addRect(QRect(i, (height / 2) - ((rms[i] * height) / 2), 1, rms[i] * height), Qt::NoPen, Qt::blue);
         scene.addRect(QRect(i, (height / 2) - ((avgs[i] * height) / 2), 1, avgs[i] * height), Qt::NoPen, QColor(QRgb(0x8888FF)));
+        setSceneRect(0,0,width,height);
+    }
+    }else{
+        //qDebug() << "width: "<< width << "height: " << height;
+        //we are at max zoom threshold where we have to draw max and min as a line graph because we arent at one sample a pixel
+        QPointF minPoint;
+        QPointF maxPoint;
+
+        float n = ogWidth / (float)MAX_SAMPLES; //step for how much to increment across the x axis in terms of the width/max_samples (like 4 samples across 5 pixels)
+        float x = 0;
+
+        QList<QPointF> pointList = QList<QPointF>(); //store points to draw lines between
+
+        for (int i = 0; i < MAX_SAMPLES; ++i){
+            minPoint = QPointF(x, (height / 2) + (abs(mins[i]) * height / 2));
+            maxPoint = QPointF(x - (n/2),(height / 2) - (abs(maxs[i]) * height / 2));
+
+            QPen pen(Qt::darkBlue);
+            pen.setWidth(1);
+            pointList.append(maxPoint);
+            pointList.append(minPoint);
+            x += n;
+        }
+
+        for (int i = 0; i < pointList.length() - 1; i++){
+            QPen pen(Qt::darkBlue);
+            pen.setWidth(1);
+            QPointF p1 = pointList[i+1];
+            QPointF p2 = pointList[i];
+
+            scene.addLine(QLineF(p1, p2), pen);
+        }
+        setSceneRect(0,0,ogWidth,height);
     }
 
-    setSceneRect(0,0,width,height);
-
+    scene.update();
 
 
 }
@@ -110,11 +151,13 @@ void WavForm::updateChart(int width, int height){
     QList<float> samples = audio->getAudioSamples();
     scene.clear();
     scene.update();
+    scrubberHasBeenDrawn = false;
 
     chartW = width;
     chartH = height;
 
     setChart(samples, width, height);
+
 }
 
 
@@ -136,8 +179,7 @@ void WavForm::mousePressEvent(QMouseEvent *evt) {
 
     centerOnScrubber = false; // if we click somewhere to change audio we don't want to keep centering; gets distracting
 
-    double position = x / chartW;
-  
+    double position = x / chartW;  
     emit sendAudioPosition(position);
 
 
@@ -145,19 +187,21 @@ void WavForm::mousePressEvent(QMouseEvent *evt) {
 
 void WavForm::updateScrubberPosition(double position) {
 
-
     if (position < 0.05) centerOnScrubber = true; //if starting from beginning we want to center on scrubber
-    int scenePosition = (int) (position * chartW);
-  
+    double scenePosition = (double) (position * chartW);
+
     if (scrubberHasBeenDrawn) scene.removeItem((QGraphicsItem *) lastLine);
 
     QPointF *first = new QPointF(scenePosition, 0);
     QPointF *second = new QPointF(scenePosition, chartH);
 
     lastLine = scene.addLine(QLineF(*first, *second), QPen(Qt::black, 3, Qt::SolidLine, Qt::FlatCap));
-
     if (centerOnScrubber) centerOn(lastLine);
 
     scrubberHasBeenDrawn = true;
 
+}
+
+ QList<float> WavForm::getSamples(){
+     return audio->getAudioSamples();
 }

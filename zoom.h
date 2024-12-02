@@ -14,7 +14,7 @@
  *
  * Purpose:
  *  - Allows user to zoom in and out of waveform view along horizontal and vertical axes
- *  - Emits updated dimentions of the viewer whenever the zoom level has changed
+ *  - Emits updated dimensions of the viewer and scrubber position whenever the zoom level has changed
  *
  * Key Members:
  *  - 'QHBoxLayout *zoomLayout': Horizontal layout containing the QSliders for zoom controls (widht and height)
@@ -54,6 +54,7 @@ public:
     int graphHeight;
     int zoomedWidth;
     int zoomedHeight;
+    void resetZoom();
 
 public slots:
 

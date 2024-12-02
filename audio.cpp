@@ -2,6 +2,7 @@
 #include <QWidget>
 #include <QLabel>
 #include "wavform.h"
+#include "waveformsegments.h"
 #include <QMediaPlayer>
 #include <QAudioOutput>
 #include <QFileDialog>
@@ -29,11 +30,17 @@
  * Slots:
  *  - 'updateTrackPositionFromTimer()': Advances the audio position periodically based on the timer
  *  - 'updateTrackPositionFromScrubber(double position)': Adjusts the player position when the scrubber is moved
- *
+ *  - 'ZoomScrubberPosition()': adjusts the scrubber when there is a zoom update
+ *  - 'AudioLoaded()': allows for the segmenting functionality to start after audio has been loaded in
  * Notes:
  *  - 'WaveForm' class and 'Zoom' class are integrated for visualization and zoom functionality respectively,
  *    see 'wavform.h' and 'wavform.cpp' for 'WaveForm' implementation and 'zoom.h' and 'zoom.cpp' for 'Zoom implementation
- *
+ *  - if issues with the scrubber arise unconnect the 'updateAudioDuration(qint64 position)' and use what is below instead:
+ *      -       //     connect(player, &QMediaPlayer::durationChanged, this, [=](qint64 duration) {
+                //     audioLength = duration;
+                //     qDebug() << duration << "duration";
+                //  });
+ *  - test for the segments is in the play/pause method
  * References:
  *  - ...
  */
@@ -46,6 +53,12 @@ Audio::Audio(QWidget *parent, QString _label)
 void Audio::newAudioPlayer(){
     audioLayout = new QHBoxLayout();
     setLayout(audioLayout);
+    wavFormAudioControlsLayout = new QVBoxLayout();
+    audioLayout-> addLayout(wavFormAudioControlsLayout);
+    audioControls = new QHBoxLayout();
+    wavFormControls = new QHBoxLayout();
+    wavFormAudioControlsLayout-> addLayout(audioControls);
+    wavFormAudioControlsLayout->addLayout(wavFormControls);
 
 // add constructor for iniitalizer of qlabel text
 
@@ -56,7 +69,7 @@ void Audio::newAudioPlayer(){
     uploadAudioButton = new QPushButton("Upload");
     uploadAudioButton->setShortcut(Qt::CTRL | Qt::Key_U);
     connect(uploadAudioButton, &QPushButton::clicked, this, &Audio::uploadAudio);
-    audioLayout->addWidget(uploadAudioButton, 0, Qt::AlignCenter);
+    audioControls->addWidget(uploadAudioButton, 0, Qt::AlignCenter);
 
     QAction *playAction = new QAction();
     connect(playAction, &QAction::triggered, this, &Audio::handlePlayPause);
@@ -65,8 +78,7 @@ void Audio::newAudioPlayer(){
     playButton->setDefaultAction(playAction);
     playButton->setIcon(QIcon(":/resources/icons/play.svg"));
     playButton->setEnabled(false);
-    audioLayout->addWidget(playButton);
-
+    audioControls->addWidget(playButton);
 
     displayAndControlsLayout = new QVBoxLayout();
     audioLayout->addLayout(displayAndControlsLayout);
@@ -106,12 +118,44 @@ void Audio::newAudioPlayer(){
 
     connect(this, &Audio::audioPositionChanged, wavChart, &WavForm::updateScrubberPosition);
     connect(this->wavChart, &WavForm::sendAudioPosition, this, &Audio::updateTrackPositionFromScrubber);
+
+    connect(zoomButtons, &Zoom::zoomGraphIn, this, &Audio::ZoomScrubberPosition);
+
+    //WavForm Controls
+    graphAudioSegments = new WaveFormSegments();
+    createGraphSegmentsButton = new QPushButton("create segment graphs");
+    createGraphSegmentsButton->setEnabled(false);
+    wavFormControls->addWidget(createGraphSegmentsButton);
+    connect(wavChart, &WavForm::audioFileLoadedTrue, this, &Audio::audioLoaded);
+
+    //GRAPH INTERVAL CONTROLS HERE ///////////////////////////////////////////////////////////////////////////
+
+    //connect(createGraphSegmentsButton, &QPushButton::clicked, ... some slot that emits QList<int> of places to divide graph;
+    //connect (this, emit of Qlist<int> of graph locations ..., graphAudioSegments, &WaveFormSegments::collectWavSegment);
+
+    // ///////////////////////////////////////////////////////////////////////////
+
+    //clearing all intervals (for what we send to close analysis graphs)
+    clearAllGraphSegmentsButton = new QPushButton("clear segments");
+    clearAllGraphSegmentsButton->setEnabled(false);
+    wavFormControls->addWidget(clearAllGraphSegmentsButton);
+    connect(clearAllGraphSegmentsButton, &QPushButton::clicked, graphAudioSegments, &WaveFormSegments::clearAllWavSegments);
+
+    //Close Analysis Graphs
+    segmentGraph = new SegmentGraph(WAVFORM_WIDTH, WAVFORM_HEIGHT);
+    segmentGraph->setVisible(false);
+    //connect(this, (Some function when segments are selected that emits a QList<QList<float>>, segmentGraph, &SegmentGraph::updateGraphs);
+    connect(graphAudioSegments, &WaveFormSegments::createWavSegmentGraphs, segmentGraph, &SegmentGraph::updateGraphs);
+    audioLayout->addWidget(segmentGraph);
+
 }
 
 void Audio::uploadAudio(){
     QUrl aName = QFileDialog::getOpenFileUrl(this, "Select audio file");
     if (aName.isEmpty()) return;
 
+    if (player) player = nullptr;
+    if(audioOutput) audioOutput = nullptr;
     player = new QMediaPlayer;
     audioOutput = new QAudioOutput;
     player->setAudioOutput(audioOutput);
@@ -122,13 +166,11 @@ void Audio::uploadAudio(){
     loopButton->setEnabled(true);
     emit emitLoadAudioIn(aName.toLocalFile());
     zoomButtons->setEnabled(true);
+    zoomButtons->resetZoom();
+    setTrackPosition(player->position());
 
-    //old way of handeling the scrubber
     // Connect to durationChanged signal to get the actual duration
-    connect(player, &QMediaPlayer::durationChanged, this, [=](qint64 duration) {
-        audioLength = duration;
-        qDebug() << duration << "duration";
-     });
+    connect(player, &QMediaPlayer::durationChanged, this, &Audio::updateAudioDuration);
 
 }
 
@@ -139,7 +181,6 @@ void Audio::handlePlayPause() {
     if (audioPlaying) {
         player->pause();
         timer->stop();
-
     }
     else {
         player->play();
@@ -149,6 +190,10 @@ void Audio::handlePlayPause() {
 
     setTrackPosition(player->position());
     audioPlaying = !audioPlaying;
+
+    //TEST FOR WAVSEGMENTING
+    //graphAudioSegments->collectWavSegment(QList<int> () << 100 << 5000 << 10000 << 15000 << 20000);
+
 }
 
 
@@ -163,16 +208,33 @@ void Audio::updateTrackPositionFromScrubber(double position) {
     player->setPosition(intPosition);
 }
 
+void Audio::ZoomScrubberPosition(){
+    double floatPosition = (double) audioPosition / audioLength;
+    if (floatPosition < 1.0 & abs(audioPosition - player->position()) > 100) {
+        audioPosition = player->position();
+    }
+    emit audioPositionChanged(floatPosition);
+}
+
 void Audio::setTrackPosition(qint64 position) {
     audioPosition = position;
-    //qDebug() << audioPosition;
     double floatPosition = (double) audioPosition / audioLength;
+    if (floatPosition < 1.0 & abs(audioPosition - player->position()) > 100) {
+        audioPosition = player->position();
+    }
 
 
     // set to 1.05 so i don't accidentally trigger with pausing right before end
     //  the timer and player position can be out of sync
     if (floatPosition > 1.05) handlePlayPause();
 
-    //qDebug() << floatPosition;
     emit audioPositionChanged(floatPosition);
+}
+
+void Audio::updateAudioDuration(qint64 duration){
+    audioLength = duration;
+}
+
+void Audio::audioLoaded(){
+    graphAudioSegments->uploadAudio(wavChart->getSamples());
 }

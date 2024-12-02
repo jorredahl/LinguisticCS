@@ -36,6 +36,7 @@
  *
  * Signals:
  *  - `void sendAudioPosition(double position)`: Emitted when the scrubber position changes.
+ *  - `void sceneSizeChange()`: emmited when scene size is finished change
  *
  * Protected Methods:
  *  - `void mousePressEvent(QMouseEvent *evt) override`: Handles user interaction for updating the scrubber.
@@ -65,6 +66,7 @@ public:
     explicit WavForm(int _width, int _height);
     void audioToChart();
     void setChart(QList<float> data, int width, int height);
+    QList<float> getSamples();
 public slots:
     void uploadAudio(QString fName);
     void updateScrubberPosition(double position);
@@ -75,6 +77,8 @@ protected:
 
 signals:
     void sendAudioPosition(double position);
+    void sceneSizeChange();
+    void audioFileLoadedTrue();
 };
 
 #endif // WAVFORM_H
