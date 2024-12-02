@@ -59,6 +59,8 @@ void Audio::newAudioPlayer(){
     wavFormControls = new QHBoxLayout();
     wavFormAudioControlsLayout-> addLayout(audioControls);
     wavFormAudioControlsLayout->addLayout(wavFormControls);
+    QVBoxLayout *wavFormVertControls = new QVBoxLayout();
+    wavFormControls->addLayout(wavFormVertControls);
 
 // add constructor for iniitalizer of qlabel text
 
@@ -122,10 +124,16 @@ void Audio::newAudioPlayer(){
     connect(zoomButtons, &Zoom::zoomGraphIn, this, &Audio::ZoomScrubberPosition);
 
     //WavForm Controls
+    deltaSelector = new QDoubleSpinBox();
+    connect(deltaSelector, &QDoubleSpinBox::valueChanged, wavChart, &WavForm::updateDelta);
+    deltaSelector->setEnabled(false);
+    connect (wavChart, &WavForm::segmentReady, this, &Audio::segmentIntervalControlsEnable);
+    wavFormVertControls->addWidget(deltaSelector);
+
     graphAudioSegments = new WaveFormSegments();
     createGraphSegmentsButton = new QPushButton("create segment graphs");
     createGraphSegmentsButton->setEnabled(false);
-    wavFormControls->addWidget(createGraphSegmentsButton);
+    wavFormVertControls->addWidget(createGraphSegmentsButton);
     connect(wavChart, &WavForm::audioFileLoadedTrue, this, &Audio::audioLoaded);
 
     segmentToolsCheckbox = new QCheckBox("segment controls");
@@ -141,7 +149,7 @@ void Audio::newAudioPlayer(){
     //clearing all intervals (for what we send to close analysis graphs)
     clearAllGraphSegmentsButton = new QPushButton("clear segments");
     clearAllGraphSegmentsButton->setEnabled(false);
-    wavFormControls->addWidget(clearAllGraphSegmentsButton);
+    wavFormVertControls->addWidget(clearAllGraphSegmentsButton);
     connect(clearAllGraphSegmentsButton, &QPushButton::clicked, graphAudioSegments, &WaveFormSegments::clearAllWavSegments);
 
     wavFormControls-> addWidget(segmentToolsCheckbox);
@@ -244,4 +252,8 @@ void Audio::updateAudioDuration(qint64 duration){
 
 void Audio::audioLoaded(){
     graphAudioSegments->uploadAudio(wavChart->getSamples());
+}
+
+void Audio::segmentIntervalControlsEnable(bool ready){
+    deltaSelector->setEnabled(ready);
 }

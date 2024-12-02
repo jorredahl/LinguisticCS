@@ -161,6 +161,8 @@ void WavForm::updateChart(int width, int height){
     chartH = height;
 
     setChart(samples, width, height);
+
+    //segment lines updates
     if(!startSegmentP.isNull()){
         double x = (startSegmentP.x() / oldW) * chartW;
         startSegmentP.setX(x);
@@ -170,6 +172,16 @@ void WavForm::updateChart(int width, int height){
         double x = (endSegmentP.x() / oldW) * chartW;
         endSegmentP.setX(x);
         endSegment = scene.addLine(QLineF(endSegmentP, QPointF(endSegmentP.x(), chartH-1)), QPen(Qt::red, 3, Qt::SolidLine, Qt::FlatCap));
+    }
+    if((startSegmentP.isNull() || endSegmentP.isNull()) && !intervalLines.isEmpty()){
+        intervalLines.clear();
+    }
+    if(!intervalLines.isEmpty() && !startSegmentP.isNull() && !endSegmentP.isNull()){
+        //double x = (startSegmentP.x() / oldW) * chartW;
+        intervalLines.clear();
+        updateDelta(delta * chartW);
+        //drawIntervalLinesInSegment(x);
+
     }
 }
 
@@ -187,6 +199,12 @@ void WavForm::mousePressEvent(QMouseEvent *evt) {
         if (startSegment && endSegment){
             scene.removeItem((QGraphicsItem *) startSegment);
             startSegment = nullptr;
+            if(!intervalLines.isEmpty()){
+                for(QGraphicsLineItem *l: intervalLines){
+                    scene.removeItem((QGraphicsItem *)l);
+                }
+                intervalLines.clear();
+            }
         }
 
         if (startSegmentP.isNull() || !endSegmentP.isNull()){
@@ -202,7 +220,7 @@ void WavForm::mousePressEvent(QMouseEvent *evt) {
             endSegmentP = QPointF(x,0);
             endSegment = scene.addLine(QLineF(endSegmentP, QPointF(x, chartH-1)), QPen(Qt::red, 3, Qt::SolidLine, Qt::FlatCap));
         }
-
+        emit segmentReady(startSegment && endSegment ? true: false);
         return;
     }
 
@@ -246,3 +264,24 @@ void WavForm::switchMouseEventControls(bool segmentControlsOn){
     if (segmentControlsOn) segmentControls = true;
     else segmentControls = false;
  }
+
+void WavForm::drawIntervalLinesInSegment(double x){
+    x += delta * chartW;
+    while(x < endSegmentP.x()){
+        intervalLines << scene.addLine(QLineF(QPointF(x,0), QPointF(x, chartH-1)), QPen(Qt::black, 3, Qt::SolidLine, Qt::FlatCap));
+        x+= delta * chartW;
+    }
+}
+
+void WavForm::updateDelta(double _delta){
+    delta = _delta / chartW;
+    if (!startSegmentP.isNull() && !endSegmentP.isNull()) {
+        if (!intervalLines.isEmpty()){
+            for (QGraphicsLineItem *l : intervalLines){
+                scene.removeItem(l);
+            }
+            intervalLines.clear();
+        }
+        drawIntervalLinesInSegment(startSegmentP.x());
+    }
+}

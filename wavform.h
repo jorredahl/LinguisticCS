@@ -66,7 +66,9 @@ class WavForm : public QGraphicsView
     QPointF endSegmentP;
     QGraphicsLineItem *startSegment;
     QGraphicsLineItem *endSegment;
-
+    QList<QGraphicsLineItem*> intervalLines;
+    double delta;
+    void drawIntervalLinesInSegment(double x);
 
 public:
     explicit WavForm(int _width, int _height);
@@ -78,6 +80,8 @@ public slots:
     void updateScrubberPosition(double position);
     void updateChart(int width, int height);
     void switchMouseEventControls(bool segmentControlsOn);
+    void updateDelta(double delta);
+
 
 protected:
     void mousePressEvent(QMouseEvent *evt) override;
@@ -86,6 +90,7 @@ signals:
     void sendAudioPosition(double position);
     void sceneSizeChange();
     void audioFileLoadedTrue();
+    void segmentReady(bool ready);
 };
 
 #endif // WAVFORM_H
