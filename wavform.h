@@ -75,12 +75,12 @@ public:
     void audioToChart();
     void setChart(QList<float> data, int width, int height);
     QList<float> getSamples();
+    void updateDelta(double delta);
 public slots:
     void uploadAudio(QString fName);
     void updateScrubberPosition(double position);
     void updateChart(int width, int height);
     void switchMouseEventControls(bool segmentControlsOn);
-    void updateDelta(double delta);
 
 
 protected:

@@ -125,10 +125,17 @@ void Audio::newAudioPlayer(){
 
     //WavForm Controls
     deltaSelector = new QDoubleSpinBox();
-    connect(deltaSelector, &QDoubleSpinBox::valueChanged, wavChart, &WavForm::updateDelta);
+    applyDeltaInterval = new QPushButton("apply interval");
+    deltaSelector->setValue(8.0);
+    //connect(deltaSelector, &QDoubleSpinBox::valueChanged, wavChart, &WavForm::updateDelta);
+    connect(applyDeltaInterval, &QPushButton::clicked, this, &Audio::applySegmentInterval);
     deltaSelector->setEnabled(false);
+    applyDeltaInterval->setEnabled(false);
     connect (wavChart, &WavForm::segmentReady, this, &Audio::segmentIntervalControlsEnable);
-    wavFormVertControls->addWidget(deltaSelector);
+    QHBoxLayout *deltaLayout = new QHBoxLayout();
+    deltaLayout->addWidget(deltaSelector);
+    deltaLayout->addWidget(applyDeltaInterval);
+    wavFormVertControls->addLayout(deltaLayout);
 
     graphAudioSegments = new WaveFormSegments();
     createGraphSegmentsButton = new QPushButton("create segment graphs");
@@ -256,4 +263,11 @@ void Audio::audioLoaded(){
 
 void Audio::segmentIntervalControlsEnable(bool ready){
     deltaSelector->setEnabled(ready);
+    applyDeltaInterval->setEnabled(ready);
+}
+
+void Audio::applySegmentInterval(){
+    wavChart->updateDelta(deltaSelector->value());
+    //connect(deltaSelector, &QDoubleSpinBox::valueChanged, wavChart, &WavForm::updateDelta);
+
 }
