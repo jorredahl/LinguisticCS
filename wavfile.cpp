@@ -60,13 +60,19 @@ bool WavFile::loadFile() {
     }
 
     //set header and audiodata byte chunks for parsing
-    QByteArray headerData = fileContent.left(44);
-    audioData = fileContent.mid(44);
+    QByteArray headerData = fileContent.left(46);
+
 
     if (!readHeader(headerData)) {
         qWarning() << "File Error: Invalid WAV header";
         emit fileLoaded(false);
         return false;
+    }
+
+    if (qFromLittleEndian<quint32>(reinterpret_cast<const uchar*>(headerData.mid(16, 4).constData())) == 16) {
+        audioData = fileContent.mid(44, dataSize);
+    } else {
+        audioData = fileContent.mid(46, dataSize);
     }
 
     //collect samples of data
@@ -95,7 +101,11 @@ bool WavFile::readHeader(const QByteArray& headerData) {
     bitDepth = qFromLittleEndian<quint16> (reinterpret_cast<uchar*> (headerData.mid(34, 2).data()));
 
     // get data size (pos 40-43)
-    dataSize = qFromLittleEndian<quint32> (reinterpret_cast<uchar*> (headerData.mid(40, 4).data()));
+    if (qFromLittleEndian<quint32>(reinterpret_cast<const uchar*>(headerData.mid(16, 4).constData())) == 16) {
+        dataSize = qFromLittleEndian<quint32>(reinterpret_cast<const uchar*>(headerData.mid(40, 4).constData()));
+    } else {
+        dataSize = qFromLittleEndian<quint32>(reinterpret_cast<const uchar*>(headerData.mid(42, 4).constData()));
+    }
 
     return true;
 }
