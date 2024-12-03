@@ -77,8 +77,12 @@ class Audio : public QWidget
         QVBoxLayout *displayAndControlsLayout;
         QHBoxLayout *controlsLayout;
         QString label;
+        QPushButton *addIntervalLines;
+        QDoubleSpinBox *deltaSelector;
+        QPushButton *applyDeltaInterval;
         QPushButton *createGraphSegmentsButton;
         QPushButton *clearAllGraphSegmentsButton;
+        QCheckBox *segmentToolsCheckbox;
 
         WaveFormSegments *graphAudioSegments;
 
@@ -97,6 +101,9 @@ public slots:
     void ZoomScrubberPosition();
     void updateAudioDuration(qint64 duration);
     void audioLoaded();
+    void segmentIntervalControlsEnable(bool ready);
+    void applySegmentInterval();
+    void segmentCreateControlsEnable(bool ready);
 
 signals:
     void emitLoadAudioIn(QString fName);

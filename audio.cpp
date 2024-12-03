@@ -59,6 +59,8 @@ void Audio::newAudioPlayer(){
     wavFormControls = new QHBoxLayout();
     wavFormAudioControlsLayout-> addLayout(audioControls);
     wavFormAudioControlsLayout->addLayout(wavFormControls);
+    QVBoxLayout *wavFormVertControls = new QVBoxLayout();
+    wavFormControls->addLayout(wavFormVertControls);
 
 // add constructor for iniitalizer of qlabel text
 
@@ -122,30 +124,45 @@ void Audio::newAudioPlayer(){
     connect(zoomButtons, &Zoom::zoomGraphIn, this, &Audio::ZoomScrubberPosition);
 
     //WavForm Controls
+    deltaSelector = new QDoubleSpinBox();
+    applyDeltaInterval = new QPushButton("apply interval");
+    deltaSelector->setValue(8.0);
+    deltaSelector->setMaximum(200);
+    connect(applyDeltaInterval, &QPushButton::clicked, this, &Audio::applySegmentInterval);
+    deltaSelector->setEnabled(false);
+    applyDeltaInterval->setEnabled(false);
+    connect (wavChart, &WavForm::segmentReady, this, &Audio::segmentIntervalControlsEnable);
+    QHBoxLayout *deltaLayout = new QHBoxLayout();
+    deltaLayout->addWidget(deltaSelector);
+    deltaLayout->addWidget(applyDeltaInterval);
+    wavFormVertControls->addLayout(deltaLayout);
+
     graphAudioSegments = new WaveFormSegments();
     createGraphSegmentsButton = new QPushButton("create segment graphs");
     createGraphSegmentsButton->setEnabled(false);
-    wavFormControls->addWidget(createGraphSegmentsButton);
+    wavFormVertControls->addWidget(createGraphSegmentsButton);
     connect(wavChart, &WavForm::audioFileLoadedTrue, this, &Audio::audioLoaded);
 
-    //GRAPH INTERVAL CONTROLS HERE ///////////////////////////////////////////////////////////////////////////
+    segmentToolsCheckbox = new QCheckBox("segment controls");
+    connect(segmentToolsCheckbox, &QCheckBox::clicked, wavChart, &WavForm::switchMouseEventControls);
 
-    //connect(createGraphSegmentsButton, &QPushButton::clicked, ... some slot that emits QList<int> of places to divide graph;
-    //connect (this, emit of Qlist<int> of graph locations ..., graphAudioSegments, &WaveFormSegments::collectWavSegment);
-
-    // ///////////////////////////////////////////////////////////////////////////
+    connect(createGraphSegmentsButton, &QPushButton::clicked, wavChart, &WavForm::sendIntervalsForSegment);
+    connect(wavChart, &WavForm::intervalsForSegments, graphAudioSegments, &WaveFormSegments::collectWavSegment);
 
     //clearing all intervals (for what we send to close analysis graphs)
     clearAllGraphSegmentsButton = new QPushButton("clear segments");
     clearAllGraphSegmentsButton->setEnabled(false);
-    wavFormControls->addWidget(clearAllGraphSegmentsButton);
+    wavFormVertControls->addWidget(clearAllGraphSegmentsButton);
     connect(clearAllGraphSegmentsButton, &QPushButton::clicked, graphAudioSegments, &WaveFormSegments::clearAllWavSegments);
-
+    connect(clearAllGraphSegmentsButton, &QPushButton::clicked, wavChart, &WavForm::clearIntervals);
+    connect(wavChart, &WavForm::chartInfoReady, this, &Audio::segmentCreateControlsEnable);
+    wavFormControls-> addWidget(segmentToolsCheckbox);
     //Close Analysis Graphs
     segmentGraph = new SegmentGraph(WAVFORM_WIDTH, WAVFORM_HEIGHT);
     segmentGraph->setVisible(false);
     //connect(this, (Some function when segments are selected that emits a QList<QList<float>>, segmentGraph, &SegmentGraph::updateGraphs);
     connect(graphAudioSegments, &WaveFormSegments::createWavSegmentGraphs, segmentGraph, &SegmentGraph::updateGraphs);
+    connect(clearAllGraphSegmentsButton, &QPushButton::clicked, segmentGraph, &SegmentGraph::clearView);
     audioLayout->addWidget(segmentGraph);
 
 }
@@ -240,4 +257,20 @@ void Audio::updateAudioDuration(qint64 duration){
 
 void Audio::audioLoaded(){
     graphAudioSegments->uploadAudio(wavChart->getSamples());
+}
+
+void Audio::segmentIntervalControlsEnable(bool ready){
+    deltaSelector->setEnabled(ready);
+    applyDeltaInterval->setEnabled(ready);
+}
+
+void Audio::applySegmentInterval(){
+    wavChart->updateDelta(deltaSelector->value());
+    if(!createGraphSegmentsButton->isEnabled()) createGraphSegmentsButton->setEnabled(true);
+    if (!clearAllGraphSegmentsButton->isEnabled())clearAllGraphSegmentsButton->setEnabled(true);
+    //connect(deltaSelector, &QDoubleSpinBox::valueChanged, wavChart, &WavForm::updateDelta);
+}
+
+void Audio::segmentCreateControlsEnable(bool ready){
+    createGraphSegmentsButton->setEnabled(ready);
 }

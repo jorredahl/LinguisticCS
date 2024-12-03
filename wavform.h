@@ -61,16 +61,30 @@ class WavForm : public QGraphicsView
     int viewH;
     int chartW;
     int chartH;
+    bool segmentControls;
+    QPointF startSegmentP;
+    QPointF endSegmentP;
+    QGraphicsLineItem *startSegment;
+    QGraphicsLineItem *endSegment;
+    QList<QGraphicsLineItem*> intervalLines;
+    double delta;
+    void drawIntervalLinesInSegment(double x);
+    QList<float> intLinesX;
 
 public:
     explicit WavForm(int _width, int _height);
     void audioToChart();
     void setChart(QList<float> data, int width, int height);
     QList<float> getSamples();
+    void updateDelta(double delta);
 public slots:
     void uploadAudio(QString fName);
     void updateScrubberPosition(double position);
     void updateChart(int width, int height);
+    void switchMouseEventControls(bool segmentControlsOn);
+    void sendIntervalsForSegment();
+    void clearIntervals();
+
 
 protected:
     void mousePressEvent(QMouseEvent *evt) override;
@@ -79,6 +93,9 @@ signals:
     void sendAudioPosition(double position);
     void sceneSizeChange();
     void audioFileLoadedTrue();
+    void segmentReady(bool ready);
+    void intervalsForSegments(QList<int>);
+    void chartInfoReady(bool ready);
 };
 
 #endif // WAVFORM_H
