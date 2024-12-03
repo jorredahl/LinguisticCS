@@ -29,7 +29,7 @@
 SegmentGraph::SegmentGraph(int width, int height) {
     charts = new QList<QChart *>();
 
-    QVBoxLayout *segGraphLayout = new QVBoxLayout();
+    segGraphLayout = new QVBoxLayout();
     setLayout(segGraphLayout);
 
     QHBoxLayout *segGraphControlsLayout = new QHBoxLayout();
@@ -77,6 +77,22 @@ void SegmentGraph::updateGraphs(QList<QList<float>> segments) {
     }
 
     segmentSlider->setMinimum(0);
-    segmentSlider->setMaximum(charts->length());
+    segmentSlider->setMaximum(charts->length() - 1);
     slideSegments(0);
+    segmentSlider->setSliderPosition(0);
+}
+void SegmentGraph::clearView(){
+    if (segmentSlider) segmentSlider->setSliderPosition(0);
+    //if (graph->chart()) graph->setChart(nullptr);
+    int w = graph->width();
+    int h = graph->height();
+    delete graph;
+    graph = new QChartView();
+    graph->resize(w, h);
+    segGraphLayout->addWidget(graph);
+     if (!charts->isEmpty()){
+        charts->clear();
+     }
+    exitView();
+
 }

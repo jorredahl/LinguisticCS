@@ -103,6 +103,7 @@ public slots:
     void audioLoaded();
     void segmentIntervalControlsEnable(bool ready);
     void applySegmentInterval();
+    void segmentCreateControlsEnable(bool ready);
 
 signals:
     void emitLoadAudioIn(QString fName);

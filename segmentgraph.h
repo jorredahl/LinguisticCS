@@ -6,6 +6,7 @@
 #include <QPushButton>
 #include <QChart>
 #include <QChartView>
+#include <QBoxLayout>
 
 /*
  * File: segmentgraph.h
@@ -42,6 +43,7 @@
 class SegmentGraph: public QWidget
 {
     Q_OBJECT
+    QVBoxLayout *segGraphLayout;
     QSlider *segmentSlider;
     QPushButton *exitButton;
     QChartView *graph;
@@ -54,6 +56,7 @@ public slots:
     void slideSegments(int position);
     void exitView();
     void updateGraphs(QList<QList<float>> segments);
+    void clearView();
 };
 
 #endif // SEGMENTGRAPH_H

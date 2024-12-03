@@ -1,4 +1,5 @@
 #include "waveformsegments.h"
+#include <QtCore/qdebug.h>
 
 /*
  * File: waveformsegments.cpp
@@ -26,7 +27,6 @@ WaveFormSegments::WaveFormSegments(QList<float> _audioSamples , QObject *parent)
 {}
 
 void WaveFormSegments::collectWavSegment(QList<int> segmentPlaces){
-
     // only one line given
     if(segmentPlaces.length() == 1){
         if (segmentPlaces[0] != 0) {
@@ -41,17 +41,22 @@ void WaveFormSegments::collectWavSegment(QList<int> segmentPlaces){
     }
 
     //more than one segment line
-    std::sort(segmentPlaces.begin(), segmentPlaces.end()); //sort incase lines are sent out of order
+    //std::sort(segmentPlaces.begin(), segmentPlaces.end()); //sort incase lines are sent out of order
 
     for (int segmentIndx = 0; segmentIndx < segmentPlaces.length() - 1; segmentIndx ++) {
+        //qDebug() << "segment";
+        //qDebug() << segmentPlaces[segmentIndx];
+        //qDebug() << abs(segmentPlaces[segmentIndx + 1] - segmentPlaces[segmentIndx]) + 1;
         QList<float> wavSegment = originalAudio.mid(segmentPlaces[segmentIndx], abs(segmentPlaces[segmentIndx + 1] - segmentPlaces[segmentIndx]) + 1);
         wavSegments << wavSegment;
+        //qDebug() << wavSegment;
+
     }
     emit createWavSegmentGraphs(wavSegments);
 }
 
 void WaveFormSegments::clearAllWavSegments(){
-    wavSegments.clear();
+    if (!wavSegments.isEmpty())wavSegments.clear();
 }
 void WaveFormSegments::uploadAudio(QList<float> audio){
     if (!originalAudio.empty()){
