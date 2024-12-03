@@ -5,9 +5,29 @@
 #include <QAudioDecoder>
 #include "spectrograph.h"
 
-/* This blog explains how to perform Short-Time Fourier Transform using FFTW.
- * It inspired the implementation of overlapping window processing and FFT setup.
- * https://ofdsp.blogspot.com/2011/08/short-time-fourier-transform-with-fftw3.html */
+/*
+ * File: spectograph.cpp
+ * Description:
+ *  This source file implements the Spectograph class, which visualizes audio as a spectogram using FFT,
+ *  transforming audio data into its frequency-domain representation to display in the spectogram and
+ *  providing a detailed view of the frequency content of the audio.
+ *
+ * Key Methods:
+ *  - 'Spectograph(QWidget *parent)': Constructor initializes FFT setup, UI layout, and defines default parameters.
+ *  - 'void loadAudioFile(const QString &fileName)': Loads audio file and initializes decoder (processAudioFile).
+ *  - 'void processAudioFile(const QUrl &fileUrl)': Sets up 'QAudioDecoder' for decoding audio buffers.
+ *  - 'void setupSpectograph(QVector<double> &accumulatedSamples)': Applies FFT to audia data chunks and updates spectogram.
+ *  - 'void hammingWindow(int windowLength, QVector<double> &window)': Generates hamming window vector for FFT
+ *  - 'void reset()': Clears spectogram and samples data and resets the spectogram.
+ *  - 'void paintEvent(QPaintEvent *event)': Creates spectogram visualization with changing color intensity based
+ *    on amplitude and draws peak frequency lines if enabled.
+ *
+ * References:
+ *  - This blog explains how to perform Short-Time Fourier Transform using FFTW.
+ *    It inspired the implementation of overlapping window processing and FFT setup.
+ *    https://ofdsp.blogspot.com/2011/08/short-time-fourier-transform-with-fftw3.html
+ *  - https://cplusplus.com/forum/beginner/251061/
+ */
 
 Spectrograph::Spectrograph(QWidget *parent)
     : QWidget(parent)

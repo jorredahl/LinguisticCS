@@ -21,17 +21,20 @@
  *  zooming functionality.
  *
  * Key Methods:
- *  - 'newAudioPlayer()': Sets up the layout, buttons, waveform, and timer connecetions
+ *  - 'newAudioPlayer()': Sets up the layout, buttons, waveform, and timer connections
  *  - 'uploadAudio()': Handles the file selection process and media player setup
  *  - 'handlePlayPause()': Manages the play/pause state of the audio player and updates the timer
  *  - 'setTrackPosition(qint64 position)': Updates the current track position and emits the
  *    'audioPositionChanged' signal
+ *  - 'applySegmentInterval()': Updates waveform segments based on user-defined intervals
  *
  * Slots:
  *  - 'updateTrackPositionFromTimer()': Advances the audio position periodically based on the timer
  *  - 'updateTrackPositionFromScrubber(double position)': Adjusts the player position when the scrubber is moved
  *  - 'ZoomScrubberPosition()': adjusts the scrubber when there is a zoom update
+ *  - 'updateAudioPosition(qint64 duration)': Updates audio track duration
  *  - 'AudioLoaded()': allows for the segmenting functionality to start after audio has been loaded in
+ *
  * Notes:
  *  - 'WaveForm' class and 'Zoom' class are integrated for visualization and zoom functionality respectively,
  *    see 'wavform.h' and 'wavform.cpp' for 'WaveForm' implementation and 'zoom.h' and 'zoom.cpp' for 'Zoom implementation

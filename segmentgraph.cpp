@@ -6,10 +6,10 @@
 /*
  * File: segmentgraph.cpp
  * Description:
- *  This source file implements the 'SegmentGraph', visualizing the samples from the audio data. This widget is only
- *  set to be visible when the updateGraphs slot is called. The constructor 'SegmentGraph(int width, int height)'
- *  creates a layout for the widget that is filled with the exit button and slider above a QChartView. The widget is
- *  vertically and horizontally stretchable to fit the window.
+ *  This source file implements the 'SegmentGraph', visualizing the samples from the audio data. This class manages
+ *  the widget layout, chart updates, and user interactions such as the segment slider and exit button. The constructor
+ *  'SegmentGraph(int width, int height)' creates a layout for the widget that is filled with the exit button and slider
+ *  above a QChartView. The widget is vertically and horizontally stretchable to fit the window.
  *
  * Slots:
  *  - 'void SegmentGraph::slideSegments(int position)': Given a integer of the slider position, the QChartView will
@@ -20,7 +20,8 @@
  *    slider is reset to fid it's values.
  *
  * Notes:
- *  - Default values for the width and height are 400 and 200 respectively
+ *  - Default values for the width and height are 400 and 200 respectively.
+ *  - This widget is only set to be visible when the updateGraphs slot is called.
  *
  * References:
  *  - ...

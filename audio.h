@@ -23,6 +23,7 @@
  *  - Encapsulates the functionality required for audio interaction and visualization
  *  - Integrates with other classes like 'Wavform' and 'Zoom' for added functionality
  *  - Emits signals for audio position changes and file uploads to communicate to other widgets
+ *  - Provides interaction with scrubber and segment graph visualizations
  *
  * Key Members:
  *  - 'QPushButton *uploadAudioButton': Button for uploading audio files
