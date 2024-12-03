@@ -9,17 +9,31 @@
  * Description:
  *  This source file implements the 'WavForm' class, a custom 'QGraphicsView' which visualizes audio
  *  waveforms. The class visalizes the waveform using audio data from the 'WavFile' class and provides
- *  methods for updating the chart. The constructor 'WavForm(int _width, int _height): viewW(_width), viewH(_height)'
- *  initializes the 'QGraphicsView' and scene dimensions.
+ *  methods for updating the chart. It also supports user interaction, such as selecting segments, updating
+ *  the scrubber, and managing intervals. The constructor 'WavForm(int _width, int _height): viewW(_width),
+ *  viewH(_height)' initializes the 'QGraphicsView' and scene dimensions.
  *
  * Key Methods:
+ *  - 'WavForm(int _width, int _height): Constructor initializes the view and scene dimensions and sets up
+ *    default properties for the waveform visualization.
  *  - 'uploadAudio()': Creates a 'WavFile' object and sets up its waveform visualizatio with 'audioToChart()'
  *  - 'audioToChart()': Processes audio data and sets up the waveform chart
  *  - 'setChart()': Splits audio data into pixel-width length and calculates average, min, max and
  *    RMS values for each sample segment. When the width goes past the samples available in the wav file about (400 * 51),
  *    it switches to max and min and draws a line graph of (400*51*2 (2 for max and min)) points across the given width.
- *  - 'mousePressEvent()': Maps mouse clicks to waveform positions and adds scrubber line to position
- *  - 'updateScrubberPosition()': Moves the scrubber based on position
+ *  - 'updateChart(int width, int height)': Redraws the chart with updated dimensions, preserving current segments
+ *    and interval lines
+ *  - 'mousePressEvent()': Maps mouse clicks  for user interactions such as adding scrubber line and setting segment
+ *    start and end points
+ *  - 'updateScrubberPosition()': Moves the scrubber based on given audio playback position
+ *  - 'getSamples()': Returns list of audio samples currently loaded into the waveform
+ *  - 'switchMouseEventControls(bool segmentControlsOn)': Enables segment selection mode when segmentControlsOn is true
+ *    allowing the user to add start and end segment lines, and disables segment selection mode if false
+ *  - 'drawIntervalLinesInSegment(double x)': Adds interval lines between the start and end segment spaced by a factor of delta
+ *  - 'updateDelta(double _delta)': Updates _delta to redraw the spacing between intervals if segment line control is active
+ *  - 'sendIntervalsForSegment()': Emits a list of audio sample indeces of line segment interval lines
+ *  - 'clearIntervals()': Clears start and end segment lines and interval lines, resetting segment selection and emits
+ *    signals signifying that the segment lines and chart information are nonexistent
  *
  * Notes:
  *  - Dark blue represents min and max values for each sample segment
