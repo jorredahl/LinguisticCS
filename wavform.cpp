@@ -235,8 +235,17 @@ void WavForm::mousePressEvent(QMouseEvent *evt) {
             }
         }
         else {
-            endSegmentP = QPointF(x,0);
-            endSegment = scene.addLine(QLineF(endSegmentP, QPointF(x, chartH-1)), QPen(Qt::red, 3, Qt::SolidLine, Qt::FlatCap));
+            if (x > startSegmentP.x()){
+                endSegmentP = QPointF(x,0);
+                endSegment = scene.addLine(QLineF(endSegmentP, QPointF(x, chartH-1)), QPen(Qt::red, 3, Qt::SolidLine, Qt::FlatCap));
+            }else{
+
+                QMessageBox msgBox;
+                msgBox.setText("The end of the segment cannot be before the start");
+                msgBox.exec();
+
+            }
+
         }
         emit segmentReady(startSegment && endSegment ? true: false);
         return;
