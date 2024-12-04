@@ -28,6 +28,7 @@ WaveFormSegments::WaveFormSegments(QList<float> _audioSamples , QObject *parent)
 
 void WaveFormSegments::collectWavSegment(QList<int> segmentPlaces){
     // only one line given
+    clearAllWavSegments();
 
     if (segmentPlaces.length() == 2) {
         autoSegment(originalAudio.mid(segmentPlaces[0], segmentPlaces[1] - segmentPlaces[0]));
