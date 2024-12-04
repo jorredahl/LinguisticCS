@@ -110,7 +110,9 @@ void WaveFormSegments::autoSegment(QList<float> dataSample) {
         sumLength += localData[i].length();
     }
 
-    qDebug() << localMaxs;
+    //qDebug() << localMaxs;
+
+    collectWavSegment(localMaxs);
 
     emit drawAutoSegments(localMaxs);
 }
