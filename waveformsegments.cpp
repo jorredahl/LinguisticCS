@@ -29,12 +29,14 @@ WaveFormSegments::WaveFormSegments(QList<float> _audioSamples , QObject *parent)
 void WaveFormSegments::collectWavSegment(QList<int> segmentPlaces){
     // only one line given
 
+    qDebug() << segmentPlaces.length();
+
     if (segmentPlaces.length() == 2) {
         autoSegment(originalAudio.mid(segmentPlaces[0], segmentPlaces[1] - segmentPlaces[0]));
-        qDebug() << "auto";
+        //qDebug() << "auto";
 
     }
-    else qDebug() << "manual";
+    //else qDebug() << "manual";
 
     if(segmentPlaces.length() == 1){
         if (segmentPlaces[0] != 0) {
@@ -64,7 +66,7 @@ void WaveFormSegments::collectWavSegment(QList<int> segmentPlaces){
 }
 
 void WaveFormSegments::clearAllWavSegments(){
-    if (!wavSegments.isEmpty())wavSegments.clear();
+    if (!wavSegments.isEmpty()) wavSegments.clear();
 }
 
 
@@ -103,6 +105,8 @@ void WaveFormSegments::autoSegment(QList<float> dataSample) {
         }
         localMaxs << maxIndex;
     }
+
+    qDebug() << localMaxs;
 
     emit drawAutoSegments(localMaxs);
 }

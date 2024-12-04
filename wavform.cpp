@@ -288,8 +288,7 @@ void WavForm::updateScrubberPosition(double position) {
 }
 
 void WavForm::switchMouseEventControls(bool segmentControlsOn){
-    if (segmentControlsOn) segmentControls = true;
-    else segmentControls = false;
+    segmentControls = segmentControlsOn;
  }
 
 void WavForm::drawIntervalLinesInSegment(double x){
@@ -318,13 +317,16 @@ void WavForm::updateDelta(double _delta){
 
 void WavForm::changeBoolAutoSegment(bool _boolAutoSegment) {
     boolAutoSegment = _boolAutoSegment;
+    //qDebug() << boolAutoSegment;
+
 }
 
 
 void WavForm::sendIntervalsForSegment(){
     //int width = chartW;
     //if (width > 400 * 51) width = 400 * 51;
-    if (intLinesX.isEmpty()) return;
+    qDebug() << intLinesX;
+    //if (intLinesX.isEmpty()) return;
     QList<int> intervalLocations;
     int audioLength = audio->getAudioSamples().length();
     intervalLocations << (startSegmentP.x()/chartW) * audioLength;
