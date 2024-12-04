@@ -331,6 +331,24 @@ void WavForm::sendIntervalsForSegment(){
     emit intervalsForSegments(intervalLocations);
 }
 
+void WavForm::drawAutoIntervals(QList<int> intervalLocsInAudio){
+    //gets the positions (indxs) and put them on screen
+    if (!intervalLines.isEmpty()){
+        for (QGraphicsLineItem *l : intervalLines){
+            scene.removeItem(l);
+        }
+        intervalLines.clear();
+        intLinesX.clear();
+    }
+    int audioLength = audio->getAudioSamples().length();
+    for (int indx = 0; indx < intervalLocsInAudio.length(); indx++){
+        intLinesX << (intervalLocsInAudio[indx] / audioLength) * chartW;
+    }
+    for (float x : intLinesX){
+        intervalLines << scene.addLine(QLineF(QPointF(x,0), QPointF(x, chartH-1)), QPen(Qt::black, 3, Qt::SolidLine, Qt::FlatCap));
+    }
+}
+
 void WavForm::clearIntervals(){
     if (startSegment) {
         scene.removeItem(startSegment);
