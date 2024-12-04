@@ -34,7 +34,7 @@ void WaveFormSegments::collectWavSegment(QList<int> segmentPlaces){
     qDebug() << segmentPlaces.length();
 
     if (segmentPlaces.length() == 2) {
-        autoSegment(originalAudio.mid(segmentPlaces[0], segmentPlaces[1] - segmentPlaces[0]));
+        autoSegment(originalAudio.mid(segmentPlaces[0], segmentPlaces[1] - segmentPlaces[0]), segmentPlaces[0]);
         //qDebug() << "auto";
 
     }
@@ -80,7 +80,7 @@ void WaveFormSegments::uploadAudio(QList<float> audio){
     clearAllWavSegments();
 }
 
-void WaveFormSegments::autoSegment(QList<float> dataSample) {
+void WaveFormSegments::autoSegment(QList<float> dataSample, int startIndex) {
     QList<int> zeroCrossings;
     zeroCrossings << 0;
     for (int i = 0; i < dataSample.length() - 1; ++i) {
@@ -110,9 +110,12 @@ void WaveFormSegments::autoSegment(QList<float> dataSample) {
         sumLength += localData[i].length();
     }
 
-    //qDebug() << localMaxs;
+    QList<int> trueLocalMaxs;
+    for (int i = 0; i < localMaxs.length(); ++i) {
+        trueLocalMaxs << startIndex + localMaxs[i];
+    }
 
-    collectWavSegment(localMaxs);
+    collectWavSegment(trueLocalMaxs);
 
     emit drawAutoSegments(localMaxs);
 }
