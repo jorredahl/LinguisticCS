@@ -28,6 +28,7 @@ WaveFormSegments::WaveFormSegments(QList<float> _audioSamples , QObject *parent)
 
 void WaveFormSegments::collectWavSegment(QList<int> segmentPlaces){
     // only one line given
+    clearAllWavSegments();
 
     qDebug() << segmentPlaces.length();
 
