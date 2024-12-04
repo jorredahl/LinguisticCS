@@ -44,9 +44,11 @@ public:
 public slots:
     void collectWavSegment(QList<int> segmentPlaces);
     void clearAllWavSegments();
+    void autoSegment(QList<float> dataSample);
 
 signals:
     void createWavSegmentGraphs(QList<QList<float>>);
+    void drawAutoSegments(QList<int>);
 };
 
 #endif // WAVEFORMSEGMENTS_H

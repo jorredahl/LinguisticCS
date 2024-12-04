@@ -30,7 +30,7 @@ void WaveFormSegments::collectWavSegment(QList<int> segmentPlaces){
     // only one line given
 
     if (segmentPlaces.length() == 2) {
-        //Jorre's function called here
+        autoSegment(originalAudio.mid(segmentPlaces[0], segmentPlaces[1] - segmentPlaces[0]));
         qDebug() << "auto";
 
     }
@@ -74,6 +74,37 @@ void WaveFormSegments::uploadAudio(QList<float> audio){
     }
     originalAudio = audio;
     clearAllWavSegments();
+}
+
+void WaveFormSegments::autoSegment(QList<float> dataSample) {
+    QList<int> zeroCrossings;
+    zeroCrossings << 0;
+    for (int i = 0; i < dataSample.length() - 1; ++i) {
+        if ((dataSample[i] > 0.0 && dataSample[i + 1] < 0.0) || (dataSample[i] < 0.0 && dataSample[i + 1] > 0.0)) {
+            zeroCrossings << i;
+        }
+    }
+    zeroCrossings << dataSample.length() - 1;
+
+    QList<QList<float>> localData;
+
+    for (int i = 0; i < zeroCrossings.length() - 1; ++i) {
+        while(zeroCrossings[i + 1] - zeroCrossings[i] < 50 && zeroCrossings.length() - 1 > i + 1) {
+            zeroCrossings.remove(i + 1);
+        }
+        localData << dataSample.mid(zeroCrossings[i], zeroCrossings[i + 1] - zeroCrossings[i]);
+    }
+
+    QList<int> localMaxs;
+    for (int i = 0; i < localData.length(); ++i) {
+        int maxIndex = 0;
+        for (int j = 1; j < localData[i].length(); ++j) {
+            if (localData[i][j] > localData[i][maxIndex]) maxIndex = j;
+        }
+        localMaxs << maxIndex;
+    }
+
+    emit drawAutoSegments(localMaxs);
 }
 
 
