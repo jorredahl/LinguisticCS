@@ -84,8 +84,12 @@ class Audio : public QWidget
         QPushButton *createGraphSegmentsButton;
         QPushButton *clearAllGraphSegmentsButton;
         QCheckBox *segmentToolsCheckbox;
+        QPushButton *autoSegmentButton;
 
         WaveFormSegments *graphAudioSegments;
+
+
+        bool autoSegmentBool;
 
 
 public:
@@ -105,11 +109,14 @@ public slots:
     void segmentIntervalControlsEnable(bool ready);
     void applySegmentInterval();
     void segmentCreateControlsEnable(bool ready);
+    void toggleBoolManualSegments(double position);
+    void toggleBoolAutoSegments();
+
 
 signals:
     void emitLoadAudioIn(QString fName);
     void audioPositionChanged(double position);
-
+    void emitAutoSegmentBool(bool autoSegmentBool);
     // for connecting spectrograph
     void audioFileSelected(const QString &fileName);
 };

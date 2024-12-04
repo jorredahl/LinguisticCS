@@ -28,6 +28,14 @@ WaveFormSegments::WaveFormSegments(QList<float> _audioSamples , QObject *parent)
 
 void WaveFormSegments::collectWavSegment(QList<int> segmentPlaces){
     // only one line given
+
+    if (segmentPlaces.length() == 2) {
+        //Jorre's function called here
+        qDebug() << "auto";
+
+    }
+    else qDebug() << "manual";
+
     if(segmentPlaces.length() == 1){
         if (segmentPlaces[0] != 0) {
             QList<float> wavSegment1 = originalAudio.mid(0, segmentPlaces[0] + 1);
@@ -58,6 +66,8 @@ void WaveFormSegments::collectWavSegment(QList<int> segmentPlaces){
 void WaveFormSegments::clearAllWavSegments(){
     if (!wavSegments.isEmpty())wavSegments.clear();
 }
+
+
 void WaveFormSegments::uploadAudio(QList<float> audio){
     if (!originalAudio.empty()){
         originalAudio.clear();
@@ -65,3 +75,5 @@ void WaveFormSegments::uploadAudio(QList<float> audio){
     originalAudio = audio;
     clearAllWavSegments();
 }
+
+

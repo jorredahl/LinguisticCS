@@ -307,6 +307,11 @@ void WavForm::updateDelta(double _delta){
     }
 }
 
+void WavForm::changeBoolAutoSegment(bool _boolAutoSegment) {
+    boolAutoSegment = _boolAutoSegment;
+}
+
+
 void WavForm::sendIntervalsForSegment(){
     //int width = chartW;
     //if (width > 400 * 51) width = 400 * 51;
@@ -315,9 +320,13 @@ void WavForm::sendIntervalsForSegment(){
     int audioLength = audio->getAudioSamples().length();
     intervalLocations << (startSegmentP.x()/chartW) * audioLength;
 
-    for (int indx = 0; indx < intLinesX.length(); indx++){
-        intervalLocations << (intLinesX[indx]/chartW) * audioLength;
+
+    if (!boolAutoSegment) {
+        for (int indx = 0; indx < intLinesX.length(); indx++){
+            intervalLocations << (intLinesX[indx]/chartW) * audioLength;
+        }
     }
+
     intervalLocations << (endSegmentP.x()/chartW) * audioLength;
     emit intervalsForSegments(intervalLocations);
 }

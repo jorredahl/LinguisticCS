@@ -80,6 +80,7 @@ class WavForm : public QGraphicsView
     int viewH;
     int chartW;
     int chartH;
+    bool boolAutoSegment;
     bool segmentControls;
     QPointF startSegmentP;
     QPointF endSegmentP;
@@ -103,6 +104,8 @@ public slots:
     void switchMouseEventControls(bool segmentControlsOn);
     void sendIntervalsForSegment();
     void clearIntervals();
+    void changeBoolAutoSegment(bool _boolAutoSegment);
+
 
 
 protected:
