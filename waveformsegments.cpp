@@ -33,7 +33,9 @@ void WaveFormSegments::collectWavSegment(QList<int> segmentPlaces){
 
     qDebug() << segmentPlaces.length();
 
+    bool isAuto = false;
     if (segmentPlaces.length() == 2) {
+        isAuto = true;
         autoSegment(originalAudio.mid(segmentPlaces[0], segmentPlaces[1] - segmentPlaces[0]), segmentPlaces[0]);
         //qDebug() << "auto";
 
@@ -64,6 +66,7 @@ void WaveFormSegments::collectWavSegment(QList<int> segmentPlaces){
         //qDebug() << wavSegment;
 
     }
+    if (isAuto) wavSegments.remove(wavSegments.length() - 1);
     emit createWavSegmentGraphs(wavSegments);
 }
 
