@@ -13,6 +13,7 @@
 #include <QGraphicsView>
 #include <QAudioDecoder>
 
+
 /* File: spectrograph.h
  * Description:
  *  This header file defines the spectrograph class , which provides visualization for an audio file as a spectogram using QPaintEvent.
@@ -34,7 +35,7 @@
  *  - 'bufferReady()': Processes ready audio buffers by decoding into sample data
  *  - 'handleAudioBuffer(const QUrl &fileUrl)': Converts audio buffers to sample values and prepares them for FFT
  *  - 'void loadAudioFile(const QString &fileName)': Loads audio file and initializes decoder (processAudioFile).
- *  - 'void showPeaks()': Toggles display of peak frequency lines
+ *  - 'void showPeaks()': Toggles display hiding lowest frequencies to enhance view
  * */
 
 class Spectrograph : public QWidget
@@ -49,7 +50,7 @@ public:
     void setupSpectrograph(QVector<double> &accumulatedSamples);
     int getWindowSize() const { return windowSize; }
     void reset();
-    bool showPeaksEnabled = false;
+    bool showHighlightsEnabled = false;
 
 protected:
     void paintEvent(QPaintEvent *event) override;
@@ -71,23 +72,19 @@ private:
     QVector<double> hammingWindowValues;
 
     // parameters
-    double maxAmp = 1.0;
+    double maxAmp = 0.0;
     int hopSize;
     int windowSize = 1024;
 
     // helper method
     void hammingWindow(int windowLength, QVector<double> &window);
 
-   // void newSpectrograph();
-   // QVector<double> magnitudes;
-
-
 public slots:
     void bufferReady();
     void processAudioFile(const QUrl &fileUrl);
     void handleAudioBuffer(const QAudioBuffer &buffer);
     void loadAudioFile(const QString &fileName);
-    void showPeaks();
+    void showHighlights();
 
 };
 
