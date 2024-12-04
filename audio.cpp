@@ -129,7 +129,8 @@ void Audio::newAudioPlayer(){
 
     //WavForm Controls
     deltaSelector = new QDoubleSpinBox();
-    deltaSelector->setValue(8.0);
+    deltaSelector->setValue(10.0);
+    deltaSelector-> setMinimum(10.0);
     deltaSelector->setMaximum(200);
     deltaSelector->setEnabled(false);
     autoSegmentButton = new QPushButton("auto");
@@ -147,7 +148,7 @@ void Audio::newAudioPlayer(){
     QHBoxLayout *deltaLayout = new QHBoxLayout();
     deltaLayout->addWidget(deltaSelector);
     deltaLayout->addWidget(autoSegmentButton);
-    deltaLayout->addWidget(applyDeltaInterval);
+    //deltaLayout->addWidget(applyDeltaInterval);
     wavFormVertControls->addLayout(deltaLayout);
 
     graphAudioSegments = new WaveFormSegments();
@@ -264,8 +265,8 @@ void Audio::toggleBoolAutoSegments() {
 
 // this has to know what the last button clicked was - auto or segments
 void Audio::applySegmentInterval(){
-    if(!createGraphSegmentsButton->isEnabled()) createGraphSegmentsButton->setEnabled(true);
-    if (!clearAllGraphSegmentsButton->isEnabled())clearAllGraphSegmentsButton->setEnabled(true);
+    //if(!createGraphSegmentsButton->isEnabled()) createGraphSegmentsButton->setEnabled(true);
+    //if (!clearAllGraphSegmentsButton->isEnabled())clearAllGraphSegmentsButton->setEnabled(true);
     //connect(deltaSelector, &QDoubleSpinBox::valueChanged, wavChart, &WavForm::updateDelta);
 }
 
