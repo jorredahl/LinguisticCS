@@ -17,6 +17,7 @@
  *  audio graph information and creates segments from them to be graphed.
  *  - 'void clearAllWavSegments()': clears the wav segments out if user resets the lines
  *  - 'void uploadAudio(QList<float> audio)': uploads new audio to be sliced upon recieving segmentPlaces from collectWavSegment
+ *  - 'void autoSegment(QList<float> dataSample)': creates automated segments based of local maximums and sents the indeces
  *
  * Notes:
  *  - this does not delete individual segments, it only takes in all that need to be made, makes them, then sends them off
@@ -99,12 +100,14 @@ void WaveFormSegments::autoSegment(QList<float> dataSample) {
     }
 
     QList<int> localMaxs;
+    int sumLength = 0;
     for (int i = 0; i < localData.length(); ++i) {
         int maxIndex = 0;
         for (int j = 1; j < localData[i].length(); ++j) {
             if (localData[i][j] > localData[i][maxIndex]) maxIndex = j;
         }
-        localMaxs << maxIndex;
+        localMaxs << sumLength + maxIndex;
+        sumLength += localData[i].length();
     }
 
     qDebug() << localMaxs;

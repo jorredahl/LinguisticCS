@@ -23,6 +23,7 @@
  * Slots:
  *  - 'void collectWavSegment(QList<int> segmentPlaces)': collects wav segments and divides audio graph based on segment location
  *  - 'void clearAllWavSegments()': clears segment information (to be used when user clears segments from graph)
+ *  - 'void autoSegment(QList<float> dataSample)': creates automated points in the audio wave for segementation
  *
  *Signals:
  *  - 'createWavSegmentGraphs(QList<QList<float>>)' : tells the detailed graphs to make them from the wavSegments
