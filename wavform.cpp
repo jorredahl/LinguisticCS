@@ -188,15 +188,14 @@ void WavForm::updateChart(int width, int height){
         endSegmentP.setX(x);
         endSegment = scene.addLine(QLineF(endSegmentP, QPointF(endSegmentP.x(), chartH-1)), QPen(Qt::red, 3, Qt::SolidLine, Qt::FlatCap));
     }
-    if((!startSegment|| !endSegment) && !intervalLines.isEmpty()){
+    if((!startSegment|| !endSegment)){
         intervalLines.clear();
         intLinesX.clear();
     }
-    if(!intervalLines.isEmpty() && startSegment && endSegment){
-        intervalLines.clear();
-        intLinesX.clear();
-        updateDelta(delta * chartW);
-
+    if(startSegment && endSegment){
+        //updateDelta(delta * chartW);
+        updateIntervals(oldW);
+        scene.update();
     }
 }
 
@@ -307,12 +306,32 @@ void WavForm::updateDelta(double _delta){
         if (!intervalLines.isEmpty()){
             for (QGraphicsLineItem *l : intervalLines){
                 scene.removeItem(l);
+                delete l;
             }
             intervalLines.clear();
             intLinesX.clear();
         }
         drawIntervalLinesInSegment(startSegmentP.x());
     }
+}
+
+void WavForm::updateIntervals(int oldChartWidth){
+    if (!startSegment || !endSegment) return;
+    if (intLinesX.isEmpty()) return;
+    intervalLines.clear();
+    QList<float> newIntLinesX;
+    for (float x : intLinesX){
+        qDebug() << "Old X: " << x << ", New X: " << (double)(x / oldChartWidth) * chartW;
+        newIntLinesX << (double)(x / oldChartWidth) * chartW;
+    }
+    intLinesX.clear();
+    intLinesX = newIntLinesX;
+    for (float x : intLinesX){
+        QGraphicsLineItem *l = scene.addLine(QLineF(QPointF(x,0), QPointF(x , chartH-1)), QPen(Qt::black, 3, Qt::SolidLine, Qt::FlatCap));
+        intervalLines << l;
+
+    }
+
 }
 
 void WavForm::changeBoolAutoSegment(bool _boolAutoSegment) {

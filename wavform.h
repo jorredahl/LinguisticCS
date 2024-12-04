@@ -90,6 +90,7 @@ class WavForm : public QGraphicsView
     double delta;
     void drawIntervalLinesInSegment(double x);
     QList<float> intLinesX;
+    void updateIntervals(int oldChartWidth);
 
 public:
     explicit WavForm(int _width, int _height);
