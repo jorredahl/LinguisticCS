@@ -235,8 +235,17 @@ void WavForm::mousePressEvent(QMouseEvent *evt) {
             }
         }
         else {
-            endSegmentP = QPointF(x,0);
-            endSegment = scene.addLine(QLineF(endSegmentP, QPointF(x, chartH-1)), QPen(Qt::red, 3, Qt::SolidLine, Qt::FlatCap));
+            if (x > startSegmentP.x()){
+                endSegmentP = QPointF(x,0);
+                endSegment = scene.addLine(QLineF(endSegmentP, QPointF(x, chartH-1)), QPen(Qt::red, 3, Qt::SolidLine, Qt::FlatCap));
+            }else{
+
+                QMessageBox msgBox;
+                msgBox.setText("The end of the segment cannot be before the start");
+                msgBox.exec();
+
+            }
+
         }
         emit segmentReady(startSegment && endSegment ? true: false);
         return;
@@ -329,6 +338,24 @@ void WavForm::sendIntervalsForSegment(){
 
     intervalLocations << (endSegmentP.x()/chartW) * audioLength;
     emit intervalsForSegments(intervalLocations);
+}
+
+void WavForm::drawAutoIntervals(QList<int> intervalLocsInAudio){
+    //gets the positions (indxs) and put them on screen
+    if (!intervalLines.isEmpty()){
+        for (QGraphicsLineItem *l : intervalLines){
+            scene.removeItem(l);
+        }
+        intervalLines.clear();
+        intLinesX.clear();
+    }
+    int audioLength = audio->getAudioSamples().length();
+    for (int indx = 0; indx < intervalLocsInAudio.length(); indx++){
+        intLinesX << (intervalLocsInAudio[indx] / audioLength) * chartW;
+    }
+    for (float x : intLinesX){
+        intervalLines << scene.addLine(QLineF(QPointF(x,0), QPointF(x, chartH-1)), QPen(Qt::black, 3, Qt::SolidLine, Qt::FlatCap));
+    }
 }
 
 void WavForm::clearIntervals(){

@@ -103,6 +103,7 @@ public slots:
     void updateChart(int width, int height);
     void switchMouseEventControls(bool segmentControlsOn);
     void sendIntervalsForSegment();
+    void drawAutoIntervals(QList<int> intervalLocsInAudio);
     void clearIntervals();
     void changeBoolAutoSegment(bool _boolAutoSegment);
 
