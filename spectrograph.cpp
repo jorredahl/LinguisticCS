@@ -32,7 +32,8 @@ Spectrograph::Spectrograph(QWidget *parent)
     hammingWindow(windowSize, hammingWindowValues);
 
     // setup UI layout for toggling peak visualization
-    QPushButton *peaksButton = new QPushButton("^", this);
+    QPushButton *peaksButton = new QPushButton("Highlight", this);
+    peaksButton->setFixedSize(60,25);
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
 
     QHBoxLayout *buttonLayout = new QHBoxLayout();
@@ -46,9 +47,9 @@ Spectrograph::Spectrograph(QWidget *parent)
     setLayout(mainLayout);
 
     // set fixed size for spectrograph (can modify)
-    setFixedSize(190, 115);
+    setFixedSize(300, 200);
 
-    connect(peaksButton, &QPushButton::clicked, this, &Spectrograph::showPeaks);
+    connect(peaksButton, &QPushButton::clicked, this, &Spectrograph::showHighlights);
 }
 
 
@@ -86,6 +87,7 @@ void Spectrograph::bufferReady() {
 
 
 void Spectrograph::handleAudioBuffer(const QAudioBuffer &buffer) {
+
     // convert audio buffer to 16-bit signed integers
     const qint16 *data = buffer.constData<qint16>();
     int sampleCount = buffer.sampleCount();
@@ -128,7 +130,7 @@ void Spectrograph::hammingWindow(int windowLength, QVector<double> &window) {
 
 
 void Spectrograph::setupSpectrograph(QVector<double> &accumulatedSamples) {
-    //qDebug() << "before processing, accumulatedsamples size:" << accumulatedSamples.size();
+   // qDebug() << "before processing, accumulatedsamples size:" << accumulatedSamples.size();
 
     // signal length and number of chunks based on hopSize and window size
     int signalLength = accumulatedSamples.size();
@@ -137,6 +139,7 @@ void Spectrograph::setupSpectrograph(QVector<double> &accumulatedSamples) {
     //qDebug() << "calculated numChunks:" << numChunks << "with accumulatedSamples size" << accumulatedSamples.size();
 
     if (numChunks > 0) {
+
         // resize spectrogram to accommodate new chunks
         spectrogram.resize(spectrogram.size() + numChunks, QVector<double>(windowSize));
 
@@ -173,6 +176,7 @@ void Spectrograph::setupSpectrograph(QVector<double> &accumulatedSamples) {
         int samplesProcessed = numChunks * hopSize;
         accumulatedSamples = accumulatedSamples.mid(samplesProcessed);
     }
+
     update(); // trigger repaint of spect
 }
 
@@ -247,17 +251,17 @@ void Spectrograph::paintEvent(QPaintEvent *event) {
         }
     }
 
-    // draw peak frequency lines if enabled (loudest)
-    // blue lines represent the connection peak frequencies over time
-    if (showPeaksEnabled) {
-        painter.setPen(QPen(Qt::blue, 2));
+
+    // cover lowest frequencies with black to enhance look od spect
+    if (showHighlightsEnabled) {
+        painter.setPen(QPen(Qt::black, 2));
         QVector<QPointF> peakPoints;
 
         for (int chunk = 0; chunk < numChunks; ++chunk) {
             int peakFreq = 0;
             double peakValue = 0.0;
 
-            // Find the peak frequency in this chunk
+            // find the highest freq
             for (int freq = 0; freq < numFrequencies; ++freq) {
                 if (spectrogram[chunk][freq] > peakValue) {
                     peakFreq = freq;
@@ -265,7 +269,7 @@ void Spectrograph::paintEvent(QPaintEvent *event) {
                 }
             }
 
-            if (peakValue / maxAmp > 0.85) { // Only add significant peaks
+            if (peakValue / maxAmp < 0.75) { // target lower amplitudes to cover
                 double x = chunk * chunkWidth + chunkWidth / 2.0; // center peak horizontally
                 double y = height - (peakFreq + 1) * freqHeight; // position peak vertically
                 peakPoints.append(QPointF(x, y));
@@ -274,14 +278,15 @@ void Spectrograph::paintEvent(QPaintEvent *event) {
 
         // draw lines connecting peaks
         for (int i = 1; i < peakPoints.size(); ++i) {
-            painter.drawLine(peakPoints[i - 1], peakPoints[i]); // draw line connecting each pair of consecutive peaks
+            painter.drawLine(peakPoints[i - 1], peakPoints[i]); // draw line connecting areas of low freq
+
         }
     }
 }
 
 
-void Spectrograph::showPeaks() {
-    showPeaksEnabled = !showPeaksEnabled;
+void Spectrograph::showHighlights() {
+    showHighlightsEnabled = !showHighlightsEnabled;
     update(); //repaint
 }
 
