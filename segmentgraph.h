@@ -6,12 +6,14 @@
 #include <QPushButton>
 #include <QChart>
 #include <QChartView>
+#include <QBoxLayout>
 
 /*
  * File: segmentgraph.h
  * Description:
  *  This header file defines the 'SementGraph' class, this class provides closer visualizations of raw WAV file data
- *  in the form of a QChartView.
+ *  in the form of a QChartView. It includes a slider to navigate between segments and an exit button for closing the
+ *  visualization.
  *
  * Purpose:
  *  - The segment graph will appear upon the selection of different segments, this widget will show the raw data of
@@ -31,6 +33,7 @@
  *  - 'void slideSegments(int position)': changes the chart to show the graph according to the slider position
  *  - 'void exitView()': makes the SegmentGraph invisible until the next updateGraph
  *  - 'void updateGraphs(QList<QList<float>> segments)': visualizes the segments as a list of QCharts
+ *  - 'void clearView()': Clears the charts and resets the widget
  *
  * Notes:
  *  - This widget is completely invisible until a signal with a QList<QList<float>> is emitted.
@@ -42,6 +45,7 @@
 class SegmentGraph: public QWidget
 {
     Q_OBJECT
+    QVBoxLayout *segGraphLayout;
     QSlider *segmentSlider;
     QPushButton *exitButton;
     QChartView *graph;
@@ -54,6 +58,7 @@ public slots:
     void slideSegments(int position);
     void exitView();
     void updateGraphs(QList<QList<float>> segments);
+    void clearView();
 };
 
 #endif // SEGMENTGRAPH_H

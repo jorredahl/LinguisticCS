@@ -35,7 +35,7 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
-    QHBoxLayout *mainLayout;
+    QVBoxLayout *mainLayout;
     Audio *audio1;
     Audio *audio2;
 

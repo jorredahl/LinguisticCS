@@ -32,7 +32,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     // create main layout for central widget
     // this was V before
-    mainLayout = new QHBoxLayout(center);
+    mainLayout = new QVBoxLayout(center);
 
     // create menu bar
     //QMenu *fileMenu = new QMenu("&File");

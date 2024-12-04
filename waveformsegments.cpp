@@ -1,4 +1,5 @@
 #include "waveformsegments.h"
+#include <QtCore/qdebug.h>
 
 /*
  * File: waveformsegments.cpp
@@ -26,8 +27,15 @@ WaveFormSegments::WaveFormSegments(QList<float> _audioSamples , QObject *parent)
 {}
 
 void WaveFormSegments::collectWavSegment(QList<int> segmentPlaces){
-
     // only one line given
+
+    if (segmentPlaces.length() == 2) {
+        autoSegment(originalAudio.mid(segmentPlaces[0], segmentPlaces[1] - segmentPlaces[0]));
+        qDebug() << "auto";
+
+    }
+    else qDebug() << "manual";
+
     if(segmentPlaces.length() == 1){
         if (segmentPlaces[0] != 0) {
             QList<float> wavSegment1 = originalAudio.mid(0, segmentPlaces[0] + 1);
@@ -41,18 +49,25 @@ void WaveFormSegments::collectWavSegment(QList<int> segmentPlaces){
     }
 
     //more than one segment line
-    std::sort(segmentPlaces.begin(), segmentPlaces.end()); //sort incase lines are sent out of order
+    //std::sort(segmentPlaces.begin(), segmentPlaces.end()); //sort incase lines are sent out of order
 
     for (int segmentIndx = 0; segmentIndx < segmentPlaces.length() - 1; segmentIndx ++) {
+        //qDebug() << "segment";
+        //qDebug() << segmentPlaces[segmentIndx];
+        //qDebug() << abs(segmentPlaces[segmentIndx + 1] - segmentPlaces[segmentIndx]) + 1;
         QList<float> wavSegment = originalAudio.mid(segmentPlaces[segmentIndx], abs(segmentPlaces[segmentIndx + 1] - segmentPlaces[segmentIndx]) + 1);
         wavSegments << wavSegment;
+        //qDebug() << wavSegment;
+
     }
     emit createWavSegmentGraphs(wavSegments);
 }
 
 void WaveFormSegments::clearAllWavSegments(){
-    wavSegments.clear();
+    if (!wavSegments.isEmpty())wavSegments.clear();
 }
+
+
 void WaveFormSegments::uploadAudio(QList<float> audio){
     if (!originalAudio.empty()){
         originalAudio.clear();
@@ -60,3 +75,36 @@ void WaveFormSegments::uploadAudio(QList<float> audio){
     originalAudio = audio;
     clearAllWavSegments();
 }
+
+void WaveFormSegments::autoSegment(QList<float> dataSample) {
+    QList<int> zeroCrossings;
+    zeroCrossings << 0;
+    for (int i = 0; i < dataSample.length() - 1; ++i) {
+        if ((dataSample[i] > 0.0 && dataSample[i + 1] < 0.0) || (dataSample[i] < 0.0 && dataSample[i + 1] > 0.0)) {
+            zeroCrossings << i;
+        }
+    }
+    zeroCrossings << dataSample.length() - 1;
+
+    QList<QList<float>> localData;
+
+    for (int i = 0; i < zeroCrossings.length() - 1; ++i) {
+        while(zeroCrossings[i + 1] - zeroCrossings[i] < 50 && zeroCrossings.length() - 1 > i + 1) {
+            zeroCrossings.remove(i + 1);
+        }
+        localData << dataSample.mid(zeroCrossings[i], zeroCrossings[i + 1] - zeroCrossings[i]);
+    }
+
+    QList<int> localMaxs;
+    for (int i = 0; i < localData.length(); ++i) {
+        int maxIndex = 0;
+        for (int j = 1; j < localData[i].length(); ++j) {
+            if (localData[i][j] > localData[i][maxIndex]) maxIndex = j;
+        }
+        localMaxs << maxIndex;
+    }
+
+    emit drawAutoSegments(localMaxs);
+}
+
+

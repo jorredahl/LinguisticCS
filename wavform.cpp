@@ -9,17 +9,31 @@
  * Description:
  *  This source file implements the 'WavForm' class, a custom 'QGraphicsView' which visualizes audio
  *  waveforms. The class visalizes the waveform using audio data from the 'WavFile' class and provides
- *  methods for updating the chart. The constructor 'WavForm(int _width, int _height): viewW(_width), viewH(_height)'
- *  initializes the 'QGraphicsView' and scene dimensions.
+ *  methods for updating the chart. It also supports user interaction, such as selecting segments, updating
+ *  the scrubber, and managing intervals. The constructor 'WavForm(int _width, int _height): viewW(_width),
+ *  viewH(_height)' initializes the 'QGraphicsView' and scene dimensions.
  *
  * Key Methods:
+ *  - 'WavForm(int _width, int _height): Constructor initializes the view and scene dimensions and sets up
+ *    default properties for the waveform visualization.
  *  - 'uploadAudio()': Creates a 'WavFile' object and sets up its waveform visualizatio with 'audioToChart()'
  *  - 'audioToChart()': Processes audio data and sets up the waveform chart
  *  - 'setChart()': Splits audio data into pixel-width length and calculates average, min, max and
  *    RMS values for each sample segment. When the width goes past the samples available in the wav file about (400 * 51),
  *    it switches to max and min and draws a line graph of (400*51*2 (2 for max and min)) points across the given width.
- *  - 'mousePressEvent()': Maps mouse clicks to waveform positions and adds scrubber line to position
- *  - 'updateScrubberPosition()': Moves the scrubber based on position
+ *  - 'updateChart(int width, int height)': Redraws the chart with updated dimensions, preserving current segments
+ *    and interval lines
+ *  - 'mousePressEvent()': Maps mouse clicks  for user interactions such as adding scrubber line and setting segment
+ *    start and end points
+ *  - 'updateScrubberPosition()': Moves the scrubber based on given audio playback position
+ *  - 'getSamples()': Returns list of audio samples currently loaded into the waveform
+ *  - 'switchMouseEventControls(bool segmentControlsOn)': Enables segment selection mode when segmentControlsOn is true
+ *    allowing the user to add start and end segment lines, and disables segment selection mode if false
+ *  - 'drawIntervalLinesInSegment(double x)': Adds interval lines between the start and end segment spaced by a factor of delta
+ *  - 'updateDelta(double _delta)': Updates _delta to redraw the spacing between intervals if segment line control is active
+ *  - 'sendIntervalsForSegment()': Emits a list of audio sample indeces of line segment interval lines
+ *  - 'clearIntervals()': Clears start and end segment lines and interval lines, resetting segment selection and emits
+ *    signals signifying that the segment lines and chart information are nonexistent
  *
  * Notes:
  *  - Dark blue represents min and max values for each sample segment
@@ -29,7 +43,7 @@
  *  - ...
  */
 
-WavForm::WavForm(int _width, int _height): viewW(_width), viewH(_height)
+WavForm::WavForm(int _width, int _height): viewW(_width), viewH(_height), segmentControls(false)
 {
     setScene(&scene);
     setMinimumSize(QSize(viewW, viewH));
@@ -44,10 +58,13 @@ void WavForm::uploadAudio(QString fName){
     audio = new WavFile(fName);
     scene.clear();
     scene.update();
+    if(startSegment) startSegment = nullptr;
+    if(endSegment) endSegment = nullptr;
     scrubberHasBeenDrawn = false;
     audioToChart();
     audioFileLoaded = true;
     emit audioFileLoadedTrue();
+    clearIntervals();
 }
 
 void WavForm::audioToChart(){
@@ -61,6 +78,7 @@ void WavForm::audioToChart(){
     chartW = viewW;
     chartH = viewH * 0.95;
     setChart(samples, chartW, chartH);
+
 }
 
 void WavForm::setChart(QList<float> data, int width, int height) {
@@ -153,11 +171,33 @@ void WavForm::updateChart(int width, int height){
     scene.update();
     scrubberHasBeenDrawn = false;
 
+    int oldW = chartW;
     chartW = width;
     chartH = height;
 
     setChart(samples, width, height);
 
+    //segment lines updates
+    if(startSegment){
+        double x = (startSegmentP.x() / oldW) * chartW;
+        startSegmentP.setX(x);
+        startSegment = scene.addLine(QLineF(startSegmentP, QPointF(startSegmentP.x(), chartH-1)), QPen(Qt::green, 3, Qt::SolidLine, Qt::FlatCap));
+    }
+    if(endSegment){
+        double x = (endSegmentP.x() / oldW) * chartW;
+        endSegmentP.setX(x);
+        endSegment = scene.addLine(QLineF(endSegmentP, QPointF(endSegmentP.x(), chartH-1)), QPen(Qt::red, 3, Qt::SolidLine, Qt::FlatCap));
+    }
+    if((!startSegment|| !endSegment) && !intervalLines.isEmpty()){
+        intervalLines.clear();
+        intLinesX.clear();
+    }
+    if(!intervalLines.isEmpty() && startSegment && endSegment){
+        intervalLines.clear();
+        intLinesX.clear();
+        updateDelta(delta * chartW);
+
+    }
 }
 
 
@@ -169,6 +209,47 @@ void WavForm::mousePressEvent(QMouseEvent *evt) {
     QPointF center = mapToScene(evt->pos());
 
     double x = center.x();
+
+    if (segmentControls){
+        if (startSegment && endSegment){
+            scene.removeItem((QGraphicsItem *) startSegment);
+            startSegment = nullptr;
+            if(!intervalLines.isEmpty()){
+                for(QGraphicsLineItem *l: intervalLines){
+                    scene.removeItem((QGraphicsItem *)l);
+                }
+                intervalLines.clear();
+                intLinesX.clear();
+                emit chartInfoReady(false);
+            }
+        }
+
+        if (!startSegment || endSegment){
+            startSegmentP = QPointF(x,0);
+            startSegment = scene.addLine(QLineF(startSegmentP, QPointF(x, chartH-1)), QPen(Qt::green, 3, Qt::SolidLine, Qt::FlatCap));
+            if (endSegment) {
+                endSegmentP = QPointF();
+                scene.removeItem((QGraphicsItem *) endSegment);
+                endSegment = nullptr;
+                emit chartInfoReady(false);
+            }
+        }
+        else {
+            if (x > startSegmentP.x()){
+                endSegmentP = QPointF(x,0);
+                endSegment = scene.addLine(QLineF(endSegmentP, QPointF(x, chartH-1)), QPen(Qt::red, 3, Qt::SolidLine, Qt::FlatCap));
+            }else{
+
+                QMessageBox msgBox;
+                msgBox.setText("The end of the segment cannot be before the start");
+                msgBox.exec();
+
+            }
+
+        }
+        emit segmentReady(startSegment && endSegment ? true: false);
+        return;
+    }
 
     if (scrubberHasBeenDrawn) scene.removeItem((QGraphicsItem *) lastLine);
 
@@ -204,4 +285,95 @@ void WavForm::updateScrubberPosition(double position) {
 
  QList<float> WavForm::getSamples(){
      return audio->getAudioSamples();
+}
+
+void WavForm::switchMouseEventControls(bool segmentControlsOn){
+    if (segmentControlsOn) segmentControls = true;
+    else segmentControls = false;
+ }
+
+void WavForm::drawIntervalLinesInSegment(double x){
+    x += delta * chartW;
+    while(x < endSegmentP.x()){
+        intervalLines << scene.addLine(QLineF(QPointF(x,0), QPointF(x, chartH-1)), QPen(Qt::black, 3, Qt::SolidLine, Qt::FlatCap));
+        intLinesX << x;
+        x+= delta * chartW;
+    }
+    emit chartInfoReady(true);
+}
+
+void WavForm::updateDelta(double _delta){
+    delta = _delta / chartW;
+    if (startSegment && endSegment) {
+        if (!intervalLines.isEmpty()){
+            for (QGraphicsLineItem *l : intervalLines){
+                scene.removeItem(l);
+            }
+            intervalLines.clear();
+            intLinesX.clear();
+        }
+        drawIntervalLinesInSegment(startSegmentP.x());
+    }
+}
+
+void WavForm::changeBoolAutoSegment(bool _boolAutoSegment) {
+    boolAutoSegment = _boolAutoSegment;
+}
+
+
+void WavForm::sendIntervalsForSegment(){
+    //int width = chartW;
+    //if (width > 400 * 51) width = 400 * 51;
+    if (intLinesX.isEmpty()) return;
+    QList<int> intervalLocations;
+    int audioLength = audio->getAudioSamples().length();
+    intervalLocations << (startSegmentP.x()/chartW) * audioLength;
+
+
+    if (!boolAutoSegment) {
+        for (int indx = 0; indx < intLinesX.length(); indx++){
+            intervalLocations << (intLinesX[indx]/chartW) * audioLength;
+        }
+    }
+
+    intervalLocations << (endSegmentP.x()/chartW) * audioLength;
+    emit intervalsForSegments(intervalLocations);
+}
+
+void WavForm::drawAutoIntervals(QList<int> intervalLocsInAudio){
+    //gets the positions (indxs) and put them on screen
+    if (!intervalLines.isEmpty()){
+        for (QGraphicsLineItem *l : intervalLines){
+            scene.removeItem(l);
+        }
+        intervalLines.clear();
+        intLinesX.clear();
+    }
+    int audioLength = audio->getAudioSamples().length();
+    for (int indx = 0; indx < intervalLocsInAudio.length(); indx++){
+        intLinesX << (intervalLocsInAudio[indx] / audioLength) * chartW;
+    }
+    for (float x : intLinesX){
+        intervalLines << scene.addLine(QLineF(QPointF(x,0), QPointF(x, chartH-1)), QPen(Qt::black, 3, Qt::SolidLine, Qt::FlatCap));
+    }
+}
+
+void WavForm::clearIntervals(){
+    if (startSegment) {
+        scene.removeItem(startSegment);
+        startSegment = nullptr;
+    }
+    if (endSegment) {
+        scene.removeItem(endSegment);
+        endSegment = nullptr;
+    }
+    if (!intervalLines.isEmpty()){
+        for(QGraphicsLineItem *l : intervalLines){
+            scene.removeItem(l);
+        }
+        intervalLines.clear();
+    }
+    if (!intLinesX.isEmpty())intLinesX.clear();
+    emit segmentReady(false);
+    emit chartInfoReady(false);
 }

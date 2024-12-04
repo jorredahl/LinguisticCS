@@ -23,6 +23,7 @@
  *  - Encapsulates the functionality required for audio interaction and visualization
  *  - Integrates with other classes like 'Wavform' and 'Zoom' for added functionality
  *  - Emits signals for audio position changes and file uploads to communicate to other widgets
+ *  - Provides interaction with scrubber and segment graph visualizations
  *
  * Key Members:
  *  - 'QPushButton *uploadAudioButton': Button for uploading audio files
@@ -77,10 +78,18 @@ class Audio : public QWidget
         QVBoxLayout *displayAndControlsLayout;
         QHBoxLayout *controlsLayout;
         QString label;
+        QPushButton *addIntervalLines;
+        QDoubleSpinBox *deltaSelector;
+        QPushButton *applyDeltaInterval;
         QPushButton *createGraphSegmentsButton;
         QPushButton *clearAllGraphSegmentsButton;
+        QCheckBox *segmentToolsCheckbox;
+        QPushButton *autoSegmentButton;
 
         WaveFormSegments *graphAudioSegments;
+
+
+        bool autoSegmentBool;
 
 
 public:
@@ -97,11 +106,17 @@ public slots:
     void ZoomScrubberPosition();
     void updateAudioDuration(qint64 duration);
     void audioLoaded();
+    void segmentIntervalControlsEnable(bool ready);
+    void applySegmentInterval();
+    void segmentCreateControlsEnable(bool ready);
+    void toggleBoolManualSegments(double position);
+    void toggleBoolAutoSegments();
+
 
 signals:
     void emitLoadAudioIn(QString fName);
     void audioPositionChanged(double position);
-
+    void emitAutoSegmentBool(bool autoSegmentBool);
     // for connecting spectrograph
     void audioFileSelected(const QString &fileName);
 };
