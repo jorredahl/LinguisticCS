@@ -45,7 +45,7 @@ public:
 public slots:
     void collectWavSegment(QList<int> segmentPlaces);
     void clearAllWavSegments();
-    void autoSegment(QList<float> dataSample);
+    void autoSegment(QList<float> dataSample, int startIndex);
 
 signals:
     void createWavSegmentGraphs(QList<QList<float>>);

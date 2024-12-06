@@ -46,7 +46,7 @@ class Zoom : public QWidget
     //zoom
     QHBoxLayout *zoomLayout;
     QSlider *verticalSlider;
-    QSlider *horizantalSlider;
+    QSlider *horizontalSlider;
 
 public:
     explicit Zoom(QWidget *parent = nullptr, int viewW = 400, int viewH = 200);
@@ -59,7 +59,7 @@ public:
 public slots:
 
     void verticalZoom(int position);
-    void horizantalZoom(int position);
+    void horizontalZoom(int position);
 signals:
 
     void zoomGraphIn(int width, int height);

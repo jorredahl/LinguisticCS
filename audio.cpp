@@ -129,7 +129,8 @@ void Audio::newAudioPlayer(){
 
     //WavForm Controls
     deltaSelector = new QDoubleSpinBox();
-    deltaSelector->setValue(8.0);
+    deltaSelector->setValue(10.0);
+    deltaSelector-> setMinimum(10.0);
     deltaSelector->setMaximum(200);
     deltaSelector->setEnabled(false);
     autoSegmentButton = new QPushButton("auto");
@@ -143,6 +144,7 @@ void Audio::newAudioPlayer(){
     QHBoxLayout *deltaLayout = new QHBoxLayout();
     deltaLayout->addWidget(deltaSelector);
     deltaLayout->addWidget(autoSegmentButton);
+
     wavFormVertControls->addLayout(deltaLayout);
 
     graphAudioSegments = new WaveFormSegments();
