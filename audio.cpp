@@ -138,16 +138,11 @@ void Audio::newAudioPlayer(){
     connect(deltaSelector, &QDoubleSpinBox::valueChanged, this, &Audio::toggleBoolManualSegments);
     connect(autoSegmentButton, &QPushButton::clicked, this, &Audio::toggleBoolAutoSegments);
 
-    applyDeltaInterval = new QPushButton("apply interval");
-    applyDeltaInterval->setEnabled(false);
-
-    connect(applyDeltaInterval, &QPushButton::clicked, this, &Audio::applySegmentInterval);
     connect (wavChart, &WavForm::segmentReady, this, &Audio::segmentIntervalControlsEnable);
 
     QHBoxLayout *deltaLayout = new QHBoxLayout();
     deltaLayout->addWidget(deltaSelector);
     deltaLayout->addWidget(autoSegmentButton);
-    deltaLayout->addWidget(applyDeltaInterval);
     wavFormVertControls->addLayout(deltaLayout);
 
     graphAudioSegments = new WaveFormSegments();
@@ -262,12 +257,6 @@ void Audio::toggleBoolAutoSegments() {
     emit emitAutoSegmentBool(autoSegmentBool);
 }
 
-// this has to know what the last button clicked was - auto or segments
-void Audio::applySegmentInterval(){
-    if(!createGraphSegmentsButton->isEnabled()) createGraphSegmentsButton->setEnabled(true);
-    if (!clearAllGraphSegmentsButton->isEnabled())clearAllGraphSegmentsButton->setEnabled(true);
-    //connect(deltaSelector, &QDoubleSpinBox::valueChanged, wavChart, &WavForm::updateDelta);
-}
 
 
 void Audio::ZoomScrubberPosition(){
@@ -305,7 +294,6 @@ void Audio::audioLoaded(){
 // so when auto is clicked it makes them auto
 void Audio::segmentIntervalControlsEnable(bool ready){
     deltaSelector->setEnabled(ready);
-    applyDeltaInterval->setEnabled(ready);
     autoSegmentButton->setEnabled(ready);
 }
 
