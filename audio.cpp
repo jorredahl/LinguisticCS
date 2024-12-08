@@ -139,16 +139,11 @@ void Audio::newAudioPlayer(){
     connect(deltaSelector, &QDoubleSpinBox::valueChanged, this, &Audio::toggleBoolManualSegments);
     connect(autoSegmentButton, &QPushButton::clicked, this, &Audio::toggleBoolAutoSegments);
 
-    applyDeltaInterval = new QPushButton("apply interval");
-    applyDeltaInterval->setEnabled(false);
-
-    connect(applyDeltaInterval, &QPushButton::clicked, this, &Audio::applySegmentInterval);
     connect (wavChart, &WavForm::segmentReady, this, &Audio::segmentIntervalControlsEnable);
 
     QHBoxLayout *deltaLayout = new QHBoxLayout();
     deltaLayout->addWidget(deltaSelector);
     deltaLayout->addWidget(autoSegmentButton);
-    //deltaLayout->addWidget(applyDeltaInterval);
     wavFormVertControls->addLayout(deltaLayout);
 
     graphAudioSegments = new WaveFormSegments();
@@ -174,11 +169,11 @@ void Audio::newAudioPlayer(){
     //Close Analysis Graphs
     segmentGraph = new SegmentGraph(WAVFORM_WIDTH, WAVFORM_HEIGHT);
     segmentGraph->setVisible(false);
-    //connect(this, (Some function when segments are selected that emits a QList<QList<float>>, segmentGraph, &SegmentGraph::updateGraphs);
     connect(graphAudioSegments, &WaveFormSegments::createWavSegmentGraphs, segmentGraph, &SegmentGraph::updateGraphs);
     connect(graphAudioSegments, &WaveFormSegments::storeStartEndValuesOfSegments, segmentGraph, &SegmentGraph::getSegmentStartEnd);
     connect(graphAudioSegments, &WaveFormSegments::drawAutoSegments, wavChart, &WavForm::drawAutoIntervals);
-    connect(clearAllGraphSegmentsButton, &QPushButton::clicked, segmentGraph, &SegmentGraph::clearView);
+    connect(wavChart, &WavForm::clearAllSegmentInfo, segmentGraph, &SegmentGraph::clearView);
+    connect(wavChart, &WavForm::clearAllSegmentInfo, graphAudioSegments, &WaveFormSegments::clearAllWavSegments);
     connect(segmentGraph, &SegmentGraph::sendPlaySegmentAudio, this, &Audio::updateTrackPositionFromSegment);
     audioLayout->addWidget(segmentGraph);
 
@@ -257,17 +252,15 @@ void Audio::updateTrackPositionFromSegment(QPair<double, double> startEnd){
     setTrackPosition(segmentAudioStartPosition);
     player->setPosition(segmentAudioStartPosition);
 
-    //audioPosition = player->position();
     segmentAudioPlaying= true;
     segmentAudioEndPosition = (qint64)(startEnd.second * audioLength);
     handlePlayPause();
 
 
 }
-void Audio::watchForEndOfSegmentAudio(qint64 audioPosition){
+void Audio::watchForEndOfSegmentAudio(qint64 audioPos){
     if(!segmentAudioPlaying) return;
-    //qint64 intPosition = (qint64) (audioPosition * audioLength);
-    if (audioPosition >= segmentAudioEndPosition){
+    if (audioPos >= segmentAudioEndPosition){
         setTrackPosition(segmentAudioStartPosition);
         player->setPosition(segmentAudioStartPosition);
     }
@@ -292,13 +285,6 @@ void Audio::toggleBoolAutoSegments() {
     emit emitAutoSegmentBool(autoSegmentBool);
 }
 
-// this has to know what the last button clicked was - auto or segments
-void Audio::applySegmentInterval(){
-    //if(!createGraphSegmentsButton->isEnabled()) createGraphSegmentsButton->setEnabled(true);
-    //if (!clearAllGraphSegmentsButton->isEnabled())clearAllGraphSegmentsButton->setEnabled(true);
-    //connect(deltaSelector, &QDoubleSpinBox::valueChanged, wavChart, &WavForm::updateDelta);
-}
-
 
 void Audio::ZoomScrubberPosition(){
     double floatPosition = (double) audioPosition / audioLength;
@@ -310,7 +296,6 @@ void Audio::ZoomScrubberPosition(){
 
 void Audio::setTrackPosition(qint64 position) {
     audioPosition = position;
-    qDebug() << "settrackposition";
     double floatPosition = (double) audioPosition / audioLength;
     if (floatPosition < 1.0 & abs(audioPosition - player->position()) > 100) {
         audioPosition = player->position();
@@ -336,7 +321,6 @@ void Audio::audioLoaded(){
 // so when auto is clicked it makes them auto
 void Audio::segmentIntervalControlsEnable(bool ready){
     deltaSelector->setEnabled(ready);
-    applyDeltaInterval->setEnabled(ready);
     autoSegmentButton->setEnabled(ready);
 }
 

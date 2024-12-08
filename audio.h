@@ -81,7 +81,6 @@ class Audio : public QWidget
         QString label;
         QPushButton *addIntervalLines;
         QDoubleSpinBox *deltaSelector;
-        QPushButton *applyDeltaInterval;
         QPushButton *createGraphSegmentsButton;
         QPushButton *clearAllGraphSegmentsButton;
         QCheckBox *segmentToolsCheckbox;
@@ -112,7 +111,6 @@ public slots:
     void updateAudioDuration(qint64 duration);
     void audioLoaded();
     void segmentIntervalControlsEnable(bool ready);
-    void applySegmentInterval();
     void segmentCreateControlsEnable(bool ready);
     void toggleBoolManualSegments(double position);
     void toggleBoolAutoSegments();

@@ -27,33 +27,16 @@ WaveFormSegments::WaveFormSegments(QList<float> _audioSamples , QObject *parent)
     : QObject{parent}, originalAudio(_audioSamples)
 {}
 
-void WaveFormSegments::collectWavSegment(QList<int> segmentPlaces){
+void WaveFormSegments::collectWavSegment(QList<int> segmentPlaces, bool isAuto){
     // only one line given
     clearAllWavSegments();
 
-    bool isAuto = false;
-    if (segmentPlaces.length() == 2) {
-        isAuto = true;
+    if (isAuto) {
         autoSegment(originalAudio.mid(segmentPlaces[0], segmentPlaces[1] - segmentPlaces[0]), segmentPlaces[0]);
-        //qDebug() << "auto";
 
     }
-    //else qDebug() << "manual";
 
-    if(segmentPlaces.length() == 1){
-        if (segmentPlaces[0] != 0) {
-            QList<float> wavSegment1 = originalAudio.mid(0, segmentPlaces[0] + 1);
-            wavSegments << wavSegment1;
-        }
-        if (segmentPlaces[0] != originalAudio.length() - 1){
-            QList<float> wavSegment2 = originalAudio.mid(segmentPlaces[0]);
-            wavSegments << wavSegment2;
-        }
-        return;
-    }
     audioSampleLength = originalAudio.length();
-    //more than one segment line
-    //std::sort(segmentPlaces.begin(), segmentPlaces.end()); //sort incase lines are sent out of order
 
     for (int segmentIndx = 0; segmentIndx < segmentPlaces.length() - 1; segmentIndx ++) {
         double startOfSegment = (double) (segmentPlaces[segmentIndx] / audioSampleLength);
@@ -73,6 +56,7 @@ void WaveFormSegments::collectWavSegment(QList<int> segmentPlaces){
 
 void WaveFormSegments::clearAllWavSegments(){
     if (!wavSegments.isEmpty()) wavSegments.clear();
+    if (!wavSegmentStartEndPositions.isEmpty()) wavSegmentStartEndPositions.clear();
 }
 
 
@@ -119,7 +103,7 @@ void WaveFormSegments::autoSegment(QList<float> dataSample, int startIndex) {
         trueLocalMaxs << startIndex + localMaxs[i];
     }
 
-    collectWavSegment(trueLocalMaxs);
+    collectWavSegment(trueLocalMaxs, false); //now it is defined segments so we send false for auto
 
     emit drawAutoSegments(localMaxs);
 }

@@ -45,7 +45,7 @@ public:
     void uploadAudio(QList<float> audio);
 
 public slots:
-    void collectWavSegment(QList<int> segmentPlaces);
+    void collectWavSegment(QList<int> segmentPlaces,  bool isAuto);
     void clearAllWavSegments();
     void autoSegment(QList<float> dataSample, int startIndex);
 

@@ -118,8 +118,9 @@ signals:
     void sceneSizeChange();
     void audioFileLoadedTrue();
     void segmentReady(bool ready);
-    void intervalsForSegments(QList<int>);
+    void intervalsForSegments(QList<int>, bool);
     void chartInfoReady(bool ready);
+    void clearAllSegmentInfo();
 };
 
 #endif // WAVFORM_H

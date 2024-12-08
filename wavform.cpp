@@ -193,7 +193,6 @@ void WavForm::updateChart(int width, int height){
         intLinesX.clear();
     }
     if(startSegment && endSegment){
-        //updateDelta(delta * chartW);
         updateIntervals(oldW);
         scene.update();
     }
@@ -237,6 +236,7 @@ void WavForm::mousePressEvent(QMouseEvent *evt) {
             if (x > startSegmentP.x()){
                 endSegmentP = QPointF(x,0);
                 endSegment = scene.addLine(QLineF(endSegmentP, QPointF(x, chartH-1)), QPen(Qt::red, 3, Qt::SolidLine, Qt::FlatCap));
+                emit chartInfoReady(true);
             }else{
 
                 QMessageBox msgBox;
@@ -247,6 +247,7 @@ void WavForm::mousePressEvent(QMouseEvent *evt) {
 
         }
         emit segmentReady(startSegment && endSegment ? true: false);
+        updateChart(chartW,chartH);
         return;
     }
 
@@ -335,7 +336,7 @@ void WavForm::updateIntervals(int oldChartWidth){
 
 void WavForm::changeBoolAutoSegment(bool _boolAutoSegment) {
     boolAutoSegment = _boolAutoSegment;
-    //qDebug() << boolAutoSegment;
+    if (boolAutoSegment) sendIntervalsForSegment();
 
 }
 
@@ -352,7 +353,7 @@ void WavForm::sendIntervalsForSegment(){
     }
 
     intervalLocations << (endSegmentP.x()/chartW) * audioLength;
-    emit intervalsForSegments(intervalLocations);
+    emit intervalsForSegments(intervalLocations, boolAutoSegment);
 }
 
 void WavForm::drawAutoIntervals(QList<int> intervalLocsInAudio){
@@ -393,4 +394,5 @@ void WavForm::clearIntervals(){
     if (!intLinesX.isEmpty())intLinesX.clear();
     emit segmentReady(false);
     emit chartInfoReady(false);
+    emit clearAllSegmentInfo();
 }
