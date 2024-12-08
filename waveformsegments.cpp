@@ -97,7 +97,7 @@ void WaveFormSegments::autoSegment(QList<float> dataSample, int startIndex) {
     QList<QList<float>> localData;
 
     for (int i = 0; i < zeroCrossings.length() - 1; ++i) {
-        while(zeroCrossings[i + 1] - zeroCrossings[i] < 50 && zeroCrossings.length() - 1 > i + 1) {
+        while(zeroCrossings[i + 1] - zeroCrossings[i] < (dataSample.length() / 100) && zeroCrossings.length() - 1 > i + 1) {
             zeroCrossings.remove(i + 1);
         }
         localData << dataSample.mid(zeroCrossings[i], zeroCrossings[i + 1] - zeroCrossings[i]);
