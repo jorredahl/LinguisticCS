@@ -46,6 +46,10 @@ SegmentGraph::SegmentGraph(int width, int height) {
     connect(segmentSlider, &QSlider::sliderMoved, this, &SegmentGraph::slideSegments);
     segGraphControlsLayout->addWidget(segmentSlider);
 
+    playSegmentButton = new QPushButton("play");
+    playSegmentButton->setDisabled(true);
+    connect(playSegmentButton, &QPushButton::clicked, this, &SegmentGraph::playSegmentAudio);
+    segGraphControlsLayout->addWidget(playSegmentButton);
     graph = new QChartView();
     graph->resize(width, height);
     segGraphLayout->addWidget(graph);
@@ -54,6 +58,7 @@ SegmentGraph::SegmentGraph(int width, int height) {
 void SegmentGraph::slideSegments(int position) {
     if (position >= charts->length()) return;
     graph->setChart(charts->at(position));
+    getSegmentAudioToPlay(position);
 }
 
 void SegmentGraph::exitView() {
@@ -94,6 +99,22 @@ void SegmentGraph::clearView(){
      if (!charts->isEmpty()){
         charts->clear();
      }
+     playSegmentButton->setEnabled(false);
     exitView();
 
 }
+
+void SegmentGraph::getSegmentAudioToPlay(int segmentPosition){
+    if (startEndSegmentAudioValues.isEmpty()) return;
+    startEndOfSelectedSegment = startEndSegmentAudioValues[segmentPosition];
+    playSegmentButton->setEnabled(true);
+
+}
+void SegmentGraph::playSegmentAudio(){
+    emit sendPlaySegmentAudio(startEndOfSelectedSegment);
+}
+void SegmentGraph::getSegmentStartEnd(QList<QPair<double, double>> startEndValues){
+
+    startEndSegmentAudioValues = startEndValues;
+}
+

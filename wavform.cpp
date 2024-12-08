@@ -321,7 +321,6 @@ void WavForm::updateIntervals(int oldChartWidth){
     intervalLines.clear();
     QList<float> newIntLinesX;
     for (float x : intLinesX){
-        qDebug() << "Old X: " << x << ", New X: " << (double)(x / oldChartWidth) * chartW;
         newIntLinesX << (double)(x / oldChartWidth) * chartW;
     }
     intLinesX.clear();
@@ -342,14 +341,9 @@ void WavForm::changeBoolAutoSegment(bool _boolAutoSegment) {
 
 
 void WavForm::sendIntervalsForSegment(){
-    //int width = chartW;
-    //if (width > 400 * 51) width = 400 * 51;
-    qDebug() << intLinesX;
-    //if (intLinesX.isEmpty()) return;
     QList<int> intervalLocations;
     int audioLength = audio->getAudioSamples().length();
     intervalLocations << (startSegmentP.x()/chartW) * audioLength;
-
 
     if (!boolAutoSegment) {
         for (int indx = 0; indx < intLinesX.length(); indx++){
@@ -362,8 +356,7 @@ void WavForm::sendIntervalsForSegment(){
 }
 
 void WavForm::drawAutoIntervals(QList<int> intervalLocsInAudio){
-    qDebug() << intLinesX;
-    qDebug() << intervalLocsInAudio;
+
     //gets the positions (indxs) and put them on screen
     if (!intervalLines.isEmpty()){
         for (QGraphicsLineItem *l : intervalLines){
@@ -377,7 +370,6 @@ void WavForm::drawAutoIntervals(QList<int> intervalLocsInAudio){
         intLinesX << startSegmentP.x() + ((double) intervalLocsInAudio[indx] / audioLength) * chartW;
     }
 
-    qDebug() << intLinesX;
     for (float x : intLinesX){
         intervalLines << scene.addLine(QLineF(QPointF(x ,0), QPointF(x , chartH-1)), QPen(Qt::black, 3, Qt::SolidLine, Qt::FlatCap));
     }

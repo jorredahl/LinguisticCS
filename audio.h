@@ -72,6 +72,7 @@ class Audio : public QWidget
         QTimer *timer;
         int timerRefreshRate;
         qint64 audioPosition;
+        qint64 audioPositionOnChart;
         qint64 audioLength;
         Zoom *zoomButtons;
         SegmentGraph *segmentGraph;
@@ -85,6 +86,9 @@ class Audio : public QWidget
         QPushButton *clearAllGraphSegmentsButton;
         QCheckBox *segmentToolsCheckbox;
         QPushButton *autoSegmentButton;
+        bool segmentAudioPlaying;
+        qint64 segmentAudioEndPosition;
+        qint64 segmentAudioStartPosition;
 
         WaveFormSegments *graphAudioSegments;
 
@@ -103,6 +107,7 @@ public slots:
     void handlePlayPause();
     void updateTrackPositionFromTimer();
     void updateTrackPositionFromScrubber(double position);
+    void updateTrackPositionFromSegment(QPair<double, double> startEnd);
     void ZoomScrubberPosition();
     void updateAudioDuration(qint64 duration);
     void audioLoaded();
@@ -111,6 +116,8 @@ public slots:
     void segmentCreateControlsEnable(bool ready);
     void toggleBoolManualSegments(double position);
     void toggleBoolAutoSegments();
+    void watchForEndOfSegmentAudio(qint64 audioPosition);
+    void handlePlayPauseButton();
 
 
 signals:

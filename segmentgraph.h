@@ -50,6 +50,9 @@ class SegmentGraph: public QWidget
     QPushButton *exitButton;
     QChartView *graph;
     QList<QChart *> *charts;
+    QPushButton *playSegmentButton;
+    QPair<double,double> startEndOfSelectedSegment;
+    QList<QPair<double, double>> startEndSegmentAudioValues;
 
 public:
     SegmentGraph(int width, int height);
@@ -59,6 +62,11 @@ public slots:
     void exitView();
     void updateGraphs(QList<QList<float>> segments);
     void clearView();
+    void getSegmentStartEnd(QList<QPair<double, double>> startEndValues);
+    void getSegmentAudioToPlay(int segmentPosition);
+    void playSegmentAudio();
+signals:
+    void sendPlaySegmentAudio(QPair<double, double>);
 };
 
 #endif // SEGMENTGRAPH_H

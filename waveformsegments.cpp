@@ -31,8 +31,6 @@ void WaveFormSegments::collectWavSegment(QList<int> segmentPlaces){
     // only one line given
     clearAllWavSegments();
 
-    qDebug() << segmentPlaces.length();
-
     bool isAuto = false;
     if (segmentPlaces.length() == 2) {
         isAuto = true;
@@ -53,21 +51,24 @@ void WaveFormSegments::collectWavSegment(QList<int> segmentPlaces){
         }
         return;
     }
-
+    audioSampleLength = originalAudio.length();
     //more than one segment line
     //std::sort(segmentPlaces.begin(), segmentPlaces.end()); //sort incase lines are sent out of order
 
     for (int segmentIndx = 0; segmentIndx < segmentPlaces.length() - 1; segmentIndx ++) {
-        //qDebug() << "segment";
-        //qDebug() << segmentPlaces[segmentIndx];
-        //qDebug() << abs(segmentPlaces[segmentIndx + 1] - segmentPlaces[segmentIndx]) + 1;
+        double startOfSegment = (double) (segmentPlaces[segmentIndx] / audioSampleLength);
+        double endOfSegment = (double) (segmentPlaces[segmentIndx + 1] / audioSampleLength);
         QList<float> wavSegment = originalAudio.mid(segmentPlaces[segmentIndx], abs(segmentPlaces[segmentIndx + 1] - segmentPlaces[segmentIndx]) + 1);
         wavSegments << wavSegment;
-        //qDebug() << wavSegment;
-
+        wavSegmentStartEndPositions << QPair<double, double> (startOfSegment, endOfSegment);
     }
     if (isAuto) wavSegments.remove(wavSegments.length() - 1);
+    if (isAuto) wavSegmentStartEndPositions.remove(wavSegments.length() - 1);
+    emit storeStartEndValuesOfSegments(wavSegmentStartEndPositions);
     emit createWavSegmentGraphs(wavSegments);
+
+
+
 }
 
 void WaveFormSegments::clearAllWavSegments(){

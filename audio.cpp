@@ -49,7 +49,7 @@
  */
 
 Audio::Audio(QWidget *parent, QString _label)
-    : QWidget{parent}, label(_label)
+    : QWidget{parent}, label(_label), segmentAudioPlaying(false)
 {
     newAudioPlayer();
 }
@@ -77,7 +77,7 @@ void Audio::newAudioPlayer(){
     audioControls->addWidget(uploadAudioButton, 0, Qt::AlignCenter);
 
     QAction *playAction = new QAction();
-    connect(playAction, &QAction::triggered, this, &Audio::handlePlayPause);
+    connect(playAction, &QAction::triggered, this, &Audio::handlePlayPauseButton);
     playAction->setShortcut(Qt::Key_Space);
     playButton = new QToolButton;
     playButton->setDefaultAction(playAction);
@@ -176,8 +176,10 @@ void Audio::newAudioPlayer(){
     segmentGraph->setVisible(false);
     //connect(this, (Some function when segments are selected that emits a QList<QList<float>>, segmentGraph, &SegmentGraph::updateGraphs);
     connect(graphAudioSegments, &WaveFormSegments::createWavSegmentGraphs, segmentGraph, &SegmentGraph::updateGraphs);
+    connect(graphAudioSegments, &WaveFormSegments::storeStartEndValuesOfSegments, segmentGraph, &SegmentGraph::getSegmentStartEnd);
     connect(graphAudioSegments, &WaveFormSegments::drawAutoSegments, wavChart, &WavForm::drawAutoIntervals);
     connect(clearAllGraphSegmentsButton, &QPushButton::clicked, segmentGraph, &SegmentGraph::clearView);
+    connect(segmentGraph, &SegmentGraph::sendPlaySegmentAudio, this, &Audio::updateTrackPositionFromSegment);
     audioLayout->addWidget(segmentGraph);
 
 }
@@ -189,6 +191,7 @@ void Audio::uploadAudio(){
     if (player) player = nullptr;
     if(audioOutput) audioOutput = nullptr;
     player = new QMediaPlayer;
+    connect(player, &QMediaPlayer::positionChanged, this, &Audio::watchForEndOfSegmentAudio);
     audioOutput = new QAudioOutput;
     player->setAudioOutput(audioOutput);
     player->setSource(aName);
@@ -208,7 +211,13 @@ void Audio::uploadAudio(){
     emit audioFileSelected(aName.toLocalFile());
 
 }
-
+void Audio::handlePlayPauseButton(){
+    if (segmentAudioPlaying){
+        player->setPosition(audioPositionOnChart);
+        segmentAudioPlaying = false;
+    }
+    handlePlayPause();
+}
 void Audio::handlePlayPause() {
     QIcon icon = audioPlaying ? QIcon(":/resources/icons/play.svg") : QIcon(":/resources/icons/pause.svg");
     playButton->setIcon(icon);
@@ -222,7 +231,6 @@ void Audio::handlePlayPause() {
         timer->start(timerRefreshRate);
 
     }
-
     setTrackPosition(player->position());
     audioPlaying = !audioPlaying;
 
@@ -241,8 +249,29 @@ void Audio::updateTrackPositionFromScrubber(double position) {
     qint64 intPosition = (qint64) (position * audioLength);
     setTrackPosition(intPosition);
     player->setPosition(intPosition);
+    segmentAudioPlaying = false;
 }
 
+void Audio::updateTrackPositionFromSegment(QPair<double, double> startEnd){
+    segmentAudioStartPosition = (qint64) (startEnd.first * audioLength);
+    setTrackPosition(segmentAudioStartPosition);
+    player->setPosition(segmentAudioStartPosition);
+
+    //audioPosition = player->position();
+    segmentAudioPlaying= true;
+    segmentAudioEndPosition = (qint64)(startEnd.second * audioLength);
+    handlePlayPause();
+
+
+}
+void Audio::watchForEndOfSegmentAudio(qint64 audioPosition){
+    if(!segmentAudioPlaying) return;
+    //qint64 intPosition = (qint64) (audioPosition * audioLength);
+    if (audioPosition >= segmentAudioEndPosition){
+        setTrackPosition(segmentAudioStartPosition);
+        player->setPosition(segmentAudioStartPosition);
+    }
+}
 
 void Audio::toggleBoolManualSegments(double position) {
     autoSegmentBool = false;
@@ -281,6 +310,7 @@ void Audio::ZoomScrubberPosition(){
 
 void Audio::setTrackPosition(qint64 position) {
     audioPosition = position;
+    qDebug() << "settrackposition";
     double floatPosition = (double) audioPosition / audioLength;
     if (floatPosition < 1.0 & abs(audioPosition - player->position()) > 100) {
         audioPosition = player->position();
@@ -314,4 +344,5 @@ void Audio::segmentIntervalControlsEnable(bool ready){
 
 void Audio::segmentCreateControlsEnable(bool ready){
     createGraphSegmentsButton->setEnabled(ready);
+    audioPositionOnChart = player->position();
 }
