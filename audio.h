@@ -124,6 +124,7 @@ signals:
     void emitAutoSegmentBool(bool autoSegmentBool);
     // for connecting spectrograph
     void audioFileSelected(const QString &fileName);
+    void  segmentAudioNotPlaying(bool);
 };
 
 #endif // AUDIO_H

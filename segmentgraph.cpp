@@ -36,7 +36,7 @@ SegmentGraph::SegmentGraph(int width, int height) {
     QHBoxLayout *segGraphControlsLayout = new QHBoxLayout();
     segGraphLayout->addLayout(segGraphControlsLayout);
 
-    exitButton = new QPushButton("X");
+    exitButton = new QPushButton("Close");
     exitButton->setFixedSize(30, 20);
     connect(exitButton, &QPushButton::clicked, this, &SegmentGraph::exitView);
     segGraphControlsLayout->addWidget(exitButton);
@@ -46,10 +46,16 @@ SegmentGraph::SegmentGraph(int width, int height) {
     connect(segmentSlider, &QSlider::sliderMoved, this, &SegmentGraph::slideSegments);
     segGraphControlsLayout->addWidget(segmentSlider);
 
-    playSegmentButton = new QPushButton("play");
-    playSegmentButton->setDisabled(true);
-    connect(playSegmentButton, &QPushButton::clicked, this, &SegmentGraph::playSegmentAudio);
+    QAction *playAction = new QAction();
+    connect(playAction, &QAction::triggered, this, &SegmentGraph::playSegmentAudio);
+    playAction->setShortcut(Qt::Key_Space);
+    playSegmentButton = new QToolButton;
+    playSegmentButton->setDefaultAction(playAction);
+    playSegmentButton->setIcon(QIcon(":/resources/icons/play.svg"));
+    playSegmentButton->setEnabled(false);
     segGraphControlsLayout->addWidget(playSegmentButton);
+    audioPlaying = false;
+
     graph = new QChartView();
     graph->resize(width, height);
     segGraphLayout->addWidget(graph);
@@ -63,9 +69,11 @@ void SegmentGraph::slideSegments(int position) {
 
 void SegmentGraph::exitView() {
     setVisible(false);
+    audioPlaying = false;
 }
 
 void SegmentGraph::updateGraphs(QList<QList<float>> segments) {
+    audioPlaying = false;
     setVisible(true);
 
     charts->clear();
@@ -111,10 +119,19 @@ void SegmentGraph::getSegmentAudioToPlay(int segmentPosition){
 
 }
 void SegmentGraph::playSegmentAudio(){
+    QIcon icon = audioPlaying ? QIcon(":/resources/icons/play.svg") : QIcon(":/resources/icons/pause.svg");
+    playSegmentButton->setIcon(icon);
+    audioPlaying = !audioPlaying;
     emit sendPlaySegmentAudio(startEndOfSelectedSegment);
 }
 void SegmentGraph::getSegmentStartEnd(QList<QPair<double, double>> startEndValues){
 
     startEndSegmentAudioValues = startEndValues;
+}
+
+void SegmentGraph::changePlayPauseButton(bool segAudioNotPlaying){
+    QIcon icon = segAudioNotPlaying ? QIcon(":/resources/icons/play.svg") : QIcon(":/resources/icons/pause.svg");
+    playSegmentButton->setIcon(icon);
+    audioPlaying = !segAudioNotPlaying;
 }
 

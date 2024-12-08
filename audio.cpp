@@ -134,6 +134,7 @@ void Audio::newAudioPlayer(){
     deltaSelector->setMaximum(200);
     deltaSelector->setEnabled(false);
     autoSegmentButton = new QPushButton("auto");
+    autoSegmentButton->setEnabled(false);
 
 
     connect(deltaSelector, &QDoubleSpinBox::valueChanged, this, &Audio::toggleBoolManualSegments);
@@ -175,6 +176,7 @@ void Audio::newAudioPlayer(){
     connect(wavChart, &WavForm::clearAllSegmentInfo, segmentGraph, &SegmentGraph::clearView);
     connect(wavChart, &WavForm::clearAllSegmentInfo, graphAudioSegments, &WaveFormSegments::clearAllWavSegments);
     connect(segmentGraph, &SegmentGraph::sendPlaySegmentAudio, this, &Audio::updateTrackPositionFromSegment);
+    connect(this, &Audio::segmentAudioNotPlaying,segmentGraph, &SegmentGraph::changePlayPauseButton);
     audioLayout->addWidget(segmentGraph);
 
 }
@@ -207,15 +209,16 @@ void Audio::uploadAudio(){
 
 }
 void Audio::handlePlayPauseButton(){
+    QIcon icon = audioPlaying ? QIcon(":/resources/icons/play.svg") : QIcon(":/resources/icons/pause.svg");
+    playButton->setIcon(icon);
     if (segmentAudioPlaying){
         player->setPosition(audioPositionOnChart);
         segmentAudioPlaying = false;
     }
     handlePlayPause();
+    emit segmentAudioNotPlaying(true);
 }
 void Audio::handlePlayPause() {
-    QIcon icon = audioPlaying ? QIcon(":/resources/icons/play.svg") : QIcon(":/resources/icons/pause.svg");
-    playButton->setIcon(icon);
 
     if (audioPlaying) {
         player->pause();
@@ -245,6 +248,10 @@ void Audio::updateTrackPositionFromScrubber(double position) {
     setTrackPosition(intPosition);
     player->setPosition(intPosition);
     segmentAudioPlaying = false;
+    emit segmentAudioNotPlaying(true);
+    QIcon icon = audioPlaying ? QIcon(":/resources/icons/play.svg") : QIcon(":/resources/icons/pause.svg");
+    playButton->setIcon(icon);
+
 }
 
 void Audio::updateTrackPositionFromSegment(QPair<double, double> startEnd){
@@ -304,7 +311,7 @@ void Audio::setTrackPosition(qint64 position) {
 
     // set to 1.05 so i don't accidentally trigger with pausing right before end
     //  the timer and player position can be out of sync
-    if (floatPosition > 1.05) handlePlayPause();
+    if (floatPosition > 1.05) handlePlayPauseButton();
 
     emit audioPositionChanged(floatPosition);
 }
