@@ -119,6 +119,7 @@ public slots:
     void watchForEndOfSegmentAudio(qint64 audioPosition);
     void handlePlayPauseButton();
     void clearSegmentsEnable(bool enable);
+    void handleLoopClick();
 
 
 signals:

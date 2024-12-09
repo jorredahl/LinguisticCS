@@ -90,19 +90,15 @@ void Audio::newAudioPlayer(){
     displayAndControlsLayout = new QVBoxLayout();
     audioLayout->addLayout(displayAndControlsLayout);
 
-    // QLabel *nativeWaveLabel = new QLabel(label); // using QLabel as a placeholder for waveforms
-    // //nativeWaveLabel->setScaledContents(true);
-    // //displayAndControlsLayout->addWidget(nativeWaveLabel);
-
 
     QAction *loopAction = new QAction();
-    //connect(loopAction, &QAction::triggered, this, &Audio::handleLoopClick);
+    connect(loopAction, &QAction::triggered, this, &Audio::handleLoopClick);
     loopButton = new QToolButton;
     loopButton->setDefaultAction(loopAction);
     loopButton->setIcon(QIcon(":/resources/icons/loop.svg"));
     loopButton->setEnabled(false);
     loopButton->setShortcut(Qt::CTRL | Qt::Key_L);
-    //connect(playButton, &QToolButton::triggered, this, &MainWindow::handlePlayPause);
+    loopButton->setCheckable(true);
     playLoopControls->addWidget(loopButton, 0, Qt::AlignRight);
 
     //follow scrubber
@@ -304,6 +300,10 @@ void Audio::watchForEndOfSegmentAudio(qint64 audioPos){
     }
 }
 
+void Audio::handleLoopClick(){
+    loopButton->setChecked(!loopButton->isChecked());
+}
+
 void Audio::toggleBoolManualSegments(double position) {
     autoSegmentBool = false;
     wavChart->updateDelta(position);
@@ -342,7 +342,14 @@ void Audio::setTrackPosition(qint64 position) {
 
     // set to 1.05 so i don't accidentally trigger with pausing right before end
     //  the timer and player position can be out of sync
-    if (floatPosition > 1.05) handlePlayPauseButton();
+    if (floatPosition > 1.05 && !loopButton->isChecked()){
+        handlePlayPauseButton();
+    }
+    if(loopButton->isChecked() && floatPosition > 1){
+        player->play();
+        timer->start(timerRefreshRate);
+        setTrackPosition(player->position());
+    }
 
     emit audioPositionChanged(floatPosition);
 }
