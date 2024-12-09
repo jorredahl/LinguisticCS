@@ -74,7 +74,7 @@ void Audio::newAudioPlayer(){
     uploadAudioButton = new QPushButton("Upload");
     uploadAudioButton->setShortcut(Qt::CTRL | Qt::Key_U);
     connect(uploadAudioButton, &QPushButton::clicked, this, &Audio::uploadAudio);
-    audioControls->addWidget(uploadAudioButton, 0, Qt::AlignCenter);
+    audioControls->addWidget(uploadAudioButton, 0, Qt::AlignLeft);
 
     QAction *playAction = new QAction();
     connect(playAction, &QAction::triggered, this, &Audio::handlePlayPauseButton);
@@ -83,16 +83,17 @@ void Audio::newAudioPlayer(){
     playButton->setDefaultAction(playAction);
     playButton->setIcon(QIcon(":/resources/icons/play.svg"));
     playButton->setEnabled(false);
-    audioControls->addWidget(playButton);
+    QVBoxLayout *playLoopControls = new QVBoxLayout();
+    audioControls-> addLayout(playLoopControls);
+    playLoopControls->addWidget(playButton);
 
     displayAndControlsLayout = new QVBoxLayout();
     audioLayout->addLayout(displayAndControlsLayout);
 
-    QLabel *nativeWaveLabel = new QLabel(label); // using QLabel as a placeholder for waveforms
-    displayAndControlsLayout->addWidget(nativeWaveLabel);
+    // QLabel *nativeWaveLabel = new QLabel(label); // using QLabel as a placeholder for waveforms
+    // //nativeWaveLabel->setScaledContents(true);
+    // //displayAndControlsLayout->addWidget(nativeWaveLabel);
 
-    controlsLayout = new QHBoxLayout();
-    displayAndControlsLayout->addLayout(controlsLayout);
 
     QAction *loopAction = new QAction();
     //connect(loopAction, &QAction::triggered, this, &Audio::handleLoopClick);
@@ -102,12 +103,25 @@ void Audio::newAudioPlayer(){
     loopButton->setEnabled(false);
     loopButton->setShortcut(Qt::CTRL | Qt::Key_L);
     //connect(playButton, &QToolButton::triggered, this, &MainWindow::handlePlayPause);
-    controlsLayout->addWidget(loopButton);
+    playLoopControls->addWidget(loopButton);
 
     //Zoom
     zoomButtons = new Zoom(nullptr, WAVFORM_WIDTH, WAVFORM_HEIGHT);
     zoomButtons->setEnabled(false);
-    controlsLayout->addWidget(zoomButtons);
+
+    horizontalSlider = new QSlider();
+    horizontalSlider->setEnabled(false);
+    horizontalSlider->setOrientation(Qt::Horizontal);
+    horizontalSlider->setMinimum(1);
+    horizontalSlider->setMaximum(200);
+
+    verticalSlider = new QSlider();
+    verticalSlider->setOrientation(Qt::Vertical);
+    verticalSlider->setMinimum(1);
+    verticalSlider->setMaximum(10);
+    verticalSlider->setEnabled(false);
+    zoomButtons->setHorizontalSlider(horizontalSlider);
+    zoomButtons->setVerticalSlider(verticalSlider);
 
     //Chart
     wavChart = new WavForm(WAVFORM_WIDTH, WAVFORM_HEIGHT);
@@ -115,7 +129,12 @@ void Audio::newAudioPlayer(){
     connect(zoomButtons, &Zoom::zoomGraphIn, wavChart, &WavForm::updateChart);
     connect(this, &Audio::emitAutoSegmentBool, wavChart, &WavForm::changeBoolAutoSegment);
 
-    displayAndControlsLayout->addWidget(wavChart);
+    QHBoxLayout *ChartAndVerticalSliderLayout = new QHBoxLayout();
+    displayAndControlsLayout->addLayout(ChartAndVerticalSliderLayout);
+    ChartAndVerticalSliderLayout->addWidget(wavChart);
+    ChartAndVerticalSliderLayout->addWidget(verticalSlider);
+    //zoom next to it
+    displayAndControlsLayout->addWidget(horizontalSlider);
 
     //Timer/scrubber
     timer = new QTimer(this);
@@ -154,6 +173,7 @@ void Audio::newAudioPlayer(){
     connect(wavChart, &WavForm::audioFileLoadedTrue, this, &Audio::audioLoaded);
 
     segmentToolsCheckbox = new QCheckBox("segment controls");
+    segmentToolsCheckbox->setEnabled(false);
     connect(segmentToolsCheckbox, &QCheckBox::clicked, wavChart, &WavForm::switchMouseEventControls);
 
     connect(createGraphSegmentsButton, &QPushButton::clicked, wavChart, &WavForm::sendIntervalsForSegment);
@@ -170,6 +190,7 @@ void Audio::newAudioPlayer(){
     //Close Analysis Graphs
     segmentGraph = new SegmentGraph(WAVFORM_WIDTH, WAVFORM_HEIGHT);
     segmentGraph->setVisible(false);
+    connect(segmentGraph, &SegmentGraph::clearSegmentsEnable, this, &Audio::clearSegmentsEnable);
     connect(graphAudioSegments, &WaveFormSegments::createWavSegmentGraphs, segmentGraph, &SegmentGraph::updateGraphs);
     connect(graphAudioSegments, &WaveFormSegments::storeStartEndValuesOfSegments, segmentGraph, &SegmentGraph::getSegmentStartEnd);
     connect(graphAudioSegments, &WaveFormSegments::drawAutoSegments, wavChart, &WavForm::drawAutoIntervals);
@@ -206,6 +227,11 @@ void Audio::uploadAudio(){
 
     // emit signal to notify the spectrograph
     emit audioFileSelected(aName.toLocalFile());
+
+    //enable everything
+    verticalSlider->setEnabled(true);
+    horizontalSlider->setEnabled(true);
+    segmentToolsCheckbox->setEnabled(true);
 
 }
 void Audio::handlePlayPauseButton(){
@@ -249,8 +275,6 @@ void Audio::updateTrackPositionFromScrubber(double position) {
     player->setPosition(intPosition);
     segmentAudioPlaying = false;
     emit segmentAudioNotPlaying(true);
-    QIcon icon = audioPlaying ? QIcon(":/resources/icons/play.svg") : QIcon(":/resources/icons/pause.svg");
-    playButton->setIcon(icon);
 
 }
 
@@ -336,4 +360,8 @@ void Audio::segmentIntervalControlsEnable(bool ready){
 void Audio::segmentCreateControlsEnable(bool ready){
     createGraphSegmentsButton->setEnabled(ready);
     audioPositionOnChart = player->position();
+}
+
+void Audio::clearSegmentsEnable(bool enable){
+    clearAllGraphSegmentsButton->setEnabled(enable);
 }

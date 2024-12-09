@@ -71,6 +71,7 @@ public slots:
     void changePlayPauseButton(bool segAudioNotPlaying);
 signals:
     void sendPlaySegmentAudio(QPair<double, double>);
+    void clearSegmentsEnable(bool);
 };
 
 #endif // SEGMENTGRAPH_H

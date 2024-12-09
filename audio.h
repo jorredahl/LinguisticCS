@@ -77,7 +77,6 @@ class Audio : public QWidget
         Zoom *zoomButtons;
         SegmentGraph *segmentGraph;
         QVBoxLayout *displayAndControlsLayout;
-        QHBoxLayout *controlsLayout;
         QString label;
         QPushButton *addIntervalLines;
         QDoubleSpinBox *deltaSelector;
@@ -88,6 +87,8 @@ class Audio : public QWidget
         bool segmentAudioPlaying;
         qint64 segmentAudioEndPosition;
         qint64 segmentAudioStartPosition;
+        QSlider *horizontalSlider;
+        QSlider *verticalSlider;
 
         WaveFormSegments *graphAudioSegments;
 
@@ -116,6 +117,7 @@ public slots:
     void toggleBoolAutoSegments();
     void watchForEndOfSegmentAudio(qint64 audioPosition);
     void handlePlayPauseButton();
+    void clearSegmentsEnable(bool enable);
 
 
 signals:

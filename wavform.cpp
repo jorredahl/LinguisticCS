@@ -50,7 +50,7 @@ WavForm::WavForm(int _width, int _height): viewW(_width), viewH(_height), segmen
 
     setRenderHint(QPainter::Antialiasing, true);
     setSceneRect(0, 0, viewW, viewH); // Explicitly set scene rect to match view
-    scene.addRect(sceneRect());
+    //scene.addRect(sceneRect());
     audioFileLoaded = false;
 }
 void WavForm::uploadAudio(QString fName){

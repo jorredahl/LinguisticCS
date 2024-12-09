@@ -52,7 +52,8 @@ Spectrograph::Spectrograph(QWidget *parent)
     hammingWindow(windowSize, hammingWindowValues);
 
     // setup UI layout for toggling peak visualization
-    QPushButton *peaksButton = new QPushButton("Highlight", this);
+    peaksButton = new QPushButton("Highlight", this);
+    peaksButton->setEnabled(false);
     peaksButton->setFixedSize(60,25);
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
 
@@ -82,6 +83,7 @@ void Spectrograph::loadAudioFile(const QString &fileName) {
 
     reset();
     processAudioFile(aName);
+    peaksButton->setEnabled(true);
 }
 
 
