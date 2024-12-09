@@ -212,6 +212,7 @@ void Audio::uploadAudio(){
 
     // emit signal to notify the spectrograph
     emit audioFileSelected(aName.toLocalFile());
+    // NEW FIXING SPECT
 }
 
 void Audio::handlePlayPause() {

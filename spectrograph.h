@@ -92,6 +92,9 @@ public slots:
     void showHighlights();
     void renderToPixmap();
 
+private slots:
+    //void decodingFinished();
+
 };
 
 

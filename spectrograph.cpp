@@ -32,6 +32,7 @@
 Spectrograph::Spectrograph(QWidget *parent)
     : QWidget(parent), graphicsView(new QGraphicsView(this)), graphicsScene(new QGraphicsScene(this))
 {
+
     /* hopSize can technically be adjusted
      *
      * EXAMPLE: if we do windowSize/5 then 5 chunks will be processed , this can be tested with the qDebug statements
@@ -85,6 +86,7 @@ void Spectrograph::loadAudioFile(const QString &fileName) {
     reset(); // Clear curr spect data
     currentAudioFile = fileName; // Set the new audio file
     processAudioFile(QUrl::fromLocalFile(fileName)); // start processing
+
 }
 
 
@@ -93,16 +95,24 @@ void Spectrograph::processAudioFile(const QUrl &fileUrl) {
     if (!decoder) {
         // init QAudioDecoder for decoding audio buffers
         decoder = new QAudioDecoder(this);
+
+        //if (connect(decoder, &QAudioDecoder::finished, this, &Spectrograph::decodingFinished) ) { qDebug() << "FINISHED";}
         connect(decoder, &QAudioDecoder::bufferReady, this, &Spectrograph::bufferReady);
     }
 
     accumulatedSamples.clear(); // clear any prev samples
     decoder->setSource(fileUrl); // set decoder src to the new file
     decoder->start();
+    // connect(decoder, &QAudioDecoder::finished, this, &Spectrograph::decodingFinished);
+
+    qDebug() << "processing has been done!";
+
 }
 
-
+// used buffer ready should be finished
+// when using buffer ready it should only be when QAudioDecoder is finished
 void Spectrograph::bufferReady() {
+
     // read the next available audio buffer and process it
     QAudioBuffer buffer = decoder->read();
     handleAudioBuffer(buffer);
@@ -121,9 +131,9 @@ void Spectrograph::handleAudioBuffer(const QAudioBuffer &buffer) {
         accumulatedSamples.append(static_cast<double>(data[i]));
     }
 
-    if (decoder->bufferAvailable()) {
-        return;
-    }
+    // if (decoder->bufferAvailable()) {
+    //     return;
+    // }
 
     // Process accumulatedSamples in overlapping windows of size windowSize
     while (accumulatedSamples.size() >= getWindowSize()) {
@@ -270,8 +280,6 @@ void Spectrograph::showHighlights() {
     showHighlightsEnabled = !showHighlightsEnabled;
     update(); //repaint
 }
-
-
 
 
 
