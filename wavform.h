@@ -91,6 +91,7 @@ class WavForm : public QGraphicsView
     void drawIntervalLinesInSegment(double x);
     QList<float> intLinesX;
     void updateIntervals(int oldChartWidth);
+    QPointF viewCenterPoint;
 
 public:
     explicit WavForm(int _width, int _height);
@@ -107,6 +108,7 @@ public slots:
     void drawAutoIntervals(QList<int> intervalLocsInAudio);
     void clearIntervals();
     void changeBoolAutoSegment(bool _boolAutoSegment);
+    void changeCenterOnScrubber(Qt::CheckState checkedState);
 
 
 

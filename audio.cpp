@@ -85,7 +85,7 @@ void Audio::newAudioPlayer(){
     playButton->setEnabled(false);
     QVBoxLayout *playLoopControls = new QVBoxLayout();
     audioControls-> addLayout(playLoopControls);
-    playLoopControls->addWidget(playButton);
+    playLoopControls->addWidget(playButton,  0, Qt::AlignRight);
 
     displayAndControlsLayout = new QVBoxLayout();
     audioLayout->addLayout(displayAndControlsLayout);
@@ -103,7 +103,13 @@ void Audio::newAudioPlayer(){
     loopButton->setEnabled(false);
     loopButton->setShortcut(Qt::CTRL | Qt::Key_L);
     //connect(playButton, &QToolButton::triggered, this, &MainWindow::handlePlayPause);
-    playLoopControls->addWidget(loopButton);
+    playLoopControls->addWidget(loopButton, 0, Qt::AlignRight);
+
+    //follow scrubber
+    followScrubber = new QCheckBox("follow scrubber");
+    followScrubber->setLayoutDirection(Qt::LayoutDirection::RightToLeft);
+    followScrubber->setCheckState(Qt::Checked);
+    playLoopControls->addWidget(followScrubber);
 
     //Zoom
     zoomButtons = new Zoom(nullptr, WAVFORM_WIDTH, WAVFORM_HEIGHT);
@@ -128,6 +134,7 @@ void Audio::newAudioPlayer(){
     connect(this, &Audio::emitLoadAudioIn, wavChart, &WavForm::uploadAudio);
     connect(zoomButtons, &Zoom::zoomGraphIn, wavChart, &WavForm::updateChart);
     connect(this, &Audio::emitAutoSegmentBool, wavChart, &WavForm::changeBoolAutoSegment);
+    connect(followScrubber, &QCheckBox::checkStateChanged, wavChart, &WavForm::changeCenterOnScrubber);
 
     QHBoxLayout *ChartAndVerticalSliderLayout = new QHBoxLayout();
     displayAndControlsLayout->addLayout(ChartAndVerticalSliderLayout);

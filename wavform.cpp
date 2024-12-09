@@ -40,10 +40,11 @@
  *  - ...
  *
  * References:
- *  - ...
+ *  -view rect: https://stackoverflow.com/questions/1355446/get-visible-rectangle-of-qgraphicsview
+ *  - center of rect: https://doc.qt.io/qt-6/qrectf.html#center
  */
 
-WavForm::WavForm(int _width, int _height): viewW(_width), viewH(_height), segmentControls(false)
+WavForm::WavForm(int _width, int _height): centerOnScrubber(true), viewW(_width), viewH(_height), segmentControls(false)
 {
     setScene(&scene);
     setMinimumSize(QSize(viewW, viewH));
@@ -166,6 +167,11 @@ void WavForm::setChart(QList<float> data, int width, int height) {
 
 void WavForm::updateChart(int width, int height){
     //clear old chart and update with the same samples but different width/height
+
+    //save the old center point in scene
+    QRectF oldViewRect = scene.views()[0]->mapToScene(scene.views()[0]->viewport()->geometry()).boundingRect();
+    viewCenterPoint = QPointF((oldViewRect.center().x() / chartW) * width, height/2);
+
     QList<float> samples = audio->getAudioSamples();
     scene.clear();
     scene.update();
@@ -258,8 +264,6 @@ void WavForm::mousePressEvent(QMouseEvent *evt) {
     lastLine = scene.addLine(QLineF(*first, *second), QPen(Qt::black, 3, Qt::SolidLine, Qt::FlatCap));
     scrubberHasBeenDrawn = true;
 
-    centerOnScrubber = false; // if we click somewhere to change audio we don't want to keep centering; gets distracting
-
     double position = x / chartW;  
     emit sendAudioPosition(position);
 
@@ -268,7 +272,6 @@ void WavForm::mousePressEvent(QMouseEvent *evt) {
 
 void WavForm::updateScrubberPosition(double position) {
 
-    if (position < 0.05) centerOnScrubber = true; //if starting from beginning we want to center on scrubber
     double scenePosition = (double) (position * chartW);
 
     if (scrubberHasBeenDrawn) scene.removeItem((QGraphicsItem *) lastLine);
@@ -278,9 +281,14 @@ void WavForm::updateScrubberPosition(double position) {
 
     lastLine = scene.addLine(QLineF(*first, *second), QPen(Qt::black, 3, Qt::SolidLine, Qt::FlatCap));
     if (centerOnScrubber) centerOn(lastLine);
-
+    else centerOn(viewCenterPoint);
     scrubberHasBeenDrawn = true;
 
+}
+
+void WavForm::changeCenterOnScrubber(Qt::CheckState checkedState){
+    if (checkedState == Qt::CheckState::Checked) centerOnScrubber = true;
+    else centerOnScrubber = false;
 }
 
  QList<float> WavForm::getSamples(){

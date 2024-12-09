@@ -89,6 +89,7 @@ class Audio : public QWidget
         qint64 segmentAudioStartPosition;
         QSlider *horizontalSlider;
         QSlider *verticalSlider;
+        QCheckBox *followScrubber;
 
         WaveFormSegments *graphAudioSegments;
 

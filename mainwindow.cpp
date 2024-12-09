@@ -20,7 +20,8 @@
  *  -
  *
  * References:
- *  - ...
+ *  - scroll area: https://stackoverflow.com/questions/65554770/qscrollarea-how-do-i-make-my-central-widget-scrollable
+
  */
 
 MainWindow::MainWindow(QWidget *parent)
