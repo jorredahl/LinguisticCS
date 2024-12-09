@@ -52,6 +52,9 @@ Audio::Audio(QWidget *parent, QString _label)
     : QWidget{parent}, label(_label)
 {
     newAudioPlayer();
+    audioUploaded = false;
+    disableButtonsUntilAudio();
+
 }
 void Audio::newAudioPlayer(){
     audioLayout = new QHBoxLayout();
@@ -185,9 +188,15 @@ void Audio::newAudioPlayer(){
 void Audio::uploadAudio(){
 
     handleSpectWithPlay();
+    disableButtonsUntilAudio();
 
     QUrl aName = QFileDialog::getOpenFileUrl(this, "Select audio file");
     if (aName.isEmpty()) return;
+
+    audioUploaded = true;
+    disableButtonsUntilAudio();
+    handleWavClearing();
+
 
     if (player) player = nullptr;
     if(audioOutput) audioOutput = nullptr;
@@ -323,7 +332,6 @@ void Audio::segmentCreateControlsEnable(bool ready){
 // when the spect is loading while audio is playing
 // audio & time should stop to prevent jumpy scrubber
 void Audio::handleSpectWithPlay() {
-
     // if player exists and playing
     if (player && player->playbackState() == QMediaPlayer::PlayingState) {
         player->stop();  // stop playback
@@ -335,5 +343,23 @@ void Audio::handleSpectWithPlay() {
         audioPlaying = false;
         playButton->setIcon(QIcon(":/resources/icons/play.svg"));
     }
+}
 
+// if charts in use and new audio is uploaded charts & data should be cleaned up
+void Audio::handleWavClearing() {
+
+    if (segmentGraph || wavChart ) {
+        segmentGraph->clearView();
+        wavChart->clearIntervals();
+    }
+}
+
+
+void Audio::disableButtonsUntilAudio() {
+
+    autoSegmentButton->setEnabled(audioUploaded);
+    clearAllGraphSegmentsButton->setEnabled(audioUploaded);
+    createGraphSegmentsButton->setEnabled(audioUploaded);
+    deltaSelector->setEnabled(audioUploaded);
+    zoomButtons->setEnabled(audioUploaded);
 }

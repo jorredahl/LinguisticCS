@@ -91,6 +91,7 @@ class Audio : public QWidget
 
         bool autoSegmentBool;
         bool spectrographReadyFlag;
+        bool audioUploaded = false;
 
 
 public:
@@ -113,6 +114,8 @@ public slots:
     void toggleBoolManualSegments(double position);
     void toggleBoolAutoSegments();
     void handleSpectWithPlay();
+    void handleWavClearing();
+    void disableButtonsUntilAudio();
 
 
 signals:

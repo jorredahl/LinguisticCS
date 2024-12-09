@@ -280,7 +280,3 @@ void Spectrograph::showHighlights() {
     showHighlightsEnabled = !showHighlightsEnabled;
     update(); //repaint
 }
-
-
-
-
