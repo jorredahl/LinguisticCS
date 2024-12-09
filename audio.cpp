@@ -183,6 +183,9 @@ void Audio::newAudioPlayer(){
 }
 
 void Audio::uploadAudio(){
+
+    handleSpectWithPlay();
+
     QUrl aName = QFileDialog::getOpenFileUrl(this, "Select audio file");
     if (aName.isEmpty()) return;
 
@@ -201,15 +204,18 @@ void Audio::uploadAudio(){
     zoomButtons->resetZoom();
     setTrackPosition(player->position());
 
+    // Connect scrubber to spectrograph updates
+    connect(player, &QMediaPlayer::positionChanged, this, &Audio::updateTrackPositionFromTimer);
+
     // Connect to durationChanged signal to get the actual duration
     connect(player, &QMediaPlayer::durationChanged, this, &Audio::updateAudioDuration);
 
     // emit signal to notify the spectrograph
     emit audioFileSelected(aName.toLocalFile());
-
 }
 
 void Audio::handlePlayPause() {
+
     QIcon icon = audioPlaying ? QIcon(":/resources/icons/play.svg") : QIcon(":/resources/icons/pause.svg");
     playButton->setIcon(icon);
 
@@ -228,7 +234,6 @@ void Audio::handlePlayPause() {
 
     //TEST FOR WAVSEGMENTING
     //graphAudioSegments->collectWavSegment(QList<int> () << 100 << 5000 << 10000 << 15000 << 20000);
-
 }
 
 
@@ -310,8 +315,24 @@ void Audio::segmentIntervalControlsEnable(bool ready){
     autoSegmentButton->setEnabled(ready);
 }
 
-
-
 void Audio::segmentCreateControlsEnable(bool ready){
     createGraphSegmentsButton->setEnabled(ready);
+}
+
+// when the spect is loading while audio is playing
+// audio & time should stop to prevent jumpy scrubber
+void Audio::handleSpectWithPlay() {
+
+    // if player exists and playing
+    if (player && player->playbackState() == QMediaPlayer::PlayingState) {
+        player->stop();  // stop playback
+        timer->stop();   // stop timer updates
+        audioPosition = 0;  // reset track pos to beginning
+        emit audioPositionChanged(0.0);
+
+        // update pay button to state play
+        audioPlaying = false;
+        playButton->setIcon(QIcon(":/resources/icons/play.svg"));
+    }
+
 }

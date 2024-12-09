@@ -40,10 +40,10 @@ class MainWindow : public QMainWindow
     Audio *audio2;
 
 
-
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+
 
 };
 

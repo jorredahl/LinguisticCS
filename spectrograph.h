@@ -51,11 +51,16 @@ public:
     int getWindowSize() const { return windowSize; }
     void reset();
     bool showHighlightsEnabled = false;
-
-protected:
-    void paintEvent(QPaintEvent *event) override;
+    QPixmap cachedSpect;
 
 private:
+    // thread for background processing
+    //QThread *workerThread;
+    QGraphicsView *graphicsView; // display the scene
+    QGraphicsScene *graphicsScene;
+
+    QString currentAudioFile; // storing file
+
     // audio processing
     QAudioDecoder *decoder = nullptr;
     QVector<double> accumulatedSamples;
@@ -85,6 +90,7 @@ public slots:
     void handleAudioBuffer(const QAudioBuffer &buffer);
     void loadAudioFile(const QString &fileName);
     void showHighlights();
+    void renderToPixmap();
 
 };
 
