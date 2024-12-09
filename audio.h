@@ -44,13 +44,26 @@
  *  - 'void handlePlayPause()': Toggles between playing and pausing the audio
  *  - 'void updateTrackPositionFromTimer()': Updates track position based on timer
  *  - 'void updateTrackPositionFromScrubber(double position)': Updates track position from scrubbler movement
+ *  - 'void updateTrackPositionFromSegment(QPair<double, double> startEnd)': updates the audio to play the displayed segment
+ *  - 'void ZoomScrubberPosition()': adjusts the scrubber when there is a zoom update
+ *  - 'void updateAudioPosition(qint64 duration)': Updates audio track duration
+ *  - 'void AudioLoaded()': allows for the segmenting functionality to start after audio has been loaded in
+ *  - 'void segmentIntervalControlsEnable(bool ready)': enables interval controls after segments are started
+ *  - 'void segmentCreateControlsEnable(bool ready)': enables the create button once segments are established
+ *  - 'void toggleBoolManualSegments(double position)': enables the clear button and sends updated delta data and indicates to use segments from the delta value
+ *  - 'void toggleBoolAutoSegments()': enables clear button and indicates the segments are the auto ones
+ *  - 'void watchForEndOfSegmentAudio(qint64 audioPosition)': watches for if the end of the indicated segment is reached if the segment play is on
+ *  - 'void handlePlayPauseButton()': deals with play pause specifically when the button for it is pressed (or if original audio needs to be paused/played)
+ *  - 'void clearSegmentsEnable(bool enable)': enable/disable the clear segments button
+ *  - 'void handleLoopClick()': if the loop action is clicked this hadles the logic to make sure audio is looped/ the button looks selected
  *
  * Signals:
  *  - 'void emitLoadAudioIn(QString fName)': Emits signal when an audio file is uploaded
  *  - 'void audioPositionChanged(double position)': Emits signal when the audio position is changed
+ *  - 'void  segmentAudioNotPlaying(bool)': emits when the segment audio is playing/not to update what the player is doing or segment ui
  *
  * Notes:
- *  - The 'Audio' class relies on the 'WavForm' and 'Zoom' classes for waveform visualization and zooming
+ *  - The 'Audio' class relies on the 'WavForm', 'SegmentGraph', 'WavFormSegments', and 'Zoom' classes for waveform visualization and zooming
  *
  * References:
  *  - ...
@@ -126,9 +139,9 @@ signals:
     void emitLoadAudioIn(QString fName);
     void audioPositionChanged(double position);
     void emitAutoSegmentBool(bool autoSegmentBool);
+    void  segmentAudioNotPlaying(bool);
     // for connecting spectrograph
     void audioFileSelected(const QString &fileName);
-    void  segmentAudioNotPlaying(bool);
 };
 
 #endif // AUDIO_H

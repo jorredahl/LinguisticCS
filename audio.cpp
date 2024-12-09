@@ -34,6 +34,16 @@
  *  - 'ZoomScrubberPosition()': adjusts the scrubber when there is a zoom update
  *  - 'updateAudioPosition(qint64 duration)': Updates audio track duration
  *  - 'AudioLoaded()': allows for the segmenting functionality to start after audio has been loaded in
+ *  - 'updateTrackPositionFromSegment(QPair<double, double> startEnd)': updates the audio to play the displayed segment
+ *  - 'segmentIntervalControlsEnable(bool ready)': enables interval controls after segments are started
+ *  - 'segmentCreateControlsEnable(bool ready)': enables the create button once segments are established
+ *  - 'toggleBoolManualSegments(double position)': enables the clear button and sends updated delta data and indicates to use segments from the delta value
+ *  - 'toggleBoolAutoSegments()': enables clear button and indicates the segments are the auto ones
+ *  - 'watchForEndOfSegmentAudio(qint64 audioPosition)': watches for if the end of the indicated segment is reached if the segment play is on
+ *  - 'handlePlayPauseButton()': deals with play pause specifically when the button for it is pressed (or if original audio needs to be paused/played)
+ *  - 'clearSegmentsEnable(bool enable)': enable/disable the clear segments button
+ *  - 'handleLoopClick()': if the loop action is clicked this hadles the logic to make sure audio is looped/ the button looks selected
+ *
  *
  * Notes:
  *  - 'WaveForm' class and 'Zoom' class are integrated for visualization and zoom functionality respectively,
@@ -307,7 +317,6 @@ void Audio::handleLoopClick(){
 void Audio::toggleBoolManualSegments(double position) {
     autoSegmentBool = false;
     wavChart->updateDelta(position);
-    if (!createGraphSegmentsButton->isEnabled()) createGraphSegmentsButton->setEnabled(true);
     if (!clearAllGraphSegmentsButton->isEnabled())clearAllGraphSegmentsButton->setEnabled(true);
 
     emit emitAutoSegmentBool(autoSegmentBool);
@@ -316,8 +325,6 @@ void Audio::toggleBoolManualSegments(double position) {
 
 void Audio::toggleBoolAutoSegments() {
     autoSegmentBool = true;
-
-    if(!createGraphSegmentsButton->isEnabled()) createGraphSegmentsButton->setEnabled(true);
     if (!clearAllGraphSegmentsButton->isEnabled())clearAllGraphSegmentsButton->setEnabled(true);
 
     emit emitAutoSegmentBool(autoSegmentBool);
