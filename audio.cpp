@@ -269,7 +269,6 @@ void Audio::handlePlayPauseButton(){
     emit segmentAudioNotPlaying(true);
 }
 void Audio::handlePlayPause() {
-
     if (audioPlaying) {
         player->pause();
         timer->stop();
@@ -281,9 +280,6 @@ void Audio::handlePlayPause() {
     }
     setTrackPosition(player->position());
     audioPlaying = !audioPlaying;
-
-    //TEST FOR WAVSEGMENTING
-    //graphAudioSegments->collectWavSegment(QList<int> () << 100 << 5000 << 10000 << 15000 << 20000);
 }
 
 
@@ -346,6 +342,8 @@ void Audio::ZoomScrubberPosition(){
     if (floatPosition < 1.0 & abs(audioPosition - player->position()) > 100) {
         audioPosition = player->position();
     }
+    qDebug() << "zoomScrubberPosition, emit audio position changed";
+
     emit audioPositionChanged(floatPosition);
 }
 
@@ -360,15 +358,23 @@ void Audio::setTrackPosition(qint64 position) {
     // set to 1.05 so i don't accidentally trigger with pausing right before end
     //  the timer and player position can be out of sync
     if (floatPosition > 1.05 && !loopButton->isChecked()){
-        handlePlayPauseButton();
+        floatPosition = 0;
+        QIcon icon = QIcon(":/resources/icons/play.svg");
+        playButton->setIcon(icon);
+        audioPlaying = false;
+        emit segmentAudioNotPlaying(true);
+        player->pause();
+        timer->stop();
+
     }
     if(loopButton->isChecked() && floatPosition > 1){
         player->play();
         timer->start(timerRefreshRate);
         setTrackPosition(player->position());
-    }
 
+    }
     emit audioPositionChanged(floatPosition);
+
 }
 
 void Audio::updateAudioDuration(qint64 duration){
