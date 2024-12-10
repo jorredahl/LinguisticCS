@@ -79,7 +79,9 @@ void Audio::newAudioPlayer(){
     wavFormAudioControlsLayout-> addLayout(audioControls);
     wavFormAudioControlsLayout->addLayout(wavFormControls);
     QVBoxLayout *wavFormVertControls = new QVBoxLayout();
+    QVBoxLayout *wavFormSegmentControls = new QVBoxLayout();
     wavFormControls->addLayout(wavFormVertControls);
+    wavFormControls->addLayout(wavFormSegmentControls);
 
 // add constructor for iniitalizer of qlabel text
 
@@ -178,7 +180,8 @@ void Audio::newAudioPlayer(){
     connect(deltaSelector, &QDoubleSpinBox::valueChanged, this, &Audio::toggleBoolManualSegments);
     connect(autoSegmentButton, &QPushButton::clicked, this, &Audio::toggleBoolAutoSegments);
 
-    connect (wavChart, &WavForm::segmentReady, this, &Audio::segmentIntervalControlsEnable);
+    connect(wavChart, &WavForm::segmentReady, this, &Audio::segmentIntervalControlsEnable);
+    connect(wavChart, &WavForm::segmentLength, this, &Audio::segmentLengthShow);
 
     QHBoxLayout *deltaLayout = new QHBoxLayout();
     deltaLayout->addWidget(deltaSelector);
@@ -195,6 +198,9 @@ void Audio::newAudioPlayer(){
     segmentToolsCheckbox->setEnabled(false);
     connect(segmentToolsCheckbox, &QCheckBox::clicked, wavChart, &WavForm::switchMouseEventControls);
 
+    segmentLengthLabel = new QLabel();
+    segmentLengthLabel->setVisible(false);
+
     connect(createGraphSegmentsButton, &QPushButton::clicked, wavChart, &WavForm::sendIntervalsForSegment);
     connect(wavChart, &WavForm::intervalsForSegments, graphAudioSegments, &WaveFormSegments::collectWavSegment);
 
@@ -205,7 +211,8 @@ void Audio::newAudioPlayer(){
     connect(clearAllGraphSegmentsButton, &QPushButton::clicked, graphAudioSegments, &WaveFormSegments::clearAllWavSegments);
     connect(clearAllGraphSegmentsButton, &QPushButton::clicked, wavChart, &WavForm::clearIntervals);
     connect(wavChart, &WavForm::chartInfoReady, this, &Audio::segmentCreateControlsEnable);
-    wavFormControls-> addWidget(segmentToolsCheckbox);
+    wavFormSegmentControls-> addWidget(segmentToolsCheckbox);
+    wavFormSegmentControls-> addWidget(segmentLengthLabel);
     //Close Analysis Graphs
     segmentGraph = new SegmentGraph(WAVFORM_WIDTH, WAVFORM_HEIGHT);
     segmentGraph->setVisible(false);
@@ -339,10 +346,13 @@ void Audio::toggleBoolAutoSegments() {
 
 void Audio::ZoomScrubberPosition(){
     double floatPosition = (double) audioPosition / audioLength;
+<<<<<<< HEAD
     if (floatPosition < 1.0 & abs(audioPosition - player->position()) > 100) {
         audioPosition = player->position();
     }
 
+=======
+>>>>>>> 85bf10e17400e37da926ca7224e9447e91f5ccfa
     emit audioPositionChanged(floatPosition);
 }
 
@@ -389,6 +399,13 @@ void Audio::audioLoaded(){
 void Audio::segmentIntervalControlsEnable(bool ready){
     deltaSelector->setEnabled(ready);
     autoSegmentButton->setEnabled(ready);
+    segmentLengthLabel->setVisible(ready);
+}
+
+void Audio::segmentLengthShow(int numSamples, int sampleRate) {
+    double timeSecs = double(numSamples) / double (sampleRate);
+    QString formattedTime = QString::number(timeSecs, 'f', 3);
+    segmentLengthLabel->setText(QString("Length of segment:\n%1 samples\nor %2 seconds").arg(numSamples).arg(formattedTime));
 }
 
 void Audio::segmentCreateControlsEnable(bool ready){

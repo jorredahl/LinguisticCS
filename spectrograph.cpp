@@ -33,7 +33,7 @@ Spectrograph::Spectrograph(QWidget *parent)
     : QWidget(parent), graphicsView(new QGraphicsView(this)), graphicsScene(new QGraphicsScene(this))
 {
 
-    /* hopSize can technically be adjusted
+    /* hopSize can be adjusted
      *
      * EXAMPLE: if we do windowSize/5 then 5 chunks will be processed , this can be tested with the qDebug statements
      *
@@ -52,38 +52,24 @@ Spectrograph::Spectrograph(QWidget *parent)
     // calc hamming window for smoothing (FFT processing)
     hammingWindow(windowSize, hammingWindowValues);
 
-    graphicsView->setFixedSize(300, 150);
-    graphicsScene->setSceneRect(0, 0, 300, 150); // match the scene size to the view
-
+    graphicsView->setFixedSize(650, 200);
+    graphicsScene->setSceneRect(0, 0, 650, 200); // match the scene size to the view
 
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
-
     graphicsView->setScene(graphicsScene);
     graphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     graphicsView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     mainLayout->addWidget(graphicsView);
-
-    QHBoxLayout *buttonLayout = new QHBoxLayout();
-    // buttonLayout->addWidget(peaksButton); // Add the button
-    buttonLayout->addStretch();  // Push everything else to the right
-
-    // Add the button layout to the main layout at the top
-    mainLayout->addLayout(buttonLayout);
-    mainLayout->addStretch(); // Push everything else below the button
-
     setLayout(mainLayout);
 
     // set fixed size for spectrograph (can modify)
-    setFixedSize(300, 150);
-
-    //connect(peaksButton, &QPushButton::clicked, this, &Spectrograph::showHighlights);
+    //setFixedSize(700, 150);
 }
 
 void Spectrograph::loadAudioFile(const QString &fileName) {
     reset(); // Clear curr spect data
     currentAudioFile = fileName; // Set the new audio file
     processAudioFile(QUrl::fromLocalFile(fileName)); // start processing
-
 }
 
 
@@ -92,27 +78,43 @@ void Spectrograph::processAudioFile(const QUrl &fileUrl) {
     if (!decoder) {
         // init QAudioDecoder for decoding audio buffers
         decoder = new QAudioDecoder(this);
-
-        //if (connect(decoder, &QAudioDecoder::finished, this, &Spectrograph::decodingFinished) ) { qDebug() << "FINISHED";}
         connect(decoder, &QAudioDecoder::bufferReady, this, &Spectrograph::bufferReady);
+        connect(decoder, &QAudioDecoder::finished, this, &Spectrograph::decodingFinished);
     }
 
     accumulatedSamples.clear(); // clear any prev samples
     decoder->setSource(fileUrl); // set decoder src to the new file
     decoder->start();
-    // connect(decoder, &QAudioDecoder::finished, this, &Spectrograph::decodingFinished);
-
-    qDebug() << "processing has been done!";
-
 }
+
 
 // used buffer ready should be finished
 // when using buffer ready it should only be when QAudioDecoder is finished
 void Spectrograph::bufferReady() {
 
-    // read the next available audio buffer and process it
     QAudioBuffer buffer = decoder->read();
-    handleAudioBuffer(buffer);
+    const qint16 *data = buffer.constData<qint16>();
+    int sampleCount = buffer.sampleCount();
+
+    for (int i = 0; i < sampleCount; ++i) {
+        accumulatedSamples.append(static_cast<double>(data[i]) / 32768.0); // Normalize to 16-bit signed integer
+    }
+}
+
+
+// if the decoder is finished then we
+void Spectrograph::decodingFinished() {
+
+    // ensure there are samples to process
+    if (accumulatedSamples.isEmpty()) {
+        qWarning() << "No audio samples to process!";
+        return;
+    }
+
+    // process the accumulated samples into spectrogram chunks
+    QVector<double> windowSamples = accumulatedSamples; // copy all samples
+    setupSpectrograph(windowSamples);
+    accumulatedSamples.clear();
 }
 
 
@@ -128,10 +130,6 @@ void Spectrograph::handleAudioBuffer(const QAudioBuffer &buffer) {
         accumulatedSamples.append(static_cast<double>(data[i]));
     }
 
-    // if (decoder->bufferAvailable()) {
-    //     return;
-    // }
-
     // Process accumulatedSamples in overlapping windows of size windowSize
     while (accumulatedSamples.size() >= getWindowSize()) {
 
@@ -139,7 +137,6 @@ void Spectrograph::handleAudioBuffer(const QAudioBuffer &buffer) {
         QVector<double> windowSamples = accumulatedSamples.mid(0, getWindowSize());
         // remove processed samples based on hopSize
         accumulatedSamples = accumulatedSamples.mid(hopSize);
-
         setupSpectrograph(windowSamples);
     }
 }
@@ -164,19 +161,16 @@ void Spectrograph::hammingWindow(int windowLength, QVector<double> &window) {
 
 
 void Spectrograph::setupSpectrograph(QVector<double> &accumulatedSamples) {
-   // qDebug() << "before processing, accumulatedsamples size:" << accumulatedSamples.size();
     graphicsScene->clear();
 
     // signal length and number of chunks based on hopSize and window size
     int signalLength = accumulatedSamples.size();
     int numChunks = (signalLength - windowSize) / hopSize + 1;
 
-    //qDebug() << "calculated numChunks:" << numChunks << "with accumulatedSamples size" << accumulatedSamples.size();
-
     if (numChunks > 0) {
 
         // resize spectrogram to accommodate new chunks
-        spectrogram.resize(spectrogram.size() + numChunks, QVector<double>(windowSize));
+        spectrogram.resize(spectrogram.size() + numChunks, QVector<double>(windowSize/ 2));
 
         // process each chunk
         for (int chunk = 0; chunk < numChunks; ++chunk) {
@@ -195,7 +189,7 @@ void Spectrograph::setupSpectrograph(QVector<double> &accumulatedSamples) {
             fftw_execute(plan);
 
             // store amplitudes in spectrograph
-            for (int i=0; i < windowSize; ++i) {
+            for (int i=0; i < windowSize/2; ++i) {
                 //what is displayed from fft
                 double real = fft_result[i][0];
                 double imag = fft_result[i][1];
@@ -206,15 +200,8 @@ void Spectrograph::setupSpectrograph(QVector<double> &accumulatedSamples) {
                 spectrogram[spectrogram.size() - numChunks + chunk][i] = amplitude;
             }
         }
-        // remove processed samples
-        int samplesProcessed = numChunks * hopSize;
-        accumulatedSamples = accumulatedSamples.mid(samplesProcessed);
     }
-
-    // render spect to QImage and cache it as a QPixmap
     renderToPixmap();
-    graphicsScene->clear();
-    graphicsScene->addPixmap(cachedSpect);
 }
 
 
@@ -230,9 +217,9 @@ void Spectrograph::renderToPixmap() {
 
     // determine dimensions for each chunk and frequency
     int numChunks = spectrogram.size();
-    int numFrequencies = windowSize;
+    int numFrequencies = windowSize / 2;
     double chunkWidth = static_cast<double>(width()) / (numChunks);
-    double freqHeight = static_cast<double>(height()) / (numFrequencies/125); // cut in half bc fftw is mirrored
+    double freqHeight = static_cast<double>(height()) / (numFrequencies/105); // cut in half again bc fftw is mirrored
 
     // Find the maximum amplitude for normalization
     double maxAmp = 0.0;
@@ -249,7 +236,20 @@ void Spectrograph::renderToPixmap() {
         for (int freq = 0; freq < numFrequencies; ++freq) {
             double amplitude = spectrogram[chunk][freq];
             int intensity = static_cast<int>((amplitude / maxAmp) * 255.0);
-            QColor color = QColor::fromHsv(0, 255, intensity); // adjust color later rn cant use same thing from QPaintEvent
+
+            // ensure intensity stays within 255
+            intensity = std::clamp(intensity, 0, 255);
+
+            QColor color;
+            if (intensity <= 127) {
+                // map from black (quietest amp) to red (middle amp)
+                int red = std::clamp(intensity * 2, 0, 255);
+                color.setRgb(red, 0, 0); // Only red increases
+            } else {
+                // map from red (middle) to yellow (loudest amp)
+                int green = std::clamp((intensity - 127) * 2, 0, 255);
+                color.setRgb(255, green, 0); // Red stays max, green increases, blue stays 0
+            }
 
             QRectF rect(chunk * chunkWidth, height() - (freq + 1) * freqHeight, chunkWidth, freqHeight);
             painter.fillRect(rect, color);
@@ -259,6 +259,8 @@ void Spectrograph::renderToPixmap() {
 
     // cache the rendered image as a pixmap
     cachedSpect = QPixmap::fromImage(image);
+    graphicsScene->clear();
+    graphicsScene->addPixmap(cachedSpect);
 }
 
 void Spectrograph::reset() {
@@ -271,9 +273,4 @@ void Spectrograph::reset() {
     spectrogram.clear();
     accumulatedSamples.clear();
     update();
-}
-
-void Spectrograph::showHighlights() {
-    showHighlightsEnabled = !showHighlightsEnabled;
-    update(); //repaint
 }

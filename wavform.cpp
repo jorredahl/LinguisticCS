@@ -253,6 +253,11 @@ void WavForm::mousePressEvent(QMouseEvent *evt) {
 
         }
         emit segmentReady(startSegment && endSegment ? true: false);
+        if (startSegment && endSegment) {
+            float segmentProp = (endSegmentP.x() / chartW) - (startSegmentP.x() / chartW);
+            int numSamples = int(audio->getAudioSamples().length() * segmentProp);
+            emit segmentLength(numSamples, audio->getSampleRate());
+        }
         updateChart(chartW,chartH);
         return;
     }

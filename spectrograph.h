@@ -90,12 +90,10 @@ public slots:
     void processAudioFile(const QUrl &fileUrl);
     void handleAudioBuffer(const QAudioBuffer &buffer);
     void loadAudioFile(const QString &fileName);
-    void showHighlights();
     void renderToPixmap();
 
 private slots:
-    //void decodingFinished();
-
+    void decodingFinished();
 };
 
 

@@ -99,6 +99,7 @@ class Audio : public QWidget
         QPushButton *createGraphSegmentsButton;
         QPushButton *clearAllGraphSegmentsButton;
         QCheckBox *segmentToolsCheckbox;
+        QLabel *segmentLengthLabel;
         QPushButton *autoSegmentButton;
         bool segmentAudioPlaying;
         qint64 segmentAudioEndPosition;
@@ -131,6 +132,7 @@ public slots:
     void updateAudioDuration(qint64 duration);
     void audioLoaded();
     void segmentIntervalControlsEnable(bool ready);
+    void segmentLengthShow(int numSamples, int sampleRate);
     void segmentCreateControlsEnable(bool ready);
     void toggleBoolManualSegments(double position);
     void toggleBoolAutoSegments();
