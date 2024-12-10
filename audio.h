@@ -108,6 +108,8 @@ class Audio : public QWidget
 
 
         bool autoSegmentBool;
+        bool spectrographReadyFlag;
+        bool audioUploaded = false;
 
 
 public:
@@ -129,10 +131,16 @@ public slots:
     void segmentCreateControlsEnable(bool ready);
     void toggleBoolManualSegments(double position);
     void toggleBoolAutoSegments();
+
     void watchForEndOfSegmentAudio(qint64 audioPosition);
     void handlePlayPauseButton();
     void clearSegmentsEnable(bool enable);
     void handleLoopClick();
+
+    void handleSpectWithPlay();
+    void handleWavClearing();
+    void disableButtonsUntilAudio();
+
 
 
 signals:
@@ -142,6 +150,8 @@ signals:
     void  segmentAudioNotPlaying(bool);
     // for connecting spectrograph
     void audioFileSelected(const QString &fileName);
+
+
 };
 
 #endif // AUDIO_H

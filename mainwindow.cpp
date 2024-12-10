@@ -43,25 +43,26 @@ MainWindow::MainWindow(QWidget *parent)
     mainLayout->addWidget(audio1);
 
     // spectrograph 1
-    Spectrograph *spectrograph1 = new Spectrograph(this);
-    mainLayout->addWidget(spectrograph1, 0, Qt::AlignRight);
-    connect(audio1, &Audio::audioFileSelected, spectrograph1, &Spectrograph::loadAudioFile);
 
+    Spectrograph *spectrograph1 = new Spectrograph();
+    mainLayout->addWidget(spectrograph1, 0, Qt::AlignRight);
+
+    connect(audio1, &Audio::audioFileSelected, spectrograph1, &Spectrograph::loadAudioFile);
 
     audio2 = new Audio(nullptr, "User Sound Wave");
     mainLayout->addWidget(audio2);
 
     // spectrograph 2
-    Spectrograph *spectrograph2 = new Spectrograph(this);
+    Spectrograph *spectrograph2 = new Spectrograph();
     mainLayout->addWidget(spectrograph2, 0, Qt::AlignRight);
     connect(audio2, &Audio::audioFileSelected, spectrograph2, &Spectrograph::loadAudioFile);
-    center->setLayout(mainLayout);
 
+    center->setLayout(mainLayout);
 }
 
 
-
 MainWindow::~MainWindow() {
+
 }
 
 
