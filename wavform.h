@@ -120,6 +120,7 @@ signals:
     void sceneSizeChange();
     void audioFileLoadedTrue();
     void segmentReady(bool ready);
+    void segmentLength(int numSamples, int sampleRate);
     void intervalsForSegments(QList<int>, bool);
     void chartInfoReady(bool ready);
     void clearAllSegmentInfo();
