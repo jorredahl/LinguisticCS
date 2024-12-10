@@ -49,7 +49,6 @@ MainWindow::MainWindow(QWidget *parent)
     // spectrograph 1
     Spectrograph *spectrograph1 = new Spectrograph();
     mainLayout->addWidget(spectrograph1);
-  //  QObject::connect(audio1, &Audio::playPressed, spectrograph1, &Spectrograph::restartSpect);
     connect(audio1, &Audio::audioFileSelected, spectrograph1, &Spectrograph::loadAudioFile);
 
     audio2 = new Audio(nullptr, "User Sound Wave");
@@ -58,11 +57,7 @@ MainWindow::MainWindow(QWidget *parent)
     // spectrograph 2
     Spectrograph *spectrograph2 = new Spectrograph();
     mainLayout->addWidget(spectrograph2);
-  //  QObject::connect(audio1, &Audio::playPressed, spectrograph2, &Spectrograph::restartSpect);
-
-    // spectrograph2->moveToThread(spectThread2);
     connect(audio2, &Audio::audioFileSelected, spectrograph2, &Spectrograph::loadAudioFile);
-    // connect(spectThread2, &QThread::finished, spectrograph2, &QObject::deleteLater);
 
     center->setLayout(mainLayout);
 }
