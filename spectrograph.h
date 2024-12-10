@@ -41,6 +41,7 @@
 class Spectrograph : public QWidget
 {
     Q_OBJECT
+    QPushButton *peaksButton;
 
 public:
     explicit Spectrograph(QWidget *parent = nullptr);

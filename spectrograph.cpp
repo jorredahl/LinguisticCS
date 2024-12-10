@@ -52,8 +52,8 @@ Spectrograph::Spectrograph(QWidget *parent)
     // calc hamming window for smoothing (FFT processing)
     hammingWindow(windowSize, hammingWindowValues);
 
-    graphicsView->setFixedSize(700, 150);
-    graphicsScene->setSceneRect(0, 0, 700, 150); // match the scene size to the view
+    graphicsView->setFixedSize(650, 200);
+    graphicsScene->setSceneRect(0, 0, 650, 200); // match the scene size to the view
 
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     graphicsView->setScene(graphicsScene);
@@ -65,7 +65,6 @@ Spectrograph::Spectrograph(QWidget *parent)
     // set fixed size for spectrograph (can modify)
     //setFixedSize(700, 150);
 }
-
 
 void Spectrograph::loadAudioFile(const QString &fileName) {
     reset(); // Clear curr spect data
