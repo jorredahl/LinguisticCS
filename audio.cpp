@@ -91,16 +91,30 @@ void Audio::newAudioPlayer(){
     displayAndControlsLayout = new QVBoxLayout();
     audioLayout->addLayout(displayAndControlsLayout);
 
-    // configure audio recording
-    audioRecorder = new QAudioRecorder(this);
-    QAudioEncoderSettings audioSettings;
-    audioSettings.setCodec("audio/pcm");
-    audioSettings.setQuality(QMultiMedia::HighQuality);
-    audioRecorder->setEncodingSettings(audioSettings);
-    //configure bit depth? sample rate?
+    // // configure audio recording
+    // audioRecorder = new QAudioRecorder(this);
+    // QAudioEncoderSettings audioSettings;
+    // audioSettings.setCodec("audio/pcm");
+    // audioSettings.setQuality(QMultiMedia::HighQuality);
+    // audioRecorder->setEncodingSettings(audioSettings);
+    // //configure bit depth? sample rate?
 
-    // audioRecorder->setOutputLocation(QUrl::fromLocalFile("recording.wav"));
-    //saveFilePath = "recording.wav";
+    // // audioRecorder->setOutputLocation(QUrl::fromLocalFile("recording.wav"));
+    // //saveFilePath = "recording.wav";
+    // recordButton = new QPushButton("Start Recording");
+    // recordButton->setEnabled(true);
+    // audioControls->addWidget(recordButton);
+
+    // connect(recordButton, &QPushButton::clicked, this, [this]() {isRecording ? stopRecording() : startRecording();});
+    captureSession = new QMediaCaptureSession(this);
+    audioInput = new QAudioInput(this);
+    mediaRecorder = new QMediaRecorder(this);
+
+    captureSession->setAudioInput(audioInput);
+    captureSession->setRecorder(mediaRecorder);
+
+    mediaRecorder->setQuality(QMediaRecorder::HighQuality);
+    mediaRecorder->setOutputLocation(QUrl::fromLocalFile("recording.wav")); //temporary file default location
     recordButton = new QPushButton("Start Recording");
     recordButton->setEnabled(true);
     audioControls->addWidget(recordButton);
@@ -333,43 +347,48 @@ void Audio::audioLoaded(){
     graphAudioSegments->uploadAudio(wavChart->getSamples());
 }
 
-void Audio::setupAudioRecorder() {
-    //set an output location for recorded audio
-    audioRecorder->setOutputLocation(QUrl::fromLocalFile("recording.wav"));
+// void Audio::setupAudioRecorder() {
+//     //set an output location for recorded audio
+//     audioRecorder->setOutputLocation(QUrl::fromLocalFile("recording.wav"));
 
-    //configure audio settings here
-    //
-}
+//     //configure audio settings here
+//     //
+// }
 
 void Audio::startRecording() {
     QString tempLocation = QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/temp_recording.wav"; //temp output location
-    audioRecorder->setOutputLocation(QUrl::fromLocalFile(tempLocation));
+    mediaRecorder->setOutputLocation(QUrl::fromLocalFile(tempLocation));
 
-    audioRecorder->record();
+    mediaRecorder->record(); //start recording
     isRecording = true;
     recordButton->setText("Stop Recording");
 }
 
 void Audio::stopRecording() {
     if (!isRecording) return;
-    audioRecorder->stop();
+    mediaRecorder->stop();
     isRecording = false;
     recordButton->setText("StartRecording");
 
-    QString defaultSaveName = "recording.wav";
+    // save recording
+    QString defaultSaveName = "recording.wav"; //needed?
     QString recordingName = QFileDialog::getSaveFileName(this, tr("Save Recording"), QDir::currentPath() + "/" + defaultSaveName, tr("Audio Files (*.wav)"));
     if (recordingName.isEmpty()) {
         qDebug() << "Save canceled";
         return;
     }
 
+    // ensure wav file
     if (!recordingName.endsWith(".wav", Qt::CaseInsensitive)) {
         recordingName += ".wav";
     }
 
-    //delete temporary file?...
+    QFile::rename(mediaRecorder->outputLocation().toLocalFile(), recordingName);
 
     qDebug() << "Recording saved to: " << recordingName;
+
+    //load audio for playback
+    emit audioFileSelected(recordingName);
 }
 
 // we want the segments to be whatever the last button hit was

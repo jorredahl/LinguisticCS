@@ -7,13 +7,14 @@
 #include <QMediaPlayer>
 #include <QToolButton>
 #include <QBoxLayout>
+#include <QMediaCaptureSession>
+#include <QAudioInput>
 #include <QMediaRecorder>
-#include <QAudioRecorder>
 #include "wavform.h"
 #include "zoom.h"
 #include "segmentgraph.h"
 #include "waveformsegments.h"
-
+//what do I need to do for multimedia inclusion in .pro file(qml)?
 /*
  * File: audio.h
  * Description:
@@ -95,7 +96,10 @@ class Audio : public QWidget
         bool audioUploaded = false;
 
         // for audio recording
-        QAudioRecorder *audioRecorder;
+        //QAudioRecorder *audioRecorder;
+        QMediaCaptureSession *captureSession;
+        QAudioInput *audioInput;
+        QMediaRecorder *mediaRecorder;
         QPushButton *recordButton;
         bool isRecording; //to track recording state
 
@@ -126,7 +130,6 @@ public slots:
     // slot methods for audio recording
     void startRecording();
     void stopRecording();
-    //void recordingError(QMediaRecorder::Error error);
 
 signals:
     void emitLoadAudioIn(QString fName);
