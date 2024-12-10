@@ -385,6 +385,7 @@ void WavForm::drawAutoIntervals(QList<int> intervalLocsInAudio){
 }
 
 void WavForm::clearIntervals(){
+
     if (startSegment) {
         scene.removeItem(startSegment);
         startSegment = nullptr;
@@ -403,4 +404,6 @@ void WavForm::clearIntervals(){
     emit segmentReady(false);
     emit chartInfoReady(false);
     emit clearAllSegmentInfo();
+
+
 }

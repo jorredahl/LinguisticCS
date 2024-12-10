@@ -222,23 +222,20 @@ void Audio::uploadAudio(){
 
     handleSpectWithPlay();
     disableButtonsUntilAudio();
-
     QUrl aName = QFileDialog::getOpenFileUrl(this, "Select audio file");
     if (aName.isEmpty()) return;
-
     audioUploaded = true;
     disableButtonsUntilAudio();
     handleWavClearing();
 
-
     if (player) player = nullptr;
     if(audioOutput) audioOutput = nullptr;
     player = new QMediaPlayer;
-    connect(player, &QMediaPlayer::positionChanged, this, &Audio::watchForEndOfSegmentAudio);
     audioOutput = new QAudioOutput;
     player->setAudioOutput(audioOutput);
     player->setSource(aName);
     audioOutput->setVolume(50);
+    connect(player, &QMediaPlayer::positionChanged, this, &Audio::watchForEndOfSegmentAudio);
 
     playButton->setEnabled(true);
     loopButton->setEnabled(true);
@@ -246,7 +243,6 @@ void Audio::uploadAudio(){
     zoomButtons->setEnabled(true);
     zoomButtons->resetZoom();
     setTrackPosition(player->position());
-
     // Connect scrubber to spectrograph updates
     connect(player, &QMediaPlayer::positionChanged, this, &Audio::updateTrackPositionFromTimer);
 
@@ -389,7 +385,8 @@ void Audio::segmentIntervalControlsEnable(bool ready){
 
 void Audio::segmentCreateControlsEnable(bool ready){
     createGraphSegmentsButton->setEnabled(ready);
-    audioPositionOnChart = player->position();
+    audioPositionOnChart = player? player->position(): 0;
+
 }
 
 void Audio::clearSegmentsEnable(bool enable){
@@ -414,7 +411,8 @@ void Audio::handleSpectWithPlay() {
 
 // if charts in use and new audio is uploaded charts & data should be cleaned up
 void Audio::handleWavClearing() {
-
+    if (!segmentGraph) return;
+    if (!wavChart) return;
     if (segmentGraph || wavChart ) {
         segmentGraph->clearView();
         wavChart->clearIntervals();
