@@ -7,6 +7,8 @@
 #include <QMediaPlayer>
 #include <QToolButton>
 #include <QBoxLayout>
+#include <QMediaRecorder>
+#include <QAudioRecorder>
 #include "wavform.h"
 #include "zoom.h"
 #include "segmentgraph.h"
@@ -88,17 +90,22 @@ class Audio : public QWidget
 
         WaveFormSegments *graphAudioSegments;
 
-
         bool autoSegmentBool;
         bool spectrographReadyFlag;
         bool audioUploaded = false;
 
+        // for audio recording
+        QAudioRecorder *audioRecorder;
+        QPushButton *recordButton;
+        bool isRecording; //to track recording state
 
 public:
     explicit Audio(QWidget *parent = nullptr, QString _label = "Sound Wave");
     WavForm *wavChart;
     void newAudioPlayer();
     void setTrackPosition(qint64 position);
+    //method to initialize audio recording
+    void setupAudioRecorder();
 
 public slots:
     void uploadAudio();
@@ -116,7 +123,10 @@ public slots:
     void handleSpectWithPlay();
     void handleWavClearing();
     void disableButtonsUntilAudio();
-
+    // slot methods for audio recording
+    void startRecording();
+    void stopRecording();
+    //void recordingError(QMediaRecorder::Error error);
 
 signals:
     void emitLoadAudioIn(QString fName);
@@ -124,8 +134,6 @@ signals:
     void emitAutoSegmentBool(bool autoSegmentBool);
     // for connecting spectrograph
     void audioFileSelected(const QString &fileName);
-
-
 };
 
 #endif // AUDIO_H

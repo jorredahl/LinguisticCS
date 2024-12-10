@@ -91,6 +91,22 @@ void Audio::newAudioPlayer(){
     displayAndControlsLayout = new QVBoxLayout();
     audioLayout->addLayout(displayAndControlsLayout);
 
+    // configure audio recording
+    audioRecorder = new QAudioRecorder(this);
+    QAudioEncoderSettings audioSettings;
+    audioSettings.setCodec("audio/pcm");
+    audioSettings.setQuality(QMultiMedia::HighQuality);
+    audioRecorder->setEncodingSettings(audioSettings);
+    //configure bit depth? sample rate?
+
+    // audioRecorder->setOutputLocation(QUrl::fromLocalFile("recording.wav"));
+    //saveFilePath = "recording.wav";
+    recordButton = new QPushButton("Start Recording");
+    recordButton->setEnabled(true);
+    audioControls->addWidget(recordButton);
+
+    connect(recordButton, &QPushButton::clicked, this, [this]() {isRecording ? stopRecording() : startRecording();});
+
     QLabel *nativeWaveLabel = new QLabel(label); // using QLabel as a placeholder for waveforms
     displayAndControlsLayout->addWidget(nativeWaveLabel);
 
@@ -315,6 +331,45 @@ void Audio::updateAudioDuration(qint64 duration){
 
 void Audio::audioLoaded(){
     graphAudioSegments->uploadAudio(wavChart->getSamples());
+}
+
+void Audio::setupAudioRecorder() {
+    //set an output location for recorded audio
+    audioRecorder->setOutputLocation(QUrl::fromLocalFile("recording.wav"));
+
+    //configure audio settings here
+    //
+}
+
+void Audio::startRecording() {
+    QString tempLocation = QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/temp_recording.wav"; //temp output location
+    audioRecorder->setOutputLocation(QUrl::fromLocalFile(tempLocation));
+
+    audioRecorder->record();
+    isRecording = true;
+    recordButton->setText("Stop Recording");
+}
+
+void Audio::stopRecording() {
+    if (!isRecording) return;
+    audioRecorder->stop();
+    isRecording = false;
+    recordButton->setText("StartRecording");
+
+    QString defaultSaveName = "recording.wav";
+    QString recordingName = QFileDialog::getSaveFileName(this, tr("Save Recording"), QDir::currentPath() + "/" + defaultSaveName, tr("Audio Files (*.wav)"));
+    if (recordingName.isEmpty()) {
+        qDebug() << "Save canceled";
+        return;
+    }
+
+    if (!recordingName.endsWith(".wav", Qt::CaseInsensitive)) {
+        recordingName += ".wav";
+    }
+
+    //delete temporary file?...
+
+    qDebug() << "Recording saved to: " << recordingName;
 }
 
 // we want the segments to be whatever the last button hit was
