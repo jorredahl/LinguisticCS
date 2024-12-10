@@ -124,14 +124,6 @@ void Audio::newAudioPlayer(){
 
     connect(recordButton, &QPushButton::clicked, this, [this]() {isRecording ? stopRecording() : startRecording();});
 
-    QLabel *nativeWaveLabel = new QLabel(label); // using QLabel as a placeholder for waveforms
-    displayAndControlsLayout->addWidget(nativeWaveLabel);
-
-    controlsLayout = new QHBoxLayout();
-    displayAndControlsLayout->addLayout(controlsLayout);
-=======
->>>>>>> origin/main
-
     QAction *loopAction = new QAction();
     connect(loopAction, &QAction::triggered, this, &Audio::handleLoopClick);
     loopButton = new QToolButton;
