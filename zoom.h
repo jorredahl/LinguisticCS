@@ -54,6 +54,8 @@ public:
     int graphHeight;
     int zoomedWidth;
     int zoomedHeight;
+    void setHorizontalSlider(QSlider* slider);
+    void setVerticalSlider(QSlider* slider);
     void resetZoom();
 
 public slots:

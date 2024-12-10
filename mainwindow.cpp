@@ -20,36 +20,31 @@
  *  -
  *
  * References:
- *  - ...
+ *  - scroll area: https://stackoverflow.com/questions/65554770/qscrollarea-how-do-i-make-my-central-widget-scrollable
+
  */
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
+    QScrollArea *scrollArea = new QScrollArea(this);
     // create central widget
     QWidget *center = new QWidget();
-    setCentralWidget(center);
+    setCentralWidget(scrollArea);
+    scrollArea->setWidget(center);
+    scrollArea->show();
+    scrollArea->setWidgetResizable(true);
 
     // create main layout for central widget
     // this was V before
     mainLayout = new QVBoxLayout(center);
-
-    // create menu bar
-    //QMenu *fileMenu = new QMenu("&File");
-    QMenu *fileMenu = menuBar()->addMenu("&File");
-
-    //QAction *uploadAction = new QAction("&Upload Audio File", this);
-    //connect(uploadAction, &QAction::triggered, this, &MainWindow::uploadAudio);
-    //uploadAction->setShortcut(Qt::CTRL | Qt::Key_N);
-    //fileMenu->addAction(uploadAction);
 
     audio1 = new Audio(nullptr, "Speaker Sound Wave");
     mainLayout->addWidget(audio1);
 
     // spectrograph 1
     Spectrograph *spectrograph1 = new Spectrograph();
-    mainLayout->addWidget(spectrograph1);
-  //  QObject::connect(audio1, &Audio::playPressed, spectrograph1, &Spectrograph::restartSpect);
+    mainLayout->addWidget(spectrograph1, 0, Qt::AlignRight);
     connect(audio1, &Audio::audioFileSelected, spectrograph1, &Spectrograph::loadAudioFile);
 
     audio2 = new Audio(nullptr, "User Sound Wave");
@@ -57,12 +52,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     // spectrograph 2
     Spectrograph *spectrograph2 = new Spectrograph();
-    mainLayout->addWidget(spectrograph2);
-  //  QObject::connect(audio1, &Audio::playPressed, spectrograph2, &Spectrograph::restartSpect);
-
-    // spectrograph2->moveToThread(spectThread2);
+    mainLayout->addWidget(spectrograph2, 0, Qt::AlignRight);
     connect(audio2, &Audio::audioFileSelected, spectrograph2, &Spectrograph::loadAudioFile);
-    // connect(spectThread2, &QThread::finished, spectrograph2, &QObject::deleteLater);
 
     center->setLayout(mainLayout);
 }
