@@ -47,7 +47,7 @@
  *  - 'void updateTrackPositionFromSegment(QPair<double, double> startEnd)': updates the audio to play the displayed segment
  *  - 'void ZoomScrubberPosition()': adjusts the scrubber when there is a zoom update
  *  - 'void updateAudioPosition(qint64 duration)': Updates audio track duration
- *  - 'void AudioLoaded()': allows for the segmenting functionality to start after audio has been loaded in
+ *  - 'void audioLoaded()': allows for the segmenting functionality to start after audio has been loaded in
  *  - 'void segmentIntervalControlsEnable(bool ready)': enables interval controls after segments are started
  *  - 'void segmentCreateControlsEnable(bool ready)': enables the create button once segments are established
  *  - 'void toggleBoolManualSegments(double position)': enables the clear button and sends updated delta data and indicates to use segments from the delta value
@@ -56,12 +56,15 @@
  *  - 'void handlePlayPauseButton()': deals with play pause specifically when the button for it is pressed (or if original audio needs to be paused/played)
  *  - 'void clearSegmentsEnable(bool enable)': enable/disable the clear segments button
  *  - 'void handleLoopClick()': if the loop action is clicked this hadles the logic to make sure audio is looped/ the button looks selected
+ *  - 'void handleSpectWithPlay()': when the spect is loading while audio is playing, audio & time stop to prevent jumpy scrubber
+ *  - 'void handleWavClearing()': if charts are in use and new audio is uploaded charts & data are cleared
+ *  - 'void disableButtonsUntilAudio()': disables buttons until audio is loaded
  *
  * Signals:
  *  - 'void emitLoadAudioIn(QString fName)': Emits signal when an audio file is uploaded
  *  - 'void audioPositionChanged(double position)': Emits signal when the audio position is changed
- *  - 'void  segmentAudioNotPlaying(bool)': emits when the segment audio is playing/not to update what the player is doing or segment ui
- *
+ *  - 'void segmentAudioNotPlaying(bool)': emits when the segment audio is playing/not to update what the player is doing or segment ui
+ *  - 'void audioFileSelected(const QString &fileName)': tells spectrograph that the audio is loaded
  * Notes:
  *  - The 'Audio' class relies on the 'WavForm', 'SegmentGraph', 'WavFormSegments', and 'Zoom' classes for waveform visualization and zooming
  *

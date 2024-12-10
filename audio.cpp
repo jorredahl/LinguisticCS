@@ -43,6 +43,9 @@
  *  - 'handlePlayPauseButton()': deals with play pause specifically when the button for it is pressed (or if original audio needs to be paused/played)
  *  - 'clearSegmentsEnable(bool enable)': enable/disable the clear segments button
  *  - 'handleLoopClick()': if the loop action is clicked this hadles the logic to make sure audio is looped/ the button looks selected
+ *  - 'void handleSpectWithPlay()': when the spect is loading while audio is playing, audio & time stop to prevent jumpy scrubber
+ *  - 'void handleWavClearing()': if charts are in use and new audio is uploaded charts & data are cleared
+ *  - 'void disableButtonsUntilAudio()': disables buttons until audio is loaded
  *
  *
  * Notes:
