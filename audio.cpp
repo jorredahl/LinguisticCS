@@ -289,9 +289,9 @@ void Audio::updateTrackPositionFromTimer() {
 }
 
 void Audio::updateTrackPositionFromScrubber(double position) {
-    qint64 intPosition = (qint64) (position * audioLength);
-    setTrackPosition(intPosition);
-    player->setPosition(intPosition);
+    double scaledPosition = (double) (position * audioLength);
+    player->setPosition(scaledPosition);
+    setTrackPosition(scaledPosition);
     segmentAudioPlaying = false;
     emit segmentAudioNotPlaying(true);
 
@@ -342,7 +342,6 @@ void Audio::ZoomScrubberPosition(){
     if (floatPosition < 1.0 & abs(audioPosition - player->position()) > 100) {
         audioPosition = player->position();
     }
-    qDebug() << "zoomScrubberPosition, emit audio position changed";
 
     emit audioPositionChanged(floatPosition);
 }
