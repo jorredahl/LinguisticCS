@@ -83,29 +83,30 @@ void Audio::newAudioPlayer(){
     wavFormControls->addLayout(wavFormVertControls);
     wavFormControls->addLayout(wavFormSegmentControls);
 
-    // Upload: ctrl+U
-    // Play/Pause: space
-    // loop: ctrl+L
-
     uploadAudioButton = new QPushButton("Upload");
-    uploadAudioButton->setShortcut(Qt::CTRL | Qt::Key_U);
+    //uploadAudioButton->setShortcut(Qt::CTRL | Qt::Key_U);
     connect(uploadAudioButton, &QPushButton::clicked, this, &Audio::uploadAudio);
     audioControls->addWidget(uploadAudioButton, 0, Qt::AlignLeft);
 
     QAction *playAction = new QAction();
     connect(playAction, &QAction::triggered, this, &Audio::handlePlayPauseButton);
-    playAction->setShortcut(Qt::Key_Space);
+
+    if (audioDiviceNumber == 0) {
+        playAction->setShortcut(Qt::Key_Space); // top audio play & pause: Space
+    } else {
+        playAction->setShortcut(Qt::SHIFT | Qt::Key_Space); // bottom audio: Shift+Space
+    }
+
     playButton = new QToolButton;
     playButton->setDefaultAction(playAction);
     playButton->setIcon(QIcon(":/resources/icons/play.svg"));
     playButton->setEnabled(false);
+
     QVBoxLayout *playLoopControls = new QVBoxLayout();
     audioControls-> addLayout(playLoopControls);
     playLoopControls->addWidget(playButton,  0, Qt::AlignRight);
-
     displayAndControlsLayout = new QVBoxLayout();
     audioLayout->addLayout(displayAndControlsLayout);
-
 
     QAction *loopAction = new QAction();
     connect(loopAction, &QAction::triggered, this, &Audio::handleLoopClick);
@@ -113,7 +114,7 @@ void Audio::newAudioPlayer(){
     loopButton->setDefaultAction(loopAction);
     loopButton->setIcon(QIcon(":/resources/icons/loop.svg"));
     loopButton->setEnabled(false);
-    loopButton->setShortcut(Qt::CTRL | Qt::Key_L);
+    //loopButton->setShortcut(Qt::CTRL | Qt::Key_L);
     loopButton->setCheckable(true);
     playLoopControls->addWidget(loopButton, 0, Qt::AlignRight);
 
@@ -272,7 +273,6 @@ void Audio::uploadAudio(){
 
     // emit signal to notify the spectrograph
     emit audioFileSelected(aName.toLocalFile());
-    // NEW FIXING SPECT
 
     if(audioDiviceNumber == 1){
         emit secondAudioExists(true);

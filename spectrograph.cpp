@@ -16,11 +16,12 @@
  *  - 'Spectograph(QWidget *parent)': Constructor initializes FFT setup, UI layout, and defines default parameters.
  *  - 'void loadAudioFile(const QString &fileName)': Loads audio file and initializes decoder (processAudioFile).
  *  - 'void processAudioFile(const QUrl &fileUrl)': Sets up 'QAudioDecoder' for decoding audio buffers.
+ *  - 'void bufferReady()': reads from the decoder and normalizes samples
+ *  - 'decodingFinished()': once QAudioDecoder is done window samples should be displayed
  *  - 'void setupSpectograph(QVector<double> &accumulatedSamples)': Applies FFT to audia data chunks and updates spectogram.
  *  - 'void hammingWindow(int windowLength, QVector<double> &window)': Generates hamming window vector for FFT
+ *  - 'void renderToPixmap()': renders spectrogram based on amplitude calculated in setup to a QPixmap
  *  - 'void reset()': Clears spectogram and samples data and resets the spectogram.
- *  - 'void paintEvent(QPaintEvent *event)': Creates spectogram visualization with changing color intensity based
- *    on amplitude and draws peak frequency lines if enabled.
  *
  * References:
  *  - This blog explains how to perform Short-Time Fourier Transform using FFTW.
@@ -61,10 +62,8 @@ Spectrograph::Spectrograph(QWidget *parent)
     graphicsView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     mainLayout->addWidget(graphicsView);
     setLayout(mainLayout);
-
-    // set fixed size for spectrograph (can modify)
-    //setFixedSize(700, 150);
 }
+
 
 void Spectrograph::loadAudioFile(const QString &fileName) {
     reset(); // Clear curr spect data
@@ -88,8 +87,7 @@ void Spectrograph::processAudioFile(const QUrl &fileUrl) {
 }
 
 
-// used buffer ready should be finished
-// when using buffer ready it should only be when QAudioDecoder is finished
+// once buffer gets going, read data and normalize
 void Spectrograph::bufferReady() {
 
     QAudioBuffer buffer = decoder->read();
@@ -102,7 +100,6 @@ void Spectrograph::bufferReady() {
 }
 
 
-// if the decoder is finished then we
 void Spectrograph::decodingFinished() {
 
     // ensure there are samples to process
@@ -115,30 +112,6 @@ void Spectrograph::decodingFinished() {
     QVector<double> windowSamples = accumulatedSamples; // copy all samples
     setupSpectrograph(windowSamples);
     accumulatedSamples.clear();
-}
-
-
-void Spectrograph::handleAudioBuffer(const QAudioBuffer &buffer) {
-
-    // convert audio buffer to 16-bit signed integers
-    const qint16 *data = buffer.constData<qint16>();
-    int sampleCount = buffer.sampleCount();
-
-
-    // append samples to accumulatedSamples for further processing
-    for  (int i = 0; i < sampleCount; ++i) {
-        accumulatedSamples.append(static_cast<double>(data[i]));
-    }
-
-    // Process accumulatedSamples in overlapping windows of size windowSize
-    while (accumulatedSamples.size() >= getWindowSize()) {
-
-        // extract a windowSize for FFT processing
-        QVector<double> windowSamples = accumulatedSamples.mid(0, getWindowSize());
-        // remove processed samples based on hopSize
-        accumulatedSamples = accumulatedSamples.mid(hopSize);
-        setupSpectrograph(windowSamples);
-    }
 }
 
 
