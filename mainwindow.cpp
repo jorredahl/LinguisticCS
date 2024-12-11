@@ -46,18 +46,52 @@ MainWindow::MainWindow(QWidget *parent)
     Spectrograph *spectrograph1 = new Spectrograph();
     mainLayout->addWidget(spectrograph1, 0, Qt::AlignRight);
     connect(audio1, &Audio::audioFileSelected, spectrograph1, &Spectrograph::loadAudioFile);
-
-    audio2 = new Audio(nullptr, "User Sound Wave");
+    connect(audio1->alignAllAudioFocus, &QCheckBox::clicked, this, &MainWindow::audio2Connect);
+    connect(this, &MainWindow::canEnableAudioAlignment, audio1, &Audio::enableAudioAligning);
+    audio2 = new Audio(nullptr, "User Sound Wave", 1);
     mainLayout->addWidget(audio2);
 
     // spectrograph 2
     Spectrograph *spectrograph2 = new Spectrograph();
     mainLayout->addWidget(spectrograph2, 0, Qt::AlignRight);
     connect(audio2, &Audio::audioFileSelected, spectrograph2, &Spectrograph::loadAudioFile);
-
+    connect(audio2, &Audio::secondAudioExists, this, &MainWindow::audio2ConnectAllowed);
+    connect(this, &MainWindow::disableAudio2, audio2, &Audio::disableAudioControls);
+    connect(audio2, &Audio::audioEnded, this, &MainWindow::handleEndOfAudio2);
+    connect(audio1, &Audio::audioEnded, this, &MainWindow::handleEndOfAudio2);
     center->setLayout(mainLayout);
 }
-
+//all based on audio 0, the zoom, whenever one reaches the end, both stop, play pause affected, segment click stops allignment
+void MainWindow::audio2ConnectAllowed(bool secondAudioExists){
+    emit canEnableAudioAlignment(secondAudioExists);
+}
+void MainWindow::audio2Connect(bool connectAudios){
+    if (connectAudios){
+        emit disableAudio2(true);
+        connect(audio1, &Audio::playPauseActivated, audio2, &Audio::handlePlayPause);
+        connect(audio1->zoomButtons, &Zoom::horizontalSliderChanged, audio2->zoomButtons, &Zoom::horizontalZoom);
+        connect(audio1->zoomButtons, &Zoom::verticalSliderChanged, audio2->zoomButtons, &Zoom::verticalZoom);
+        connect(audio1->zoomButtons, &Zoom::resetZoomActivated, audio2->zoomButtons, &Zoom::resetZoom);
+        connect(audio1, &Audio::scrubberUpdate, audio2, &Audio::updateTrackPositionFromScrubber);
+    }
+    else{
+        emit disableAudio2(false);
+        disconnect(audio1, &Audio::playPauseActivated, audio2, &Audio::handlePlayPause);
+        disconnect(audio1->zoomButtons, &Zoom::horizontalSliderChanged, audio2->zoomButtons, &Zoom::horizontalZoom);
+        disconnect(audio1->zoomButtons, &Zoom::verticalSliderChanged, audio2->zoomButtons, &Zoom::verticalZoom);
+        disconnect(audio1->zoomButtons, &Zoom::resetZoomActivated, audio2->zoomButtons, &Zoom::resetZoom);
+        disconnect(audio1, &Audio::scrubberUpdate, audio2, &Audio::updateTrackPositionFromScrubber);
+    }
+}
+void MainWindow::handleEndOfAudio2(bool disc){
+    if (disc){
+        disconnect(audio1, &Audio::scrubberUpdate, audio2, &Audio::updateTrackPositionFromScrubber);
+        disconnect(audio1, &Audio::playPauseActivated, audio2, &Audio::handlePlayPause);
+    }else{
+        connect(audio1, &Audio::scrubberUpdate, audio2, &Audio::updateTrackPositionFromScrubber);
+        connect(audio1, &Audio::playPauseActivated, audio2, &Audio::handlePlayPause);
+    }
+}
 
 MainWindow::~MainWindow() {
 

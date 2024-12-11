@@ -30,27 +30,7 @@
 
 Zoom::Zoom(QWidget *parent, int viewW, int viewH)
     : QWidget(parent), graphWidth(viewW), graphHeight(viewH), zoomedWidth(viewW), zoomedHeight(viewH)
-{
-
-    // zoomLayout = new QHBoxLayout();
-    // setLayout(zoomLayout);
-
-    //sliders for horizontal and vertical zoom
-    // horizontalSlider = new QSlider();
-    // horizontalSlider->setOrientation(Qt::Horizontal);
-    // horizontalSlider->setMinimum(1);
-    // horizontalSlider->setMaximum(200);
-    // connect(horizontalSlider, &QSlider::sliderMoved, this, &Zoom::horizontalZoom);
-    // zoomLayout->addWidget(horizontalSlider);
-
-    // verticalSlider = new QSlider();
-    // verticalSlider->setOrientation(Qt::Horizontal);
-    // verticalSlider->setMinimum(1);
-    // verticalSlider->setMaximum(10);
-    // connect(verticalSlider, &QSlider::sliderMoved, this, &Zoom::verticalZoom);
-    // zoomLayout->addWidget(verticalSlider);
-
-}
+{}
 void Zoom::setHorizontalSlider(QSlider* slider){
     horizontalSlider = slider;
     connect(horizontalSlider, &QSlider::sliderMoved, this, &Zoom::horizontalZoom);
@@ -66,6 +46,7 @@ void Zoom::resetZoom(){
     zoomedWidth = graphWidth * 1;
     emit zoomGraphIn(zoomedWidth, zoomedHeight);
     emit zoomGraphIn(zoomedWidth, zoomedHeight);
+    emit resetZoomActivated();
 
 }
 
@@ -73,13 +54,13 @@ void Zoom::verticalZoom(int position) {
 
     zoomedHeight = graphHeight * position;
     emit zoomGraphIn(zoomedWidth, zoomedHeight);
-
+    emit verticalSliderChanged(position);
 }
 
 void Zoom::horizontalZoom(int position) {
 
     zoomedWidth = graphWidth * position;
     emit zoomGraphIn(zoomedWidth, zoomedHeight);
-
+    emit horizontalSliderChanged(position);
 }
 

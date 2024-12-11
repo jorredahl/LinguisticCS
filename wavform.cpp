@@ -44,7 +44,7 @@
  *  - center of rect: https://doc.qt.io/qt-6/qrectf.html#center
  */
 
-WavForm::WavForm(int _width, int _height): centerOnScrubber(true), viewW(_width), viewH(_height), segmentControls(false)
+WavForm::WavForm(int _width, int _height): centerOnScrubber(true), viewW(_width), viewH(_height), segmentControls(false), scrubberRedraw(false)
 {
     setScene(&scene);
     setMinimumSize(QSize(viewW, viewH));
@@ -202,6 +202,8 @@ void WavForm::updateChart(int width, int height){
         updateIntervals(oldW);
         scene.update();
     }
+
+    scrubberRedraw = false;
 }
 
 
@@ -213,6 +215,7 @@ void WavForm::mousePressEvent(QMouseEvent *evt) {
     QPointF center = mapToScene(evt->pos());
 
     double x = center.x();
+    scrubberRedraw = false;
 
     if (segmentControls){
         if (startSegment && endSegment){
@@ -269,7 +272,9 @@ void WavForm::mousePressEvent(QMouseEvent *evt) {
     lastLine = scene.addLine(QLineF(*first, *second), QPen(Qt::black, 3, Qt::SolidLine, Qt::FlatCap));
     scrubberHasBeenDrawn = true;
 
-    double position = x / chartW;  
+    double position = x / chartW;
+    scrubberRedraw = true;
+
     emit sendAudioPosition(position);
 
 
@@ -285,9 +290,13 @@ void WavForm::updateScrubberPosition(double position) {
     QPointF *second = new QPointF(scenePosition, chartH);
 
     lastLine = scene.addLine(QLineF(*first, *second), QPen(Qt::black, 3, Qt::SolidLine, Qt::FlatCap));
-    if (centerOnScrubber) centerOn(lastLine);
-    else centerOn(viewCenterPoint);
     scrubberHasBeenDrawn = true;
+    scene.update();
+    if (scrubberRedraw) return;
+    else if (centerOnScrubber) centerOn(lastLine);
+    else centerOn(viewCenterPoint);
+
+
 
 }
 

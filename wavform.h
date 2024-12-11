@@ -92,6 +92,7 @@ class WavForm : public QGraphicsView
     QList<float> intLinesX;
     void updateIntervals(int oldChartWidth);
     QPointF viewCenterPoint;
+    bool scrubberRedraw;
 
 public:
     explicit WavForm(int _width, int _height);
