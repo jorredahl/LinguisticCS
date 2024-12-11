@@ -40,17 +40,18 @@
  *  - ...
  *
  * References:
- *  - ...
+ *  -view rect: https://stackoverflow.com/questions/1355446/get-visible-rectangle-of-qgraphicsview
+ *  - center of rect: https://doc.qt.io/qt-6/qrectf.html#center
  */
 
-WavForm::WavForm(int _width, int _height): viewW(_width), viewH(_height), segmentControls(false)
+WavForm::WavForm(int _width, int _height): centerOnScrubber(true), viewW(_width), viewH(_height), segmentControls(false), scrubberRedraw(false)
 {
     setScene(&scene);
     setMinimumSize(QSize(viewW, viewH));
 
     setRenderHint(QPainter::Antialiasing, true);
     setSceneRect(0, 0, viewW, viewH); // Explicitly set scene rect to match view
-    scene.addRect(sceneRect());
+    //scene.addRect(sceneRect());
     audioFileLoaded = false;
 }
 void WavForm::uploadAudio(QString fName){
@@ -166,6 +167,11 @@ void WavForm::setChart(QList<float> data, int width, int height) {
 
 void WavForm::updateChart(int width, int height){
     //clear old chart and update with the same samples but different width/height
+
+    //save the old center point in scene
+    QRectF oldViewRect = scene.views()[0]->mapToScene(scene.views()[0]->viewport()->geometry()).boundingRect();
+    viewCenterPoint = QPointF((oldViewRect.center().x() / chartW) * width, height/2);
+
     QList<float> samples = audio->getAudioSamples();
     scene.clear();
     scene.update();
@@ -193,10 +199,11 @@ void WavForm::updateChart(int width, int height){
         intLinesX.clear();
     }
     if(startSegment && endSegment){
-        //updateDelta(delta * chartW);
         updateIntervals(oldW);
         scene.update();
     }
+
+    scrubberRedraw = false;
 }
 
 
@@ -208,6 +215,7 @@ void WavForm::mousePressEvent(QMouseEvent *evt) {
     QPointF center = mapToScene(evt->pos());
 
     double x = center.x();
+    scrubberRedraw = false;
 
     if (segmentControls){
         if (startSegment && endSegment){
@@ -237,6 +245,7 @@ void WavForm::mousePressEvent(QMouseEvent *evt) {
             if (x > startSegmentP.x()){
                 endSegmentP = QPointF(x,0);
                 endSegment = scene.addLine(QLineF(endSegmentP, QPointF(x, chartH-1)), QPen(Qt::red, 3, Qt::SolidLine, Qt::FlatCap));
+                emit chartInfoReady(true);
             }else{
 
                 QMessageBox msgBox;
@@ -247,6 +256,12 @@ void WavForm::mousePressEvent(QMouseEvent *evt) {
 
         }
         emit segmentReady(startSegment && endSegment ? true: false);
+        if (startSegment && endSegment) {
+            float segmentProp = (endSegmentP.x() / chartW) - (startSegmentP.x() / chartW);
+            int numSamples = int(audio->getAudioSamples().length() * segmentProp);
+            emit segmentLength(numSamples, audio->getSampleRate());
+        }
+        updateChart(chartW,chartH);
         return;
     }
 
@@ -257,9 +272,9 @@ void WavForm::mousePressEvent(QMouseEvent *evt) {
     lastLine = scene.addLine(QLineF(*first, *second), QPen(Qt::black, 3, Qt::SolidLine, Qt::FlatCap));
     scrubberHasBeenDrawn = true;
 
-    centerOnScrubber = false; // if we click somewhere to change audio we don't want to keep centering; gets distracting
+    double position = x / chartW;
+    scrubberRedraw = true;
 
-    double position = x / chartW;  
     emit sendAudioPosition(position);
 
 
@@ -267,7 +282,6 @@ void WavForm::mousePressEvent(QMouseEvent *evt) {
 
 void WavForm::updateScrubberPosition(double position) {
 
-    if (position < 0.05) centerOnScrubber = true; //if starting from beginning we want to center on scrubber
     double scenePosition = (double) (position * chartW);
 
     if (scrubberHasBeenDrawn) scene.removeItem((QGraphicsItem *) lastLine);
@@ -276,10 +290,19 @@ void WavForm::updateScrubberPosition(double position) {
     QPointF *second = new QPointF(scenePosition, chartH);
 
     lastLine = scene.addLine(QLineF(*first, *second), QPen(Qt::black, 3, Qt::SolidLine, Qt::FlatCap));
-    if (centerOnScrubber) centerOn(lastLine);
-
     scrubberHasBeenDrawn = true;
+    scene.update();
+    if (scrubberRedraw) return;
+    else if (centerOnScrubber) centerOn(lastLine);
+    else centerOn(viewCenterPoint);
 
+
+
+}
+
+void WavForm::changeCenterOnScrubber(Qt::CheckState checkedState){
+    if (checkedState == Qt::CheckState::Checked) centerOnScrubber = true;
+    else centerOnScrubber = false;
 }
 
  QList<float> WavForm::getSamples(){
@@ -321,7 +344,6 @@ void WavForm::updateIntervals(int oldChartWidth){
     intervalLines.clear();
     QList<float> newIntLinesX;
     for (float x : intLinesX){
-        qDebug() << "Old X: " << x << ", New X: " << (double)(x / oldChartWidth) * chartW;
         newIntLinesX << (double)(x / oldChartWidth) * chartW;
     }
     intLinesX.clear();
@@ -336,20 +358,15 @@ void WavForm::updateIntervals(int oldChartWidth){
 
 void WavForm::changeBoolAutoSegment(bool _boolAutoSegment) {
     boolAutoSegment = _boolAutoSegment;
-    //qDebug() << boolAutoSegment;
+    if (boolAutoSegment) sendIntervalsForSegment();
 
 }
 
 
 void WavForm::sendIntervalsForSegment(){
-    //int width = chartW;
-    //if (width > 400 * 51) width = 400 * 51;
-    qDebug() << intLinesX;
-    //if (intLinesX.isEmpty()) return;
     QList<int> intervalLocations;
     int audioLength = audio->getAudioSamples().length();
     intervalLocations << (startSegmentP.x()/chartW) * audioLength;
-
 
     if (!boolAutoSegment) {
         for (int indx = 0; indx < intLinesX.length(); indx++){
@@ -358,12 +375,11 @@ void WavForm::sendIntervalsForSegment(){
     }
 
     intervalLocations << (endSegmentP.x()/chartW) * audioLength;
-    emit intervalsForSegments(intervalLocations);
+    emit intervalsForSegments(intervalLocations, boolAutoSegment);
 }
 
 void WavForm::drawAutoIntervals(QList<int> intervalLocsInAudio){
-    qDebug() << intLinesX;
-    qDebug() << intervalLocsInAudio;
+
     //gets the positions (indxs) and put them on screen
     if (!intervalLines.isEmpty()){
         for (QGraphicsLineItem *l : intervalLines){
@@ -377,13 +393,13 @@ void WavForm::drawAutoIntervals(QList<int> intervalLocsInAudio){
         intLinesX << startSegmentP.x() + ((double) intervalLocsInAudio[indx] / audioLength) * chartW;
     }
 
-    qDebug() << intLinesX;
     for (float x : intLinesX){
         intervalLines << scene.addLine(QLineF(QPointF(x ,0), QPointF(x , chartH-1)), QPen(Qt::black, 3, Qt::SolidLine, Qt::FlatCap));
     }
 }
 
 void WavForm::clearIntervals(){
+
     if (startSegment) {
         scene.removeItem(startSegment);
         startSegment = nullptr;
@@ -401,4 +417,7 @@ void WavForm::clearIntervals(){
     if (!intLinesX.isEmpty())intLinesX.clear();
     emit segmentReady(false);
     emit chartInfoReady(false);
+    emit clearAllSegmentInfo();
+
+
 }

@@ -7,6 +7,8 @@
 #include <QChart>
 #include <QChartView>
 #include <QBoxLayout>
+#include <QToolButton>
+
 
 /*
  * File: segmentgraph.h
@@ -50,6 +52,10 @@ class SegmentGraph: public QWidget
     QPushButton *exitButton;
     QChartView *graph;
     QList<QChart *> *charts;
+    QToolButton *playSegmentButton;
+    QPair<double,double> startEndOfSelectedSegment;
+    QList<QPair<double, double>> startEndSegmentAudioValues;
+    bool audioPlaying;
 
 public:
     SegmentGraph(int width, int height);
@@ -59,6 +65,13 @@ public slots:
     void exitView();
     void updateGraphs(QList<QList<float>> segments);
     void clearView();
+    void getSegmentStartEnd(QList<QPair<double, double>> startEndValues);
+    void getSegmentAudioToPlay(int segmentPosition);
+    void playSegmentAudio();
+    void changePlayPauseButton(bool segAudioNotPlaying);
+signals:
+    void sendPlaySegmentAudio(QPair<double, double>);
+    void clearSegmentsEnable(bool);
 };
 
 #endif // SEGMENTGRAPH_H

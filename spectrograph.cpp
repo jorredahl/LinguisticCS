@@ -16,11 +16,12 @@
  *  - 'Spectograph(QWidget *parent)': Constructor initializes FFT setup, UI layout, and defines default parameters.
  *  - 'void loadAudioFile(const QString &fileName)': Loads audio file and initializes decoder (processAudioFile).
  *  - 'void processAudioFile(const QUrl &fileUrl)': Sets up 'QAudioDecoder' for decoding audio buffers.
+ *  - 'void bufferReady()': reads from the decoder and normalizes samples
+ *  - 'decodingFinished()': once QAudioDecoder is done window samples should be displayed
  *  - 'void setupSpectograph(QVector<double> &accumulatedSamples)': Applies FFT to audia data chunks and updates spectogram.
  *  - 'void hammingWindow(int windowLength, QVector<double> &window)': Generates hamming window vector for FFT
+ *  - 'void renderToPixmap()': renders spectrogram based on amplitude calculated in setup to a QPixmap
  *  - 'void reset()': Clears spectogram and samples data and resets the spectogram.
- *  - 'void paintEvent(QPaintEvent *event)': Creates spectogram visualization with changing color intensity based
- *    on amplitude and draws peak frequency lines if enabled.
  *
  * References:
  *  - This blog explains how to perform Short-Time Fourier Transform using FFTW.
@@ -30,9 +31,10 @@
  */
 
 Spectrograph::Spectrograph(QWidget *parent)
-    : QWidget(parent)
+    : QWidget(parent), graphicsView(new QGraphicsView(this)), graphicsScene(new QGraphicsScene(this))
 {
-    /* hopSize can technically be adjusted
+
+    /* hopSize can be adjusted
      *
      * EXAMPLE: if we do windowSize/5 then 5 chunks will be processed , this can be tested with the qDebug statements
      *
@@ -51,37 +53,22 @@ Spectrograph::Spectrograph(QWidget *parent)
     // calc hamming window for smoothing (FFT processing)
     hammingWindow(windowSize, hammingWindowValues);
 
-    // setup UI layout for toggling peak visualization
-    QPushButton *peaksButton = new QPushButton("Highlight", this);
-    peaksButton->setFixedSize(60,25);
+    graphicsView->setFixedSize(650, 200);
+    graphicsScene->setSceneRect(0, 0, 650, 200); // match the scene size to the view
+
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
-
-    QHBoxLayout *buttonLayout = new QHBoxLayout();
-    buttonLayout->addWidget(peaksButton); // Add the button
-    buttonLayout->addStretch();  // Push everything else to the right
-
-    // Add the button layout to the main layout at the top
-    mainLayout->addLayout(buttonLayout);
-    mainLayout->addStretch(); // Push everything else below the button
-
+    graphicsView->setScene(graphicsScene);
+    graphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    graphicsView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    mainLayout->addWidget(graphicsView);
     setLayout(mainLayout);
-
-    // set fixed size for spectrograph (can modify)
-    setFixedSize(350, 200);
-
-    connect(peaksButton, &QPushButton::clicked, this, &Spectrograph::showHighlights);
 }
 
 
 void Spectrograph::loadAudioFile(const QString &fileName) {
-
-    // recieves file from upload audio in audio.cpp
-    QUrl aName = QUrl::fromLocalFile(fileName);
-    if (aName.isEmpty())
-        return;
-
-    reset();
-    processAudioFile(aName);
+    reset(); // Clear curr spect data
+    currentAudioFile = fileName; // Set the new audio file
+    processAudioFile(QUrl::fromLocalFile(fileName)); // start processing
 }
 
 
@@ -91,6 +78,7 @@ void Spectrograph::processAudioFile(const QUrl &fileUrl) {
         // init QAudioDecoder for decoding audio buffers
         decoder = new QAudioDecoder(this);
         connect(decoder, &QAudioDecoder::bufferReady, this, &Spectrograph::bufferReady);
+        connect(decoder, &QAudioDecoder::finished, this, &Spectrograph::decodingFinished);
     }
 
     accumulatedSamples.clear(); // clear any prev samples
@@ -99,35 +87,31 @@ void Spectrograph::processAudioFile(const QUrl &fileUrl) {
 }
 
 
+// once buffer gets going, read data and normalize
 void Spectrograph::bufferReady() {
-    // read the next available audio buffer and process it
+
     QAudioBuffer buffer = decoder->read();
-    handleAudioBuffer(buffer);
-}
-
-
-void Spectrograph::handleAudioBuffer(const QAudioBuffer &buffer) {
-
-    // convert audio buffer to 16-bit signed integers
     const qint16 *data = buffer.constData<qint16>();
     int sampleCount = buffer.sampleCount();
 
+    for (int i = 0; i < sampleCount; ++i) {
+        accumulatedSamples.append(static_cast<double>(data[i]) / 32768.0); // Normalize to 16-bit signed integer
+    }
+}
 
-    // append samples to accumulatedSamples for further processing
-    for  (int i = 0; i < sampleCount; ++i) {
-        accumulatedSamples.append(static_cast<double>(data[i]));
+
+void Spectrograph::decodingFinished() {
+
+    // ensure there are samples to process
+    if (accumulatedSamples.isEmpty()) {
+        qWarning() << "No audio samples to process!";
+        return;
     }
 
-    // Process accumulatedSamples in overlapping windows of size windowSize
-    while (accumulatedSamples.size() >= getWindowSize()) {
-
-        // extract a windowSize for FFT processing
-        QVector<double> windowSamples = accumulatedSamples.mid(0, getWindowSize());
-        setupSpectrograph(windowSamples);
-
-        // remove processed samples based on hopSize
-        accumulatedSamples = accumulatedSamples.mid(hopSize);
-    }
+    // process the accumulated samples into spectrogram chunks
+    QVector<double> windowSamples = accumulatedSamples; // copy all samples
+    setupSpectrograph(windowSamples);
+    accumulatedSamples.clear();
 }
 
 
@@ -150,18 +134,16 @@ void Spectrograph::hammingWindow(int windowLength, QVector<double> &window) {
 
 
 void Spectrograph::setupSpectrograph(QVector<double> &accumulatedSamples) {
-   // qDebug() << "before processing, accumulatedsamples size:" << accumulatedSamples.size();
+    graphicsScene->clear();
 
     // signal length and number of chunks based on hopSize and window size
     int signalLength = accumulatedSamples.size();
     int numChunks = (signalLength - windowSize) / hopSize + 1;
 
-    //qDebug() << "calculated numChunks:" << numChunks << "with accumulatedSamples size" << accumulatedSamples.size();
-
     if (numChunks > 0) {
 
         // resize spectrogram to accommodate new chunks
-        spectrogram.resize(spectrogram.size() + numChunks, QVector<double>(windowSize));
+        spectrogram.resize(spectrogram.size() + numChunks, QVector<double>(windowSize/ 2));
 
         // process each chunk
         for (int chunk = 0; chunk < numChunks; ++chunk) {
@@ -180,7 +162,7 @@ void Spectrograph::setupSpectrograph(QVector<double> &accumulatedSamples) {
             fftw_execute(plan);
 
             // store amplitudes in spectrograph
-            for (int i=0; i < windowSize; ++i) {
+            for (int i=0; i < windowSize/2; ++i) {
                 //what is displayed from fft
                 double real = fft_result[i][0];
                 double imag = fft_result[i][1];
@@ -191,42 +173,28 @@ void Spectrograph::setupSpectrograph(QVector<double> &accumulatedSamples) {
                 spectrogram[spectrogram.size() - numChunks + chunk][i] = amplitude;
             }
         }
-
-        // remove processed samples
-        int samplesProcessed = numChunks * hopSize;
-        accumulatedSamples = accumulatedSamples.mid(samplesProcessed);
     }
-
-    update(); // trigger repaint of spect
+    renderToPixmap();
 }
 
 
-void Spectrograph::reset() {
-    spectrogram.clear();
-    accumulatedSamples.clear();
-    update();
-}
-
-
-void Spectrograph::paintEvent(QPaintEvent *event) {
-    Q_UNUSED(event);
-
-    QPainter painter(this);
-    painter.setRenderHint(QPainter::Antialiasing, true);
-
-    // widget dimensions
-    int width = this->width();
-    int height = this->height();
-
-    // num of chunks (time axis) and frequencies (freq axis)
-    int numChunks = spectrogram.size();
-    int numFrequencies = windowSize;
-
-    // case for nothing
-    if (numChunks == 0 || numFrequencies == 0)
+void Spectrograph::renderToPixmap() {
+    if (spectrogram.isEmpty())
         return;
 
-    // find the maximum amplitude for normalization
+    QImage image(width(), height(), QImage::Format_RGB32);
+    image.fill(Qt::black); // base color
+
+    QPainter painter(&image);
+    painter.setRenderHint(QPainter::Antialiasing, true);
+
+    // determine dimensions for each chunk and frequency
+    int numChunks = spectrogram.size();
+    int numFrequencies = windowSize / 2;
+    double chunkWidth = static_cast<double>(width()) / (numChunks);
+    double freqHeight = static_cast<double>(height()) / (numFrequencies/105); // cut in half again bc fftw is mirrored
+
+    // Find the maximum amplitude for normalization
     double maxAmp = 0.0;
     for (const auto &row : spectrogram) {
         for (double amplitude : row) {
@@ -234,84 +202,48 @@ void Spectrograph::paintEvent(QPaintEvent *event) {
         }
     }
 
-    if (maxAmp == 0.0)
-        return;
+    if (maxAmp == 0.0) return;
 
-    // render each chunk and frequency as a rectangle with color in it based on the amplitude
-    double chunkWidth = static_cast<double>(width) / numChunks;
-    double freqHeight = static_cast<double>(height) / (numFrequencies/100); //can adjust this shows enough
-
+    // render the spectrogram data
     for (int chunk = 0; chunk < numChunks; ++chunk) {
         for (int freq = 0; freq < numFrequencies; ++freq) {
+            double amplitude = spectrogram[chunk][freq];
+            int intensity = static_cast<int>((amplitude / maxAmp) * 255.0);
 
-            double amplitude = spectrogram[chunk][freq]; // get amp for curr chunk and freq
-            int intensity = static_cast<int>((amplitude / maxAmp) * 255.0); // normalize our amplitude to 255 range
-            int hue = 0;
+            // ensure intensity stays within 255
+            intensity = std::clamp(intensity, 0, 255);
 
-            // can change these numbers
-            // the higher the intensity the more yellow
-            if (intensity > 120) {
-                hue = static_cast<int>((60.0 * intensity) / 255.0);
-
-            // medium should be more a red or purple range
-            } else if (intensity > 45) {
-                hue = static_cast<int>((51.0 * intensity) / 255.0);
-
-            // lowest should be close to black
+            QColor color;
+            if (intensity <= 127) {
+                // map from black (quietest amp) to red (middle amp)
+                int red = std::clamp(intensity * 2, 0, 255);
+                color.setRgb(red, 0, 0); // Only red increases
             } else {
-                hue = static_cast<int>((10.0 * intensity) / 255.0);
+                // map from red (middle) to yellow (loudest amp)
+                int green = std::clamp((intensity - 127) * 2, 0, 255);
+                color.setRgb(255, green, 0); // Red stays max, green increases, blue stays 0
             }
 
-            QColor color = QColor::fromHsv(hue, 255, intensity);
-            painter.setPen(Qt::NoPen);
-            painter.setBrush(color);
-
-            QRectF rect(chunk * chunkWidth, height - (freq + 1) * freqHeight, chunkWidth, freqHeight);
+            QRectF rect(chunk * chunkWidth, height() - (freq + 1) * freqHeight, chunkWidth, freqHeight);
             painter.fillRect(rect, color);
         }
     }
+    painter.end();
 
+    // cache the rendered image as a pixmap
+    cachedSpect = QPixmap::fromImage(image);
+    graphicsScene->clear();
+    graphicsScene->addPixmap(cachedSpect);
+}
 
-    // cover lowest frequencies with black to enhance look od spect
-    if (showHighlightsEnabled) {
-        painter.setPen(QPen(Qt::black, 2));
-        QVector<QPointF> peakPoints;
-
-        for (int chunk = 0; chunk < numChunks; ++chunk) {
-            int peakFreq = 0;
-            double peakValue = 0.0;
-
-            // find the highest freq
-            for (int freq = 0; freq < numFrequencies; ++freq) {
-                if (spectrogram[chunk][freq] > peakValue) {
-                    peakFreq = freq;
-                    peakValue = spectrogram[chunk][freq];
-                }
-            }
-
-            if (peakValue / maxAmp < 0.75) { // target lower amplitudes to cover
-                double x = chunk * chunkWidth + chunkWidth / 2.0; // center peak horizontally
-                double y = height - (peakFreq + 1) * freqHeight; // position peak vertically
-                peakPoints.append(QPointF(x, y));
-            }
-        }
-
-        // draw lines connecting peaks
-        for (int i = 1; i < peakPoints.size(); ++i) {
-            painter.drawLine(peakPoints[i - 1], peakPoints[i]); // draw line connecting areas of low freq
-
-        }
+void Spectrograph::reset() {
+    if (decoder) {
+        decoder->stop();
+        delete decoder;
+        decoder = nullptr;
     }
+
+    spectrogram.clear();
+    accumulatedSamples.clear();
+    update();
 }
-
-
-void Spectrograph::showHighlights() {
-    showHighlightsEnabled = !showHighlightsEnabled;
-    update(); //repaint
-}
-
-
-
-
-
-

@@ -40,11 +40,18 @@ class MainWindow : public QMainWindow
     Audio *audio2;
 
 
-
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+public slots:
+    void audio2ConnectAllowed(bool secondAudioExists);
+    void audio2Connect(bool connectAudios);
+    void handleEndOfAudio2(bool disc);
+
+signals:
+    void disableAudio2(bool disableAudio);
+    void canEnableAudioAlignment(bool enable);
 };
 
 #endif // MAINWINDOW_H

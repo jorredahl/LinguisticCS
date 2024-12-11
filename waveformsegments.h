@@ -36,20 +36,23 @@ class WaveFormSegments : public QObject
 {
     Q_OBJECT
     QList<QList<float>> wavSegments;
+    QList<QPair<double, double>> wavSegmentStartEndPositions;
     QList<float> originalAudio;
+    double audioSampleLength;
 
 public:
     explicit WaveFormSegments(QList<float> _audioSamples = QList<float>(), QObject *parent = nullptr);
     void uploadAudio(QList<float> audio);
 
 public slots:
-    void collectWavSegment(QList<int> segmentPlaces);
+    void collectWavSegment(QList<int> segmentPlaces,  bool isAuto);
     void clearAllWavSegments();
     void autoSegment(QList<float> dataSample, int startIndex);
 
 signals:
     void createWavSegmentGraphs(QList<QList<float>>);
     void drawAutoSegments(QList<int>);
+    void storeStartEndValuesOfSegments(QList<QPair<double, double>>);
 };
 
 #endif // WAVEFORMSEGMENTS_H

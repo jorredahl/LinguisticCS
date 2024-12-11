@@ -54,6 +54,8 @@ public:
     int graphHeight;
     int zoomedWidth;
     int zoomedHeight;
+    void setHorizontalSlider(QSlider* slider);
+    void setVerticalSlider(QSlider* slider);
     void resetZoom();
 
 public slots:
@@ -63,6 +65,10 @@ public slots:
 signals:
 
     void zoomGraphIn(int width, int height);
+    void horizontalSliderChanged(int pos);
+    void verticalSliderChanged(int pos);
+    void resetZoomActivated();
+
 
 };
 
