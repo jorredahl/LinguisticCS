@@ -61,8 +61,8 @@
  *  - ...
  */
 
-Audio::Audio(QWidget *parent, QString _label)
-    : QWidget{parent}, label(_label), segmentAudioPlaying(false)
+Audio::Audio(QWidget *parent, QString _label, int _audioDiviceNumber)
+    : QWidget{parent}, audioDiviceNumber(_audioDiviceNumber), label(_label), segmentAudioPlaying(false)
 {
     newAudioPlayer();
     audioUploaded = false;
@@ -83,28 +83,28 @@ void Audio::newAudioPlayer(){
     wavFormControls->addLayout(wavFormVertControls);
     wavFormControls->addLayout(wavFormSegmentControls);
 
-// add constructor for iniitalizer of qlabel text
-
-    // Upload: ctrl+U
-    // Play/Pause: space
-    // loop: ctrl+L
-
     uploadAudioButton = new QPushButton("Upload");
-    uploadAudioButton->setShortcut(Qt::CTRL | Qt::Key_U);
+    //uploadAudioButton->setShortcut(Qt::CTRL | Qt::Key_U);
     connect(uploadAudioButton, &QPushButton::clicked, this, &Audio::uploadAudio);
     audioControls->addWidget(uploadAudioButton, 0, Qt::AlignLeft);
 
     QAction *playAction = new QAction();
     connect(playAction, &QAction::triggered, this, &Audio::handlePlayPauseButton);
-    playAction->setShortcut(Qt::Key_Space);
+
+    if (audioDiviceNumber == 0) {
+        playAction->setShortcut(Qt::Key_Space); // top audio play & pause: Space
+    } else {
+        playAction->setShortcut(Qt::SHIFT | Qt::Key_Space); // bottom audio: Shift+Space
+    }
+
     playButton = new QToolButton;
     playButton->setDefaultAction(playAction);
     playButton->setIcon(QIcon(":/resources/icons/play.svg"));
     playButton->setEnabled(false);
+
     QVBoxLayout *playLoopControls = new QVBoxLayout();
     audioControls-> addLayout(playLoopControls);
     playLoopControls->addWidget(playButton,  0, Qt::AlignRight);
-
     displayAndControlsLayout = new QVBoxLayout();
     audioLayout->addLayout(displayAndControlsLayout);
 
@@ -170,7 +170,7 @@ void Audio::newAudioPlayer(){
     loopButton->setDefaultAction(loopAction);
     loopButton->setIcon(QIcon(":/resources/icons/loop.svg"));
     loopButton->setEnabled(false);
-    loopButton->setShortcut(Qt::CTRL | Qt::Key_L);
+    //loopButton->setShortcut(Qt::CTRL | Qt::Key_L);
     loopButton->setCheckable(true);
     playLoopControls->addWidget(loopButton, 0, Qt::AlignRight);
 
@@ -178,7 +178,18 @@ void Audio::newAudioPlayer(){
     followScrubber = new QCheckBox("follow scrubber");
     followScrubber->setLayoutDirection(Qt::LayoutDirection::RightToLeft);
     followScrubber->setCheckState(Qt::Checked);
+    followScrubber->setEnabled(false);
     playLoopControls->addWidget(followScrubber);
+
+    //align audios
+    alignAllAudioFocus = new QCheckBox("allign Audios");
+    alignAllAudioFocus->setEnabled(false);
+    if(audioDiviceNumber == 0){
+        connect(alignAllAudioFocus, &QCheckBox::clicked, this, &Audio::switchControlsWithAlign);
+        alignAllAudioFocus->setLayoutDirection(Qt::LayoutDirection::RightToLeft);
+        playLoopControls->addWidget(alignAllAudioFocus);
+
+    }
 
     //Zoom
     zoomButtons = new Zoom(nullptr, WAVFORM_WIDTH, WAVFORM_HEIGHT);
@@ -252,6 +263,7 @@ void Audio::newAudioPlayer(){
     segmentToolsCheckbox = new QCheckBox("segment controls");
     segmentToolsCheckbox->setEnabled(false);
     connect(segmentToolsCheckbox, &QCheckBox::clicked, wavChart, &WavForm::switchMouseEventControls);
+    connect(segmentToolsCheckbox, &QCheckBox::clicked, this, &Audio::audioAligningSegmentControls);
 
     segmentLengthLabel = new QLabel();
     segmentLengthLabel->setVisible(false);
@@ -304,6 +316,7 @@ void Audio::uploadAudio(){
 
     playButton->setEnabled(true);
     loopButton->setEnabled(true);
+    followScrubber->setEnabled(true);
     emit emitLoadAudioIn(aName.toLocalFile());
     zoomButtons->setEnabled(true);
     zoomButtons->resetZoom();
@@ -316,7 +329,10 @@ void Audio::uploadAudio(){
 
     // emit signal to notify the spectrograph
     emit audioFileSelected(aName.toLocalFile());
-    // NEW FIXING SPECT
+
+    if(audioDiviceNumber == 1){
+        emit secondAudioExists(true);
+    }
 
 }
 void Audio::handlePlayPauseButton(){
@@ -331,6 +347,7 @@ void Audio::handlePlayPauseButton(){
     emit segmentAudioNotPlaying(true);
 }
 void Audio::handlePlayPause() {
+
     if (audioPlaying) {
         player->pause();
         timer->stop();
@@ -342,6 +359,7 @@ void Audio::handlePlayPause() {
     }
     setTrackPosition(player->position());
     audioPlaying = !audioPlaying;
+    emit playPauseActivated();
 }
 
 
@@ -356,6 +374,7 @@ void Audio::updateTrackPositionFromScrubber(double position) {
     setTrackPosition(scaledPosition);
     segmentAudioPlaying = false;
     emit segmentAudioNotPlaying(true);
+    emit scrubberUpdate(position);
 
 }
 
@@ -411,6 +430,16 @@ void Audio::setTrackPosition(qint64 position) {
         audioPosition = player->position();
     }
 
+    if(floatPosition > 1.05 && alignAllAudioFocus->isChecked()){
+        QIcon icon = QIcon(":/resources/icons/play.svg");
+        playButton->setIcon(icon);
+        audioPlaying = false;
+        emit segmentAudioNotPlaying(true);
+        player->pause();
+        timer->stop();
+        emit audioEnded(true);
+        return;
+    }
 
     // set to 1.05 so i don't accidentally trigger with pausing right before end
     //  the timer and player position can be out of sync
@@ -422,7 +451,6 @@ void Audio::setTrackPosition(qint64 position) {
         emit segmentAudioNotPlaying(true);
         player->pause();
         timer->stop();
-
     }
     if(loopButton->isChecked() && floatPosition > 1){
         player->play();
@@ -609,4 +637,46 @@ void Audio::disableButtonsUntilAudio() {
     verticalSlider->setEnabled(audioUploaded);
     horizontalSlider->setEnabled(audioUploaded);
     segmentToolsCheckbox->setEnabled(audioUploaded);
+}
+
+void Audio::enableAudioAligning(bool enable){
+    alignAllAudioFocus->setEnabled(enable);
+}
+
+void Audio::switchControlsWithAlign(bool aligning){
+    loopButton->setEnabled(!aligning);
+    followScrubber->setEnabled(!aligning);
+    followScrubber->setChecked(true);
+}
+
+void Audio::audioAligningSegmentControls(bool segEnabled){
+    if(alignAllAudioFocus->isEnabled() && segEnabled) {
+        alignAllAudioFocus->setEnabled(false);
+        alignAllAudioFocus->setCheckState(Qt::Unchecked);
+    }
+    else if(!segEnabled){
+        alignAllAudioFocus->setEnabled(true);
+    }
+
+}
+
+void Audio::disableAudioControls(bool disable){
+    if(disable){
+        graphAudioSegments->clearAllWavSegments();
+        wavChart->clearIntervals();
+        segmentToolsCheckbox->setChecked(false);
+        wavChart->switchMouseEventControls(false);
+    }
+
+    if (autoSegmentButton->isEnabled()) autoSegmentButton->setDisabled(disable);
+    if (clearAllGraphSegmentsButton->isEnabled()) clearAllGraphSegmentsButton->setDisabled(disable);
+    if (createGraphSegmentsButton->isEnabled()) createGraphSegmentsButton->setDisabled(disable);
+    if (deltaSelector->isEnabled()) deltaSelector->setDisabled(disable);
+    zoomButtons->setDisabled(disable);
+    verticalSlider->setDisabled(disable);
+    horizontalSlider->setDisabled(disable);
+    segmentToolsCheckbox->setDisabled(disable);
+    playButton->setDisabled(disable);
+    loopButton->setDisabled(disable);
+    followScrubber->setDisabled(disable);
 }

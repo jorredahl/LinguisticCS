@@ -79,60 +79,62 @@
 class Audio : public QWidget
 {
     Q_OBJECT
-        QPushButton *uploadAudioButton;
-        QMediaPlayer *player;
-        QAudioOutput *audioOutput;
-        bool audioPlaying;
-        QToolButton *playButton;
-        QToolButton *loopButton;
-        QHBoxLayout *audioLayout;
-        QVBoxLayout *wavFormAudioControlsLayout;
-        QHBoxLayout *audioControls;
-        QHBoxLayout *wavFormControls;
-        QTimer *timer;
-        int timerRefreshRate;
-        qint64 audioPosition;
-        qint64 audioPositionOnChart;
-        qint64 audioLength;
-        Zoom *zoomButtons;
-        SegmentGraph *segmentGraph;
-        QVBoxLayout *displayAndControlsLayout;
-        QString label;
-        QPushButton *addIntervalLines;
-        QDoubleSpinBox *deltaSelector;
-        QPushButton *createGraphSegmentsButton;
-        QPushButton *clearAllGraphSegmentsButton;
-        QCheckBox *segmentToolsCheckbox;
-        QLabel *segmentLengthLabel;
-        QPushButton *autoSegmentButton;
-        bool segmentAudioPlaying;
-        qint64 segmentAudioEndPosition;
-        qint64 segmentAudioStartPosition;
-        QSlider *horizontalSlider;
-        QSlider *verticalSlider;
-        QCheckBox *followScrubber;
+    int audioDiviceNumber;
+    QPushButton *uploadAudioButton;
+    QMediaPlayer *player;
+    QAudioOutput *audioOutput;
+    bool audioPlaying;
+    QToolButton *playButton;
+    QToolButton *loopButton;
+    QHBoxLayout *audioLayout;
+    QVBoxLayout *wavFormAudioControlsLayout;
+    QHBoxLayout *audioControls;
+    QHBoxLayout *wavFormControls;
+    QTimer *timer;
+    int timerRefreshRate;
+    qint64 audioPosition;
+    qint64 audioPositionOnChart;
+    qint64 audioLength;
+    SegmentGraph *segmentGraph;
+    QVBoxLayout *displayAndControlsLayout;
+    QString label;
+    QPushButton *addIntervalLines;
+    QDoubleSpinBox *deltaSelector;
+    QPushButton *createGraphSegmentsButton;
+    QPushButton *clearAllGraphSegmentsButton;
+    QCheckBox *segmentToolsCheckbox;
+    QLabel *segmentLengthLabel;
+    QPushButton *autoSegmentButton;
+    bool segmentAudioPlaying;
+    qint64 segmentAudioEndPosition;
+    qint64 segmentAudioStartPosition;
+    QSlider *horizontalSlider;
+    QSlider *verticalSlider;
+    QCheckBox *followScrubber;
 
-        WaveFormSegments *graphAudioSegments;
+    WaveFormSegments *graphAudioSegments;
 
-        bool autoSegmentBool;
-        bool spectrographReadyFlag;
-        bool audioUploaded = false;
+    bool autoSegmentBool;
+    bool spectrographReadyFlag;
+    bool audioUploaded = false;
 
-        // for audio recording
-        //QAudioRecorder *audioRecorder;
-        QMediaCaptureSession *captureSession;
-        QAudioInput *audioInput;
-        QMediaRecorder *mediaRecorder;
-        QAudioFormat *desiredFormat;
-        QAudioDecoder *decoder;
-        QPushButton *recordButton;
-        bool isRecording; //to track recording state
+    // for audio recording
+    //QAudioRecorder *audioRecorder;
+    QMediaCaptureSession *captureSession;
+    QAudioInput *audioInput;
+    QMediaRecorder *mediaRecorder;
+    QAudioFormat *desiredFormat;
+    QAudioDecoder *decoder;
+    QPushButton *recordButton;
+    bool isRecording; //to track recording state
 
 public:
-    explicit Audio(QWidget *parent = nullptr, QString _label = "Sound Wave");
+    explicit Audio(QWidget *parent = nullptr, QString _label = "Sound Wave", int _audioDiviceNumber = 0);
     WavForm *wavChart;
     void newAudioPlayer();
     void setTrackPosition(qint64 position);
+    QCheckBox *alignAllAudioFocus;
+    Zoom *zoomButtons;
 
 public slots:
     void uploadAudio();
@@ -162,15 +164,23 @@ public slots:
     void stopRecording();
     void processAudioData(const QByteArray &data);
 
-
+    void enableAudioAligning(bool enable);
+    void disableAudioControls(bool disable);
+    void audioAligningSegmentControls(bool segEnabled);
+    void switchControlsWithAlign(bool aligning);
 
 signals:
     void emitLoadAudioIn(QString fName);
     void audioPositionChanged(double position);
     void emitAutoSegmentBool(bool autoSegmentBool);
-    void  segmentAudioNotPlaying(bool);
+    void segmentAudioNotPlaying(bool);
+    void secondAudioExists(bool);
     // for connecting spectrograph
     void audioFileSelected(const QString &fileName);
+    void playPauseActivated();
+    void scrubberUpdate(double position);
+    void audioEnded(bool disconnect);
+
 };
 
 #endif // AUDIO_H

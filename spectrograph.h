@@ -16,7 +16,7 @@
 
 /* File: spectrograph.h
  * Description:
- *  This header file defines the spectrograph class , which provides visualization for an audio file as a spectogram using QPaintEvent.
+ *  This header file defines the spectrograph class , which provides visualization for an audio file using a QImage and QPixmap.
  *
  * Purpose:
  *  - Creates a visual representation (spectrogram) from audio data
@@ -28,20 +28,19 @@
  *
  * Key Methods:
  *  - 'void setupSpectograph(QVector<double> &accumulatedSamples)': Prepares the spectogram using FFT for an audio segment
- *  - 'void paintEvent(QPaintEvent *event)': Creates spectogram visualization using QPainter
+ *  - 'void renderToPixmap': Creates spectogram visualization using QPixmap
  *  - 'void hammingWindow(int windowLength, QVector<double> &window)': Applies hamming window to smooth audio data
  *
  * Slots:
- *  - 'bufferReady()': Processes ready audio buffers by decoding into sample data
- *  - 'handleAudioBuffer(const QUrl &fileUrl)': Converts audio buffers to sample values and prepares them for FFT
- *  - 'void loadAudioFile(const QString &fileName)': Loads audio file and initializes decoder (processAudioFile).
- *  - 'void showPeaks()': Toggles display hiding lowest frequencies to enhance view
+ *  - 'void bufferReady()': Processes ready audio buffers by decoding into sample data
+ *  - 'void loadAudioFile(const QString &fileName)': initilizes processing
+ *  - 'void processAudioFile(const QUrl &fileUrl)' : takes in fileUrl to sample values and prepares them for FFT by calling bufferReady and finish signals on QAudioDecoder
+ *
  * */
 
 class Spectrograph : public QWidget
 {
     Q_OBJECT
-    QPushButton *peaksButton;
 
 public:
     explicit Spectrograph(QWidget *parent = nullptr);
@@ -51,12 +50,9 @@ public:
     void setupSpectrograph(QVector<double> &accumulatedSamples);
     int getWindowSize() const { return windowSize; }
     void reset();
-    bool showHighlightsEnabled = false;
     QPixmap cachedSpect;
 
 private:
-    // thread for background processing
-    //QThread *workerThread;
     QGraphicsView *graphicsView; // display the scene
     QGraphicsScene *graphicsScene;
 
@@ -88,7 +84,6 @@ private:
 public slots:
     void bufferReady();
     void processAudioFile(const QUrl &fileUrl);
-    void handleAudioBuffer(const QAudioBuffer &buffer);
     void loadAudioFile(const QString &fileName);
     void renderToPixmap();
 

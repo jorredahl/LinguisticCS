@@ -65,6 +65,10 @@ public slots:
 signals:
 
     void zoomGraphIn(int width, int height);
+    void horizontalSliderChanged(int pos);
+    void verticalSliderChanged(int pos);
+    void resetZoomActivated();
+
 
 };
 
