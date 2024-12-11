@@ -108,21 +108,61 @@ void Audio::newAudioPlayer(){
     displayAndControlsLayout = new QVBoxLayout();
     audioLayout->addLayout(displayAndControlsLayout);
 
-    // configure capture session for audio recording
-    captureSession = new QMediaCaptureSession(this);
+    /////////////////////////////////////////////////////////////////////////////
+
+    // initialize capture session, recorder, input, decoder, and format
     audioInput = new QAudioInput(this);
+    captureSession = new QMediaCaptureSession(this);
     mediaRecorder = new QMediaRecorder(this);
+    decoder = new QAudioDecoder(this);
+    desiredFormat = new QAudioFormat;
 
     captureSession->setAudioInput(audioInput);
     captureSession->setRecorder(mediaRecorder);
 
-    mediaRecorder->setQuality(QMediaRecorder::HighQuality);
-    mediaRecorder->setOutputLocation(QUrl::fromLocalFile("recording.wav")); //temporary file default location
+    // set desired format
+    desiredFormat->setChannelCount(2); //stereo
+    desiredFormat->setSampleFormat(QAudioFormat::Int16); //16 bit samples
+    desiredFormat->setSampleRate(48000); //48kHz sample rate
+
+    decoder->setAudioFormat(*desiredFormat);
+    //QAudioInput* audioInput = new QAudioInput(desiredFormat, this);
+
+    // record button setup
     recordButton = new QPushButton("Start Recording");
     recordButton->setEnabled(true);
     audioControls->addWidget(recordButton);
-
     connect(recordButton, &QPushButton::clicked, this, [this]() {isRecording ? stopRecording() : startRecording();});
+
+    connect(decoder, &QAudioDecoder::finished, this, []() {
+        qDebug() << "Audio decoding finished";
+    });
+    connect(decoder, &QAudioDecoder::bufferReady, this, [this]() {
+        QAudioBuffer buffer = decoder->read();
+        if (!buffer.isValid()) {
+            qWarning() << "Invalid buffer received";
+            return;
+        }
+        //QByteArray data = buffer.constData();
+        //QByteArray data(static_cast<const char*>(buffer.constData()), buffer.byteCount());
+        // ensure the buffer's format matches expectations
+        if (buffer.format().sampleFormat() != QAudioFormat::Int16) {
+            qWarning() << "Unexpected audio sample format";
+            return;
+        }
+
+        //access audio data as qint16
+        const qint16* audioData = buffer.constData<qint16>();
+        int sampleCount = buffer.sampleCount();
+
+        // create QByteArray from the audio data
+        QByteArray data(reinterpret_cast<const char*>(audioData), sampleCount * sizeof(qint16));
+        processAudioData(data);
+    });
+
+    decoder->start();
+
+    /////////////////////////////////////////////////////////////////////////////
 
     QAction *loopAction = new QAction();
     connect(loopAction, &QAction::triggered, this, &Audio::handleLoopClick);
@@ -411,22 +451,37 @@ void Audio::audioLoaded(){
 // }
 
 void Audio::startRecording() {
-    QString tempLocation = QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/temp_recording.wav"; //temp output location
+    desiredFormat->setChannelCount(2); //stereo
+    desiredFormat->setSampleFormat(QAudioFormat::Int16); //16 bit samples
+    desiredFormat->setSampleRate(48000); //48kHz sample rate
+
+    //audioInput->setFormat(desiredFormat);
+
+    // temporary output location
+    QString tempLocation = QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/recording.wav";
     mediaRecorder->setOutputLocation(QUrl::fromLocalFile(tempLocation));
 
-    mediaRecorder->record(); //start recording
+    //start recording
+    mediaRecorder->record();
     isRecording = true;
     recordButton->setText("Stop Recording");
 }
 
 void Audio::stopRecording() {
     if (!isRecording) return;
+
+    //stops recording
     mediaRecorder->stop();
     isRecording = false;
-    recordButton->setText("StartRecording");
+    recordButton->setText("Start Recording");
+
+    // decode the recorded audio
+    QString recordedFile = QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/recording.wav";
+    decoder->setSource(recordedFile);
+    decoder->start();
 
     // save recording
-    QString defaultSaveName = "recording.wav"; //needed?
+    QString defaultSaveName = "recording.wav";
     QString recordingName = QFileDialog::getSaveFileName(this, tr("Save Recording"), QDir::currentPath() + "/" + defaultSaveName, tr("Audio Files (*.wav)"));
     if (recordingName.isEmpty()) {
         qDebug() << "Save canceled";
@@ -438,12 +493,59 @@ void Audio::stopRecording() {
         recordingName += ".wav";
     }
 
-    QFile::rename(mediaRecorder->outputLocation().toLocalFile(), recordingName);
+    QString tempLocation = QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/recording.wav";
+    if (!QFile::rename(tempLocation, recordingName)) {
+        qWarning() << "Failed to save recording to:" <<recordingName;
+        return;
+    }
 
-    qDebug() << "Recording saved to: " << recordingName;
+    qDebug() << "Recording saved to:" << recordingName;
 
-    //load audio for playback
+    // if (player) delete player;
+    // if (audioOutput) delete audioOutput;
+    if (player) player = nullptr;
+    if(audioOutput) audioOutput = nullptr;
+    player = new QMediaPlayer;
+    audioOutput = new QAudioOutput;
+    player->setAudioOutput(audioOutput);
+    player->setSource(recordingName);
+    audioOutput->setVolume(50);
+
+    connect(player, &QMediaPlayer::positionChanged, this, &Audio::watchForEndOfSegmentAudio);
+    connect(player, &QMediaPlayer::positionChanged, this, &Audio::updateTrackPositionFromTimer);
+    connect(player, &QMediaPlayer::durationChanged, this, &Audio::updateAudioDuration);
+
+    playButton->setEnabled(true);
+    loopButton->setEnabled(true);
+    emit emitLoadAudioIn(recordingName);
     emit audioFileSelected(recordingName);
+
+    zoomButtons->setEnabled(true);
+    zoomButtons->resetZoom();
+    setTrackPosition(player->position());
+}
+
+// void Audio::handleAudioBuffer() {
+//     QAudioBuffer buffer = decoder->read();
+//     if (!buffer.isValid()) {
+//         qWarning() << "Invalid buffer received";
+//         return;
+//     }
+
+//     //process buffer data
+//     QByteArray data = buffer.data();
+//     processAudioData(data);
+// }
+
+// void Audio::onDecodingFinished() {
+//     qDebug() << "Audio decoding finished";
+//     //called when audio decoding is complete
+// }
+
+void Audio::processAudioData(const QByteArray &data) {
+    qDebug() << "Processing audio data of size:" << data.size();
+
+
 }
 
 // we want the segments to be whatever the last button hit was

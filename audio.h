@@ -10,6 +10,7 @@
 #include <QMediaCaptureSession>
 #include <QAudioInput>
 #include <QMediaRecorder>
+#include <QAudioDecoder>
 #include "wavform.h"
 #include "zoom.h"
 #include "segmentgraph.h"
@@ -122,6 +123,8 @@ class Audio : public QWidget
         QMediaCaptureSession *captureSession;
         QAudioInput *audioInput;
         QMediaRecorder *mediaRecorder;
+        QAudioFormat *desiredFormat;
+        QAudioDecoder *decoder;
         QPushButton *recordButton;
         bool isRecording; //to track recording state
 
@@ -130,8 +133,6 @@ public:
     WavForm *wavChart;
     void newAudioPlayer();
     void setTrackPosition(qint64 position);
-    //method to initialize audio recording
-    void setupAudioRecorder();
 
 public slots:
     void uploadAudio();
@@ -159,6 +160,8 @@ public slots:
     // slot methods for audio recording
     void startRecording();
     void stopRecording();
+    void processAudioData(const QByteArray &data);
+
 
 
 signals:
