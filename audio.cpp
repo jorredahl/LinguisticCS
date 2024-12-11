@@ -499,6 +499,13 @@ void Audio::audioAligningSegmentControls(bool segEnabled){
 }
 
 void Audio::disableAudioControls(bool disable){
+    if(disable){
+        graphAudioSegments->clearAllWavSegments();
+        wavChart->clearIntervals();
+        segmentToolsCheckbox->setChecked(false);
+        wavChart->switchMouseEventControls(false);
+    }
+
     if (autoSegmentButton->isEnabled()) autoSegmentButton->setDisabled(disable);
     if (clearAllGraphSegmentsButton->isEnabled()) clearAllGraphSegmentsButton->setDisabled(disable);
     if (createGraphSegmentsButton->isEnabled()) createGraphSegmentsButton->setDisabled(disable);
