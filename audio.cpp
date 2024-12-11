@@ -361,10 +361,6 @@ void Audio::toggleBoolAutoSegments() {
     emit emitAutoSegmentBool(autoSegmentBool);
 }
 
-<<<<<<< HEAD
-
-=======
->>>>>>> 141b71fe48f0848b434fda6985df3e24624e877c
 
 void Audio::ZoomScrubberPosition(){
     double floatPosition = (double) audioPosition / audioLength;
