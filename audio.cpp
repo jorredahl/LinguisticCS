@@ -46,7 +46,10 @@
  *  - 'void handleSpectWithPlay()': when the spect is loading while audio is playing, audio & time stop to prevent jumpy scrubber
  *  - 'void handleWavClearing()': if charts are in use and new audio is uploaded charts & data are cleared
  *  - 'void disableButtonsUntilAudio()': disables buttons until audio is loaded
- *
+ *  - 'void enableAudioAligning(bool enable)': gets signal to enable audio aligning checkbox if second audio exists
+ *  - 'void disableAudioControls(bool disable)': disables audio2 controls if audio1 aligning checkbox is checked and only allows for scrubber actions on audio2 for user
+ *  - 'void audioAligningSegmentControls(bool segEnabled)': if the audio aligning is on but user on audio1 wants to use segmenting, aligning is turned off
+ *  - 'void switchControlsWithAlign(bool aligning)': forces follow scrubber on if aligning is on
  *
  * Notes:
  *  - 'WaveForm' class and 'Zoom' class are integrated for visualization and zoom functionality respectively,
@@ -62,7 +65,7 @@
  */
 
 Audio::Audio(QWidget *parent, QString _label, int _audioDiviceNumber)
-    : QWidget{parent}, audioDiviceNumber(_audioDiviceNumber), label(_label), segmentAudioPlaying(false)
+    : QWidget{parent}, audioDiviceNumber(_audioDiviceNumber), label(_label), segmentAudioPlaying(false), audio2aligned(false)
 {
     newAudioPlayer();
     audioUploaded = false;
@@ -291,7 +294,6 @@ void Audio::handlePlayPauseButton(){
     emit segmentAudioNotPlaying(true);
 }
 void Audio::handlePlayPause() {
-
     if (audioPlaying) {
         player->pause();
         timer->stop();
@@ -299,7 +301,7 @@ void Audio::handlePlayPause() {
     else {
         player->play();
         timer->start(timerRefreshRate);
-
+        //if (alignAllAudioFocus->isChecked()) emit audioEnded(false);
     }
     setTrackPosition(player->position());
     audioPlaying = !audioPlaying;
@@ -319,6 +321,11 @@ void Audio::updateTrackPositionFromScrubber(double position) {
     segmentAudioPlaying = false;
     emit segmentAudioNotPlaying(true);
     emit scrubberUpdate(position);
+    if (alignAllAudioFocus->isChecked()) {
+        if (audioPlaying) handlePlayPauseButton();
+        emit audioEnded(false);
+    }
+
 
 }
 
@@ -374,14 +381,20 @@ void Audio::setTrackPosition(qint64 position) {
         audioPosition = player->position();
     }
 
-    if(floatPosition > 1.05 && alignAllAudioFocus->isChecked()){
+    if(floatPosition > 1.05 && (alignAllAudioFocus->isChecked() || audio2aligned)){
         QIcon icon = QIcon(":/resources/icons/play.svg");
         playButton->setIcon(icon);
         audioPlaying = false;
         emit segmentAudioNotPlaying(true);
         player->pause();
         timer->stop();
-        emit audioEnded(true);
+        if(audio2aligned) {
+            emit audioEnded(true);
+            emit audioPositionChanged(floatPosition);
+            return;
+        }
+        emit audioEnded(false);
+        emit audioPositionChanged(floatPosition);
         return;
     }
 
@@ -489,8 +502,7 @@ void Audio::switchControlsWithAlign(bool aligning){
 
 void Audio::audioAligningSegmentControls(bool segEnabled){
     if(alignAllAudioFocus->isEnabled() && segEnabled) {
-        alignAllAudioFocus->setEnabled(false);
-        alignAllAudioFocus->setCheckState(Qt::Unchecked);
+        alignAllAudioFocus->click();
     }
     else if(!segEnabled){
         alignAllAudioFocus->setEnabled(true);
@@ -505,7 +517,7 @@ void Audio::disableAudioControls(bool disable){
         segmentToolsCheckbox->setChecked(false);
         wavChart->switchMouseEventControls(false);
     }
-
+    audio2aligned = disable;
     if (autoSegmentButton->isEnabled()) autoSegmentButton->setDisabled(disable);
     if (clearAllGraphSegmentsButton->isEnabled()) clearAllGraphSegmentsButton->setDisabled(disable);
     if (createGraphSegmentsButton->isEnabled()) createGraphSegmentsButton->setDisabled(disable);

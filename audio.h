@@ -59,12 +59,19 @@
  *  - 'void handleSpectWithPlay()': when the spect is loading while audio is playing, audio & time stop to prevent jumpy scrubber
  *  - 'void handleWavClearing()': if charts are in use and new audio is uploaded charts & data are cleared
  *  - 'void disableButtonsUntilAudio()': disables buttons until audio is loaded
- *
+ *  - 'void enableAudioAligning(bool enable)': gets signal to enable audio aligning checkbox if second audio exists
+ *  - 'void disableAudioControls(bool disable)': disables audio2 controls if audio1 aligning checkbox is checked and only allows for scrubber actions on audio2 for user
+ *  - 'void audioAligningSegmentControls(bool segEnabled)': if the audio aligning is on but user on audio1 wants to use segmenting, aligning is turned off
+ *  - 'void switchControlsWithAlign(bool aligning)': forces follow scrubber on if aligning is on
  * Signals:
  *  - 'void emitLoadAudioIn(QString fName)': Emits signal when an audio file is uploaded
  *  - 'void audioPositionChanged(double position)': Emits signal when the audio position is changed
  *  - 'void segmentAudioNotPlaying(bool)': emits when the segment audio is playing/not to update what the player is doing or segment ui
  *  - 'void audioFileSelected(const QString &fileName)': tells spectrograph that the audio is loaded
+ *  - signals for audio aliging so that audio2 can do whatever audio1 does:
+ *      - 'void playPauseActivated()'
+ *      - 'void scrubberUpdate(double position)': position of audio1 scrubber updated
+ *      - 'void audioEnded(bool disconnect)': when either audio ends is updated signal for audio 2 to disconnect/connect from/to 1 until play/pause or scrubber is activated
  * Notes:
  *  - The 'Audio' class relies on the 'WavForm', 'SegmentGraph', 'WavFormSegments', and 'Zoom' classes for waveform visualization and zooming
  *
@@ -107,6 +114,7 @@ class Audio : public QWidget
     QSlider *horizontalSlider;
     QSlider *verticalSlider;
     QCheckBox *followScrubber;
+    bool audio2aligned;
 
     WaveFormSegments *graphAudioSegments;
 
@@ -158,8 +166,7 @@ signals:
     void emitAutoSegmentBool(bool autoSegmentBool);
     void segmentAudioNotPlaying(bool);
     void secondAudioExists(bool);
-    // for connecting spectrograph
-    void audioFileSelected(const QString &fileName);
+    void audioFileSelected(const QString &fileName); // for connecting spectrograph
     void playPauseActivated();
     void scrubberUpdate(double position);
     void audioEnded(bool disconnect);

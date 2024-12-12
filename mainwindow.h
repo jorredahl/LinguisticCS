@@ -27,6 +27,18 @@
  *  - 'MainWindow(QWidget *parent = nullptr)': Constructor to initialize main window layout
  *  - '~MainWindow()': Destructor to clean resources
  *
+ * Slots:
+ *  - 'void audio2ConnectAllowed(bool secondAudioExists)': emits a signal that the first audio
+ *      can enable the align audio checkbox if there is a second audio available
+ *  - 'void audio2Connect(bool connectAudios)': connects or disconnects the controls for the first audio
+ *      to the second
+ *  - 'void handleEndOfAudio2(bool disc)': connects/disconnects the second audio playing from the first incase the
+ *      audios are two different sizes or are played simultaniously from different position and the second ends before
+ *      the first.
+ * Signals:
+ *  - 'void disableAudio2(bool disableAudio)': sends a signal to enable/disable audio2 controls when the audio1 controls have taken over
+ *  - 'void canEnableAudioAlignment(bool enable)': signal that the checkbox for aligning audio can be enabled on audio1 if audio2 exists
+ *
  * References:
  *  -...
  */
@@ -38,7 +50,7 @@ class MainWindow : public QMainWindow
     QVBoxLayout *mainLayout;
     Audio *audio1;
     Audio *audio2;
-
+    bool connected;
 
 public:
     MainWindow(QWidget *parent = nullptr);

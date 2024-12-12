@@ -14,6 +14,14 @@
  *  are integrated into the layout to enable independent audio playback and visualiztion within the
  *  UI layout.
  *
+ * *Slots:
+ *  - 'audio2ConnectAllowed(bool secondAudioExists)': emits a signal that the first audio
+ *      can enable the align audio checkbox if there is a second audio available
+ *  - 'audio2Connect(bool connectAudios)': connects or disconnects the controls for the first audio
+ *      to the second
+ *  - 'handleEndOfAudio2(bool disc)': connects/disconnects the second audio playing from the first incase the
+ *      audios are two different sizes or are played simultaniously from different position and the second ends before
+ *      the first.
  * Notes:
  *  - The 'Audio' class is used for playback and visualization(*). See 'audio.h' and 'audio.cpp' for
  *    its implementation.
@@ -25,7 +33,7 @@
  */
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent)
+    : QMainWindow(parent), connected(false)
 {
     QScrollArea *scrollArea = new QScrollArea(this);
     // create central widget
@@ -68,6 +76,7 @@ void MainWindow::audio2ConnectAllowed(bool secondAudioExists){
 void MainWindow::audio2Connect(bool connectAudios){
     if (connectAudios){
         emit disableAudio2(true);
+        connected = true;
         connect(audio1, &Audio::playPauseActivated, audio2, &Audio::handlePlayPause);
         connect(audio1->zoomButtons, &Zoom::horizontalSliderChanged, audio2->zoomButtons, &Zoom::horizontalZoom);
         connect(audio1->zoomButtons, &Zoom::verticalSliderChanged, audio2->zoomButtons, &Zoom::verticalZoom);
@@ -76,6 +85,7 @@ void MainWindow::audio2Connect(bool connectAudios){
     }
     else{
         emit disableAudio2(false);
+        connected = false;
         disconnect(audio1, &Audio::playPauseActivated, audio2, &Audio::handlePlayPause);
         disconnect(audio1->zoomButtons, &Zoom::horizontalSliderChanged, audio2->zoomButtons, &Zoom::horizontalZoom);
         disconnect(audio1->zoomButtons, &Zoom::verticalSliderChanged, audio2->zoomButtons, &Zoom::verticalZoom);
@@ -84,11 +94,15 @@ void MainWindow::audio2Connect(bool connectAudios){
     }
 }
 void MainWindow::handleEndOfAudio2(bool disc){
-    if (disc){
-        disconnect(audio1, &Audio::scrubberUpdate, audio2, &Audio::updateTrackPositionFromScrubber);
+    if (disc && connected){
+        connected = false;
+        qDebug() << "disconnecting trackposition and playpause";
+        //disconnect(audio1, &Audio::scrubberUpdate, audio2, &Audio::updateTrackPositionFromScrubber);
         disconnect(audio1, &Audio::playPauseActivated, audio2, &Audio::handlePlayPause);
-    }else{
-        connect(audio1, &Audio::scrubberUpdate, audio2, &Audio::updateTrackPositionFromScrubber);
+    }else if (!connected && !disc){
+        qDebug() << "reconnecting";
+        connected = true;
+        //connect(audio1, &Audio::scrubberUpdate, audio2, &Audio::updateTrackPositionFromScrubber);
         connect(audio1, &Audio::playPauseActivated, audio2, &Audio::handlePlayPause);
     }
 }
