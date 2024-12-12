@@ -126,7 +126,6 @@ void Audio::newAudioPlayer(){
     desiredFormat->setSampleRate(48000); //48kHz sample rate
 
     decoder->setAudioFormat(*desiredFormat);
-    //QAudioInput* audioInput = new QAudioInput(desiredFormat, this);
 
     // record button setup
     recordButton = new QPushButton("Start Recording");
@@ -143,7 +142,6 @@ void Audio::newAudioPlayer(){
             qWarning() << "Invalid buffer received";
             return;
         }
-        //QByteArray data = buffer.constData();
         //QByteArray data(static_cast<const char*>(buffer.constData()), buffer.byteCount());
         // ensure the buffer's format matches expectations
         if (buffer.format().sampleFormat() != QAudioFormat::Int16) {
