@@ -163,6 +163,7 @@ public slots:
     void startRecording();
     void stopRecording();
     void processAudioData(const QByteArray &data);
+    void createWavFile(const QString &filePath, const QByteArray &audioData, const QAudioFormat &format);
 
     void enableAudioAligning(bool enable);
     void disableAudioControls(bool disable);

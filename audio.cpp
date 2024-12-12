@@ -479,9 +479,9 @@ void Audio::audioLoaded(){
 // }
 
 void Audio::startRecording() {
-    desiredFormat->setChannelCount(2); //stereo
-    desiredFormat->setSampleFormat(QAudioFormat::Int16); //16 bit samples
-    desiredFormat->setSampleRate(48000); //48kHz sample rate
+    // desiredFormat->setChannelCount(2); //stereo
+    // desiredFormat->setSampleFormat(QAudioFormat::Int16); //16 bit samples
+    // desiredFormat->setSampleRate(48000); //48kHz sample rate
 
     //audioInput->setFormat(desiredFormat);
 
@@ -503,12 +503,8 @@ void Audio::stopRecording() {
     isRecording = false;
     recordButton->setText("Start Recording");
 
-    // decode the recorded audio
-    QString recordedFile = QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/recording.wav";
-    decoder->setSource(recordedFile);
-    decoder->start();
-
-    // save recording
+    // save recorded file
+    QString tempLocation = QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/recording.wav";
     QString defaultSaveName = "recording.wav";
     QString recordingName = QFileDialog::getSaveFileName(this, tr("Save Recording"), QDir::currentPath() + "/" + defaultSaveName, tr("Audio Files (*.wav)"));
     if (recordingName.isEmpty()) {
@@ -516,23 +512,27 @@ void Audio::stopRecording() {
         return;
     }
 
-    // ensure wav file
-    if (!recordingName.endsWith(".wav", Qt::CaseInsensitive)) {
-        recordingName += ".wav";
-    }
-
-    QString tempLocation = QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/recording.wav";
-    if (!QFile::rename(tempLocation, recordingName)) {
-        qWarning() << "Failed to save recording to:" <<recordingName;
+    QByteArray audioData;
+    QFile tempFile(tempLocation);
+    if (tempFile.open(QIODevice::ReadOnly)) {
+        audioData = tempFile.readAll();
+        tempFile.close();
+    } else {
+        qWarning() << "Failed to read temporary recording file";
         return;
     }
 
+    //create WAV file
+    createWavFile(recordingName, audioData, *desiredFormat);
     qDebug() << "Recording saved to:" << recordingName;
 
-    // if (player) delete player;
-    // if (audioOutput) delete audioOutput;
+    decoder->setSource(recordingName);
+    decoder->start();
+
+    // load file into audio player
     if (player) player = nullptr;
-    if(audioOutput) audioOutput = nullptr;
+    if (audioOutput) audioOutput = nullptr;
+
     player = new QMediaPlayer;
     audioOutput = new QAudioOutput;
     player->setAudioOutput(audioOutput);
@@ -551,6 +551,16 @@ void Audio::stopRecording() {
     zoomButtons->setEnabled(true);
     zoomButtons->resetZoom();
     setTrackPosition(player->position());
+
+    // ensure wav file
+    if (!recordingName.endsWith(".wav", Qt::CaseInsensitive)) {
+        recordingName += ".wav";
+    }
+
+    if (!QFile::rename(tempLocation, recordingName)) {
+        qWarning() << "Failed to save recording to:" <<recordingName;
+        return;
+    }
 }
 
 // void Audio::handleAudioBuffer() {
@@ -569,6 +579,52 @@ void Audio::stopRecording() {
 //     qDebug() << "Audio decoding finished";
 //     //called when audio decoding is complete
 // }
+
+void Audio::createWavFile(const QString &filePath, const QByteArray &audioData, const QAudioFormat &format) {
+    QFile file(filePath);
+    if (!file.open(QIODevice::WriteOnly)) {
+        qWarning() << "Failed to open file for writing:" << filePath;
+        return;
+    }
+
+    QDataStream out(&file);
+
+    // Determines bits per sample from sample rate
+    int bitsPerSample = 16;
+    // still getting bitdepth error
+    // switch (format.sampleFormat()) {
+    //     case QAudioFormat::UInt8: bitsPerSample = 8; break;
+    //     case QAudioFormat::Int16: bitsPerSample = 16; break;
+    //     case QAudioFormat::Int32: bitsPerSample = 32; break;
+    //     case QAudioFormat::Float: bitsPerSample = 32; break;
+    //     default:
+    //         qWarning() << "Unsupported sample format";
+    //         file.close();
+    //         return;
+    // }
+
+    //create WAV header placeholder
+    out.writeRawData("RIFF", 4);
+    quint32 fileSize = 36 + audioData.size(); // 36 + data chunk size
+    out << quint32(fileSize);
+    out.writeRawData("WAVE", 4);
+    out.writeRawData("fmt", 4);
+    out << quint32(16); //16 for pcm
+    out << quint16(1); //audioFormat (1 for pcm)
+    out << quint16(format.channelCount());
+    out << quint32(format.sampleRate());
+    quint32 byteRate = format.sampleRate() * format.channelCount() * (bitsPerSample / 8);
+    out << byteRate;
+    quint16 blockAlign = format.channelCount() * (bitsPerSample / 8);
+    out << blockAlign;
+    out << quint16(bitsPerSample); //bits per sample
+    out.writeRawData("data", 4);
+    out << quint32(audioData.size()); //subchunk size
+    out.writeRawData(audioData.constData(), audioData.size()); //write audio data
+
+    file.close();
+    qDebug() << "WAV file created: " << filePath;
+}
 
 void Audio::processAudioData(const QByteArray &data) {
     qDebug() << "Processing audio data of size:" << data.size();
