@@ -96,6 +96,10 @@ class Audio : public QWidget
     QHBoxLayout *wavFormControls;
     QTimer *timer;
     int timerRefreshRate;
+    qint64 prevPosition;
+    int timeElapsed;
+    int timeElapsedUpdate;
+    int audioVelocity;
     qint64 audioPosition;
     qint64 audioPositionOnChart;
     qint64 audioLength;

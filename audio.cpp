@@ -29,7 +29,7 @@
  *  - 'applySegmentInterval()': Updates waveform segments based on user-defined intervals
  *
  * Slots:
- *  - 'updateTrackPositionFromTimer()': Advances the audio position periodically based on the timer
+ *  - 'updateTrackPositionFromTimer()': Advances the audio position periodically based on the media player position, with elements of smoothing for a better UI
  *  - 'updateTrackPositionFromScrubber(double position)': Adjusts the player position when the scrubber is moved
  *  - 'ZoomScrubberPosition()': adjusts the scrubber when there is a zoom update
  *  - 'updateAudioPosition(qint64 duration)': Updates audio track duration
@@ -311,8 +311,37 @@ void Audio::handlePlayPause() {
 
 
 // this is a slot with no arguments that updates position automatically using setTrackPosition
-void Audio::updateTrackPositionFromTimer() {
-    setTrackPosition(audioPosition + timerRefreshRate);
+void Audio::updateTrackPositionFromTimer() { 
+    qint64 updateVal = player->position();
+
+    if (updateVal == player->duration()) {
+        updateVal = audioPosition + timerRefreshRate;
+    } else if (updateVal != 0) {
+        if (prevPosition == 0) {
+            timeElapsed = updateVal / timerRefreshRate;
+        } else {
+            ++timeElapsed;
+        }
+
+        if (prevPosition != updateVal) {
+            audioVelocity = updateVal / timeElapsed;
+            qint64 propVal = audioPosition + audioVelocity;
+
+            if (propVal < updateVal) {
+                ++audioVelocity;
+            } else if (propVal > updateVal) {
+                --audioVelocity;
+            }
+
+            updateVal = propVal;
+        } else {
+            updateVal = audioPosition + audioVelocity;
+        }
+    }
+
+    prevPosition = player->position();
+
+    setTrackPosition(updateVal);
 }
 
 void Audio::updateTrackPositionFromScrubber(double position) {
