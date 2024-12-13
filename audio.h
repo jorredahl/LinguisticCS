@@ -49,6 +49,7 @@
  *  - 'void updateAudioPosition(qint64 duration)': Updates audio track duration
  *  - 'void audioLoaded()': allows for the segmenting functionality to start after audio has been loaded in
  *  - 'void segmentIntervalControlsEnable(bool ready)': enables interval controls after segments are started
+ *  - 'void segmentLengthShow(int numSamples, int sampleRate)': displays selected segment length in samples and seconds on segmentLengthLabel
  *  - 'void segmentCreateControlsEnable(bool ready)': enables the create button once segments are established
  *  - 'void toggleBoolManualSegments(double position)': enables the clear button and sends updated delta data and indicates to use segments from the delta value
  *  - 'void toggleBoolAutoSegments()': enables clear button and indicates the segments are the auto ones

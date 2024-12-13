@@ -36,6 +36,7 @@
  *  - 'AudioLoaded()': allows for the segmenting functionality to start after audio has been loaded in
  *  - 'updateTrackPositionFromSegment(QPair<double, double> startEnd)': updates the audio to play the displayed segment
  *  - 'segmentIntervalControlsEnable(bool ready)': enables interval controls after segments are started
+ *  - 'void segmentLengthShow(int numSamples, int sampleRate)': displayes number of samples and samples divided by sampleRate on segmentLengthLabel
  *  - 'segmentCreateControlsEnable(bool ready)': enables the create button once segments are established
  *  - 'toggleBoolManualSegments(double position)': enables the clear button and sends updated delta data and indicates to use segments from the delta value
  *  - 'toggleBoolAutoSegments()': enables clear button and indicates the segments are the auto ones
