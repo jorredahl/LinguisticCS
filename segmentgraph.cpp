@@ -98,7 +98,6 @@ void SegmentGraph::updateGraphs(QList<QList<float>> segments) {
 }
 void SegmentGraph::clearView(){
     if (segmentSlider) segmentSlider->setSliderPosition(0);
-    //if (graph->chart()) graph->setChart(nullptr);
     int w = graph->width();
     int h = graph->height();
     delete graph;

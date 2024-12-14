@@ -55,12 +55,6 @@
  * Notes:
  *  - 'WaveForm' class and 'Zoom' class are integrated for visualization and zoom functionality respectively,
  *    see 'wavform.h' and 'wavform.cpp' for 'WaveForm' implementation and 'zoom.h' and 'zoom.cpp' for 'Zoom implementation
- *  - if issues with the scrubber arise unconnect the 'updateAudioDuration(qint64 position)' and use what is below instead:
- *      -       //     connect(player, &QMediaPlayer::durationChanged, this, [=](qint64 duration) {
-                //     audioLength = duration;
-                //     qDebug() << duration << "duration";
-                //  });
- *  - test for the segments is in the play/pause method
  * References:
  *  - ...
  */
@@ -88,7 +82,6 @@ void Audio::newAudioPlayer(){
     wavFormControls->addLayout(wavFormSegmentControls);
 
     uploadAudioButton = new QPushButton("Upload");
-    //uploadAudioButton->setShortcut(Qt::CTRL | Qt::Key_U);
     connect(uploadAudioButton, &QPushButton::clicked, this, &Audio::uploadAudio);
     audioControls->addWidget(uploadAudioButton, 0, Qt::AlignLeft);
 
@@ -118,7 +111,6 @@ void Audio::newAudioPlayer(){
     loopButton->setDefaultAction(loopAction);
     loopButton->setIcon(QIcon(":/resources/icons/loop.svg"));
     loopButton->setEnabled(false);
-    //loopButton->setShortcut(Qt::CTRL | Qt::Key_L);
     loopButton->setCheckable(true);
     playLoopControls->addWidget(loopButton, 0, Qt::AlignRight);
 
@@ -182,14 +174,17 @@ void Audio::newAudioPlayer(){
     connect(zoomButtons, &Zoom::zoomGraphIn, this, &Audio::ZoomScrubberPosition);
 
     //WavForm Controls
+
+    //Delta selector (change distance between segment lines when in segmenting control)
     deltaSelector = new QDoubleSpinBox();
     deltaSelector->setValue(10.0);
     deltaSelector-> setMinimum(10.0);
     deltaSelector->setMaximum(200);
     deltaSelector->setEnabled(false);
+
+    //auto Segments button: finds max peaks to automatically segment
     autoSegmentButton = new QPushButton("auto");
     autoSegmentButton->setEnabled(false);
-
 
     connect(deltaSelector, &QDoubleSpinBox::valueChanged, this, &Audio::toggleBoolManualSegments);
     connect(autoSegmentButton, &QPushButton::clicked, this, &Audio::toggleBoolAutoSegments);
@@ -202,6 +197,7 @@ void Audio::newAudioPlayer(){
     deltaLayout->addWidget(autoSegmentButton);
     wavFormVertControls->addLayout(deltaLayout);
 
+    //graph audio segments controls
     graphAudioSegments = new WaveFormSegments();
     createGraphSegmentsButton = new QPushButton("create segment graphs");
     createGraphSegmentsButton->setEnabled(false);
@@ -228,10 +224,12 @@ void Audio::newAudioPlayer(){
     connect(wavChart, &WavForm::chartInfoReady, this, &Audio::segmentCreateControlsEnable);
     wavFormSegmentControls-> addWidget(segmentToolsCheckbox);
     wavFormSegmentControls-> addWidget(segmentLengthLabel);
+
     //Close Analysis Graphs
     segmentGraph = new SegmentGraph(WAVFORM_WIDTH, WAVFORM_HEIGHT);
     segmentGraph->setVisible(false);
     connect(segmentGraph, &SegmentGraph::clearSegmentsEnable, this, &Audio::clearSegmentsEnable);
+    connect(wavChart, &WavForm::clearEnable, this,  &Audio::clearSegmentsEnable);
     connect(graphAudioSegments, &WaveFormSegments::createWavSegmentGraphs, segmentGraph, &SegmentGraph::updateGraphs);
     connect(graphAudioSegments, &WaveFormSegments::storeStartEndValuesOfSegments, segmentGraph, &SegmentGraph::getSegmentStartEnd);
     connect(graphAudioSegments, &WaveFormSegments::drawAutoSegments, wavChart, &WavForm::drawAutoIntervals);
@@ -269,6 +267,7 @@ void Audio::uploadAudio(){
     zoomButtons->setEnabled(true);
     zoomButtons->resetZoom();
     setTrackPosition(player->position());
+
     // Connect scrubber to spectrograph updates
     connect(player, &QMediaPlayer::positionChanged, this, &Audio::updateTrackPositionFromTimer);
 
@@ -302,7 +301,6 @@ void Audio::handlePlayPause() {
     else {
         player->play();
         timer->start(timerRefreshRate);
-        //if (alignAllAudioFocus->isChecked()) emit audioEnded(false);
     }
     setTrackPosition(player->position());
     audioPlaying = !audioPlaying;
@@ -355,8 +353,6 @@ void Audio::updateTrackPositionFromScrubber(double position) {
         if (audioPlaying) handlePlayPauseButton();
         emit audioEnded(false);
     }
-
-
 }
 
 void Audio::updateTrackPositionFromSegment(QPair<double, double> startEnd){
@@ -520,7 +516,7 @@ void Audio::disableButtonsUntilAudio() {
     segmentToolsCheckbox->setEnabled(audioUploaded);
 }
 
-void Audio::enableAudioAligning(bool enable){
+void Audio::enableAudioAligning(bool enable){ /////////////////////////////////////////////
     alignAllAudioFocus->setEnabled(enable);
 }
 
@@ -534,8 +530,9 @@ void Audio::audioAligningSegmentControls(bool segEnabled){
     if(alignAllAudioFocus->isEnabled() && segEnabled) {
         alignAllAudioFocus->click();
     }
-    else if(!segEnabled){
+    else if(!segEnabled && audio2aligned){
         alignAllAudioFocus->setEnabled(true);
+        qDebug() << "audioAligningSegmentControls callled";
     }
 
 }

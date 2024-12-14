@@ -125,6 +125,7 @@ signals:
     void intervalsForSegments(QList<int>, bool);
     void chartInfoReady(bool ready);
     void clearAllSegmentInfo();
+    void clearEnable(bool enable);
 };
 
 #endif // WAVFORM_H

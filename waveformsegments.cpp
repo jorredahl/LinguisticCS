@@ -28,12 +28,9 @@ WaveFormSegments::WaveFormSegments(QList<float> _audioSamples , QObject *parent)
 {}
 
 void WaveFormSegments::collectWavSegment(QList<int> segmentPlaces, bool isAuto){
-    // only one line given
     clearAllWavSegments();
-
     if (isAuto) {
         autoSegment(originalAudio.mid(segmentPlaces[0], segmentPlaces[1] - segmentPlaces[0]), segmentPlaces[0]);
-
     }
 
     audioSampleLength = originalAudio.length();
@@ -49,16 +46,12 @@ void WaveFormSegments::collectWavSegment(QList<int> segmentPlaces, bool isAuto){
     if (isAuto) wavSegmentStartEndPositions.remove(wavSegments.length() - 1);
     emit storeStartEndValuesOfSegments(wavSegmentStartEndPositions);
     emit createWavSegmentGraphs(wavSegments);
-
-
-
 }
 
 void WaveFormSegments::clearAllWavSegments(){
     if (!wavSegments.isEmpty()) wavSegments.clear();
     if (!wavSegmentStartEndPositions.isEmpty()) wavSegmentStartEndPositions.clear();
 }
-
 
 void WaveFormSegments::uploadAudio(QList<float> audio){
     if (!originalAudio.empty()){

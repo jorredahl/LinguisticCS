@@ -261,6 +261,7 @@ void WavForm::mousePressEvent(QMouseEvent *evt) {
             int numSamples = int(audio->getAudioSamples().length() * segmentProp);
             emit segmentLength(numSamples, audio->getSampleRate());
         }
+        emit clearEnable(startSegment || endSegment ? true: false);
         updateChart(chartW,chartH);
         return;
     }

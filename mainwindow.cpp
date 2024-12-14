@@ -96,13 +96,9 @@ void MainWindow::audio2Connect(bool connectAudios){
 void MainWindow::handleEndOfAudio2(bool disc){
     if (disc && connected){
         connected = false;
-        qDebug() << "disconnecting trackposition and playpause";
-        //disconnect(audio1, &Audio::scrubberUpdate, audio2, &Audio::updateTrackPositionFromScrubber);
         disconnect(audio1, &Audio::playPauseActivated, audio2, &Audio::handlePlayPause);
     }else if (!connected && !disc){
-        qDebug() << "reconnecting";
         connected = true;
-        //connect(audio1, &Audio::scrubberUpdate, audio2, &Audio::updateTrackPositionFromScrubber);
         connect(audio1, &Audio::playPauseActivated, audio2, &Audio::handlePlayPause);
     }
 }
