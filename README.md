@@ -81,19 +81,7 @@ The first step is to load an audio file to compare.
 
 **Note: only `.wav` files are accepted at the moment.  A 24 or 32 bitrate is encouraged for the file.**
 
-### Playing audio files
-Once your audio file is loaded, you can click the corresponding play button to play and pause.  You can see the scrubber's corresponding progress through the waveform to the right.
-
-### Visualizing the audio
-There are two primary visualization methods within the Phonetics Visualizer: a waveform and a spectrogram
-
-#### The Waveform
-
-#### The Spectrogram
-
-### Zooming in 
-There are two ways to zoom in
-
+#### Please see the User Documentation PDF and the User Documentation PDF for additional details.
 
 ## ⛏️ Built Using <a name = "built_using"></a>
 - C++
