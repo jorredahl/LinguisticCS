@@ -81,7 +81,7 @@ The first step is to load an audio file to compare.
 
 **Note: only `.wav` files are accepted at the moment.  A 24 or 32 bitrate is encouraged for the file.**
 
-#### Please see the User Documentation PDF and the User Documentation PDF for additional details.
+## Please see the User Documentation PDF and the User Documentation PDF for additional details.
 
 
 ## ⛏️ Built Using <a name = "built_using"></a>
